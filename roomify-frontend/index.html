@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Roomify – Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/global.css">
+  <link rel="stylesheet" href="assets/css/auth.css">
+</head>
+<body>
+
+  <!-- LEFT PANEL (tidak berubah saat switch tab) -->
+  <div class="left-panel">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+    <div class="left-text">
+      <h1>Selamat<br>Datang!</h1>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+
+    <!-- Tab toggle (selalu tampil) -->
+    <div class="tab-group">
+      <button class="tab-btn active" id="tab-login"  onclick="switchTab('login')">Login</button>
+      <button class="tab-btn"        id="tab-signup" onclick="switchTab('signup')">Sign up</button>
+    </div>
+
+    <!-- FORM LOGIN -->
+    <div class="form-view active" id="form-login">
+      <div class="form-heading">
+        <h2>Login</h2>
+        <p>Selamat datang kembali!<br>Silakan masukan email dan password Anda</p>
+      </div>
+      <div class="field" id="field-login-email">
+        <label for="login-email">Email</label>
+        <input type="email" id="login-email" placeholder="nama@gmail.com" autocomplete="email"/>
+        <p class="error-msg">Masukkan email yang valid.</p>
+      </div>
+      <div class="field" id="field-login-password">
+        <label for="login-password">Password</label>
+        <div class="input-wrapper">
+          <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password"/>
+          <button class="toggle-pw" id="togglePw-login" title="Tampilkan password"></button>
+        </div>
+        <p class="error-msg">Password tidak boleh kosong.</p>
+      </div>
+      <p class="terms">
+        Dengan masuk Anda setuju dengan
+        <a href="#">Terms of Use</a> dan <a href="#">Privacy Policy</a>
+      </p>
+      <button class="btn-primary" id="loginBtn" onclick="handleLogin()">
+        <span class="spinner"></span>
+        <span id="loginBtnText">Login</span>
+      </button>
+    </div>
+
+    <!-- FORM SIGNUP -->
+    <div class="form-view" id="form-signup">
+      <div class="form-heading">
+        <h2>Sign Up</h2>
+        <p>Selamat datang!<br>Silakan daftarkan email dan password Anda</p>
+      </div>
+      <div class="field" id="field-nama">
+        <label for="nama">Nama Lengkap</label>
+        <input type="text" id="nama" placeholder="Masukkan nama lengkap Anda" autocomplete="name"/>
+        <p class="error-msg">Nama lengkap tidak boleh kosong.</p>
+      </div>
+      <div class="field" id="field-signup-email">
+        <label for="signup-email">Email</label>
+        <input type="email" id="signup-email" placeholder="nama@gmail.com" autocomplete="email"/>
+        <p class="error-msg">Masukkan email yang valid.</p>
+      </div>
+      <div class="field" id="field-signup-password">
+        <label for="signup-password">Password</label>
+        <div class="input-wrapper">
+          <input type="password" id="signup-password" placeholder="Min. 8 karakter" autocomplete="new-password"/>
+          <button class="toggle-pw" id="togglePw-signup" title="Tampilkan password"></button>
+        </div>
+        <p class="error-msg">Password minimal 8 karakter.</p>
+      </div>
+      <p class="terms">
+        Dengan mendaftar Anda setuju dengan
+        <a href="#">Terms of Use</a> dan <a href="#">Privacy Policy</a>
+      </p>
+      <button class="btn-primary" id="signupBtn" onclick="handleSignup()">
+        <span class="spinner"></span>
+        <span id="signupBtnText">Sign up</span>
+      </button>
+    </div>
+
+  </div>
+
+  <script src="assets/js/auth.utils.js"></script>
+  <script src="assets/js/auth.js"></script>
+</body>
+</html>
