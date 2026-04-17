@@ -5,6 +5,21 @@ import Link from 'next/link';
 import { isValidEmail } from '@/utils/auth.utils';
 import { useAuth } from '@/hooks/useAuth';
 
+const EyeOpenIcon = (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" />
+    <circle cx="12" cy="12" r="3" />
+  </svg>
+);
+
+const EyeClosedIcon = (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M17.94 17.94A10.94 10.94 0 0 1 12 19C5 19 1 12 1 12a18.09 18.09 0 0 1 5.06-5.94" />
+    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+    <line x1="1" y1="1" x2="23" y2="23" />
+  </svg>
+);
+
 export default function LoginForm() {
   const { login, isLoading } = useAuth();
   const [email, setEmail] = useState('');
@@ -81,7 +96,7 @@ export default function LoginForm() {
               onClick={() => setShowPassword((prev) => !prev)}
               title={showPassword ? 'Sembunyikan password' : 'Tampilkan password'}
             >
-              {showPassword ? '🙈' : '👁️'}
+              {showPassword ? EyeClosedIcon : EyeOpenIcon}
             </button>
           </div>
           <p className="error-msg">Password tidak boleh kosong.</p>
@@ -90,7 +105,7 @@ export default function LoginForm() {
         {serverError ? <p className="error-msg">{serverError}</p> : null}
 
         <p className="terms">
-          Dengan masuk Anda setuju dengan
+          Dengan masuk Anda setuju dengan 
           <a href="#">Terms of Use</a> dan <a href="#">Privacy Policy</a>
         </p>
 
