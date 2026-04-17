@@ -3,17 +3,20 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { isValidEmail } from '@/utils/auth.utils';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function LoginForm() {
+  const { login, isLoading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({ email: false, password: false });
-  const [isLoading, setIsLoading] = useState(false);
+  const [serverError, setServerError] = useState('');
 
   const handleLogin = async () => {
     // Reset errors
     setErrors({ email: false, password: false });
+    setServerError('');
 
     let valid = true;
     if (!email || !isValidEmail(email)) {
@@ -27,19 +30,9 @@ export default function LoginForm() {
 
     if (!valid) return;
 
-    setIsLoading(true);
-
-    // TODO: Replace with actual API call
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      alert('Login berhasil! Selamat datang di Roomify 🏠');
-      // window.location.href = '/customer/dashboard';
-    } catch (error) {
-      console.error('Login failed:', error);
-      alert('Login gagal. Silakan coba lagi.');
-    } finally {
-      setIsLoading(false);
+    const result = await login({ email, password });
+    if (!result.success) {
+      setServerError(result.error || 'Login gagal. Periksa kembali email dan password.');
     }
   };
 
@@ -93,6 +86,8 @@ export default function LoginForm() {
           </div>
           <p className="error-msg">Password tidak boleh kosong.</p>
         </div>
+
+        {serverError ? <p className="error-msg">{serverError}</p> : null}
 
         <p className="terms">
           Dengan masuk Anda setuju dengan

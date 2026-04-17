@@ -2,20 +2,21 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { isValidEmail } from '@/utils/auth.utils';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function RegisterForm() {
-  const router = useRouter();
+  const { register, isLoading } = useAuth();
   const [nama, setNama] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({ nama: false, email: false, password: false });
-  const [isLoading, setIsLoading] = useState(false);
+  const [serverError, setServerError] = useState('');
 
   const handleSignup = async () => {
     setErrors({ nama: false, email: false, password: false });
+    setServerError('');
 
     let valid = true;
     if (!nama) {
@@ -33,18 +34,9 @@ export default function RegisterForm() {
 
     if (!valid) return;
 
-    setIsLoading(true);
-
-    try {
-      // TODO: Replace with actual API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      alert('Akun berhasil dibuat! Silakan login. 🎉');
-      router.push('/auth/login');
-    } catch (error) {
-      console.error('Signup failed:', error);
-      alert('Pendaftaran gagal. Silakan coba lagi.');
-    } finally {
-      setIsLoading(false);
+    const result = await register({ nama, email, password });
+    if (!result.success) {
+      setServerError(result.error || 'Pendaftaran gagal. Silakan coba lagi.');
     }
   };
 
@@ -110,6 +102,8 @@ export default function RegisterForm() {
           </div>
           <p className="error-msg">Password minimal 8 karakter.</p>
         </div>
+
+        {serverError ? <p className="error-msg">{serverError}</p> : null}
 
         <p className="terms">
           Dengan mendaftar Anda setuju dengan
