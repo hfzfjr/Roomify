@@ -214,8 +214,8 @@ roomify/
 
 | No | Nama | NIM | Peran |
 |----|------|-----|-------|
-| 1 | Muhammad Alvin Faa'iz | 103012400229 | Full Stack Developer |
-| 2 | Hafiz Fajar Ramadhan | 103012430027 | Frontend Developer |
-| 3 | Muhammad Rafiq Abdurrasyid | 103012400240 | Backend Developer |
-| 4 | Rashaqa Nashwan Moya | 103012300058 | Database Engineer |
-| 5 | Ridwan Faiz Herlambang | 103012400061 | UI/UX Designer |
+| 1 | Muhammad Alvin Faa'iz | 103012400229 | Desain UI |
+| 2 | Hafiz Fajar Ramadhan | 103012430027 | Database |
+| 3 | Muhammad Rafiq Abdurrasyid | 103012400240 | Backend API |
+| 4 | Rashaqa Nashwan Moya | 103012300058 |  Backend Auth |
+| 5 | Ridwan Faiz Herlambang | 103012400061 | Frontend |
