@@ -24,6 +24,7 @@ npm run build
 
 ### Jalankan production server
 npm start
+```
 
 ## Struktur Folder dan File
 
