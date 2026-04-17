@@ -28,23 +28,24 @@ npm start
 
 ## Struktur Folder dan File
 
+```bash
 roomify/
 │
 ├── src/                                                           # Source code utama aplikasi
 │   ├── app/                                                       # Routing dan halaman Next.js (App Router)
-│   │   ├── (auth)/                                                # Grup auth (tanpa navbar/sidebar)
+│   │   ├── auth/                                                  # Grup auth (tanpa navbar/sidebar)
 │   │   │   ├── login/                                             # Folder halaman login
 │   │   │   │   └── page.tsx                                       # Halaman login customer/owner/admin
 │   │   │   └── register/                                          # Folder halaman registrasi
 │   │   │       └── page.tsx                                       # Halaman registrasi akun baru
 │   │   │
-│   │   ├── (customer)/                                            # Grup customer (dengan sidebar customer)
+│   │   ├── customer/                                              # Grup customer (dengan sidebar customer)
 │   │   │   ├── layout.tsx                                         # Layout dengan sidebar khusus customer
 │   │   │   ├── dashboard/                                         # Folder dashboard customer
 │   │   │   │   └── page.tsx                                       # Dashboard customer (ringkasan booking, rekomendasi)
 │   │   │   ├── rooms/                                             # Folder halaman ruangan
 │   │   │   │   ├── page.tsx                                       # Daftar semua ruangan yang tersedia
-│   │   │   │   └── [id]/                                          # Dynamic route untuk detail ruangan
+│   │   │   │   └── id/                                            # Dynamic route untuk detail ruangan
 │   │   │   │       └── page.tsx                                   # Detail ruangan (harga, fasilitas, booking)
 │   │   │   ├── bookings/                                          # Folder riwayat booking
 │   │   │   │   └── page.tsx                                       # Riwayat booking customer
@@ -53,7 +54,7 @@ roomify/
 │   │   │   └── reviews/                                           # Folder ulasan
 │   │   │       └── page.tsx                                       # Halaman melihat & menulis ulasan
 │   │   │
-│   │   ├── (owner)/                                               # Grup owner (dengan sidebar owner)
+│   │   ├── owner/                                                 # Grup owner (dengan sidebar owner)
 │   │   │   ├── layout.tsx                                         # Layout dengan sidebar khusus owner
 │   │   │   ├── dashboard/                                         # Folder dashboard owner
 │   │   │   │   └── page.tsx                                       # Dashboard owner (statistik pendapatan, booking)
@@ -62,7 +63,7 @@ roomify/
 │   │   │   │   ├── add/                                           # Folder form tambah ruangan
 │   │   │   │   │   └── page.tsx                                   # Form tambah ruangan baru
 │   │   │   │   └── edit/                                          # Folder edit ruangan
-│   │   │   │       └── [id]/                                      # Dynamic route edit ruangan
+│   │   │   │       └── id/                                        # Dynamic route edit ruangan
 │   │   │   │           └── page.tsx                               # Form edit ruangan
 │   │   │   ├── bookings/                                          # Folder semua booking
 │   │   │   │   └── page.tsx                                       # Semua booking untuk ruangan owner
@@ -71,7 +72,7 @@ roomify/
 │   │   │   └── reports/                                           # Folder laporan
 │   │   │       └── page.tsx                                       # Laporan penjualan & statistik
 │   │   │
-│   │   ├── (admin)/                                               # Grup admin (dengan sidebar admin)
+│   │   ├── admin/                                                 # Grup admin (dengan sidebar admin)
 │   │   │   ├── layout.tsx                                         # Layout dengan sidebar khusus admin
 │   │   │   ├── dashboard/                                         # Folder dashboard admin
 │   │   │   │   └── page.tsx                                       # Dashboard admin (monitoring semua aktivitas)
@@ -83,7 +84,7 @@ roomify/
 │   │   │   │   └── route.ts                                       # Auth API (NextAuth) - login, register, session
 │   │   │   ├── rooms/                                             # Folder rooms API
 │   │   │   │   ├── route.ts                                       # GET daftar ruangan, POST tambah ruangan
-│   │   │   │   └── [id]/                                          # Dynamic route API
+│   │   │   │   └── id/                                            # Dynamic route API
 │   │   │   │       └── route.ts                                   # GET detail, PUT edit, DELETE hapus ruangan
 │   │   │   ├── bookings/                                          # Folder bookings API
 │   │   │   │   └── route.ts                                       # GET, POST booking
@@ -169,6 +170,7 @@ roomify/
 ├── postcss.config.mjs                                             # Konfigurasi PostCSS (untuk Tailwind CSS)
 ├── README.md                                                      # Dokumentasi proyek (file ini)
 └── tsconfig.json                                                  # Konfigurasi TypeScript
+```
 
 ## Fitur
 
