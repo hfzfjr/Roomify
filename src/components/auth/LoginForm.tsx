@@ -106,7 +106,7 @@ export default function LoginForm() {
 
         <p className="terms">
           Dengan masuk Anda setuju dengan 
-          <a href="#">Terms of Use</a> dan <a href="#">Privacy Policy</a>
+          <a href="#"> Terms of Use</a> dan <a href="#">Privacy Policy</a>
         </p>
 
         <button 
