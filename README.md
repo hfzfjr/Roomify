@@ -26,76 +26,78 @@ npm run build
 npm start
 ```
 
-## Deployment ke Vercel
+## Struktur Folder dan File
 
-### Persiapan
-
-1. **Push kode ke GitHub** (jika belum):
-   ```bash
-   git add .
-   git commit -m "Ready for deployment"
-   git push origin main
-   ```
-
-2. **Siapkan Environment Variables**:
-   - Copy `.env.example` ke `.env.local`
-   - Isi dengan nilai yang benar dari Supabase project Anda
-
-### Langkah Deployment
-
-1. **Buka [Vercel Dashboard](https://vercel.com/dashboard)**
-
-2. **Import Project**:
-   - Klik "New Project"
-   - Connect ke GitHub repository Anda
-   - Pilih repository `roomify`
-
-3. **Konfigurasi Project**:
-   - **Framework Preset**: Next.js (otomatis terdeteksi)
-   - **Root Directory**: `./` (default)
-   - **Build Command**: `npm run build` (otomatis)
-   - **Output Directory**: `.next` (otomatis)
-
-4. **Environment Variables**:
-   Tambahkan environment variables berikut di tab "Environment Variables":
-
-   ```
-   NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-   NEXTAUTH_SECRET=your_random_secret_string
-   NEXTAUTH_URL=https://your-app-name.vercel.app
-   ```
-
-5. **Deploy**:
-   - Klik "Deploy"
-   - Tunggu proses build selesai (biasanya 2-3 menit)
-
-### Setelah Deployment
-
-1. **Update NEXTAUTH_URL**:
-   - Setelah deploy berhasil, update `NEXTAUTH_URL` di environment variables Vercel
-   - Gunakan URL yang diberikan Vercel (contoh: `https://roomify-yourname.vercel.app`)
-
-2. **Test Login**:
-   - Gunakan credentials test yang sudah disiapkan:
-     - Customer: `andi@email.com` / `password123`
-     - Owner: `maju@owner.com` / `password123`
-     - Admin: `admin@roomify.com` / `password123`
-
-### Troubleshooting
-
-- **Build Error**: Pastikan semua dependencies terinstall dengan benar
-- **Environment Variables**: Pastikan semua env vars sudah di-set dengan benar
-- **Database Connection**: Pastikan Supabase URL dan keys valid
-- **CORS Issues**: Vercel sudah dikonfigurasi untuk handle CORS di `vercel.json`
-
-### Custom Domain (Opsional)
-
-Untuk menggunakan custom domain:
-1. Buka project di Vercel Dashboard
-2. Tab "Settings" → "Domains"
-3. Add your custom domain
-4. Update DNS records sesuai instruksi Vercel
+```bash
+roomify/
+│
+├── src/                                                           # Source code utama aplikasi
+│   ├── app/                                                       # Routing dan halaman Next.js (App Router)
+│   │   ├── auth/                                                  # Grup auth (tanpa navbar/sidebar)
+│   │   │   ├── login/                                             # Folder halaman login
+│   │   │   │   └── page.tsx                                       # Halaman login customer/owner/admin
+│   │   │   └── register/                                          # Folder halaman registrasi
+│   │   │       └── page.tsx                                       # Halaman registrasi akun baru
+│   │   │
+│   │   ├── customer/                                              # Grup customer (dengan sidebar customer)
+│   │   │   ├── layout.tsx                                         # Layout dengan sidebar khusus customer
+│   │   │   ├── dashboard/                                         # Folder dashboard customer
+│   │   │   │   └── page.tsx                                       # Dashboard customer (ringkasan booking, rekomendasi)
+│   │   │   ├── rooms/                                             # Folder halaman ruangan
+│   │   │   │   ├── page.tsx                                       # Daftar semua ruangan yang tersedia
+│   │   │   │   └── id/                                            # Dynamic route untuk detail ruangan
+│   │   │   │       └── page.tsx                                   # Detail ruangan (harga, fasilitas, booking)
+│   │   │   ├── bookings/                                          # Folder riwayat booking
+│   │   │   │   └── page.tsx                                       # Riwayat booking customer
+│   │   │   ├── profile/                                           # Folder profil customer
+│   │   │   │   └── page.tsx                                       # Profil & pengaturan akun customer
+│   │   │   └── reviews/                                           # Folder ulasan
+│   │   │       └── page.tsx                                       # Halaman melihat & menulis ulasan
+│   │   │
+│   │   ├── owner/                                                 # Grup owner (dengan sidebar owner)
+│   │   │   ├── layout.tsx                                         # Layout dengan sidebar khusus owner
+│   │   │   ├── dashboard/                                         # Folder dashboard owner
+│   │   │   │   └── page.tsx                                       # Dashboard owner (statistik pendapatan, booking)
+│   │   │   ├── rooms/                                             # Folder kelola ruangan
+│   │   │   │   ├── page.tsx                                       # Kelola ruangan milik owner (CRUD)
+│   │   │   │   ├── add/                                           # Folder form tambah ruangan
+│   │   │   │   │   └── page.tsx                                   # Form tambah ruangan baru
+│   │   │   │   └── edit/                                          # Folder edit ruangan
+│   │   │   │       └── id/                                        # Dynamic route edit ruangan
+│   │   │   │           └── page.tsx                               # Form edit ruangan
+│   │   │   ├── bookings/                                          # Folder semua booking
+│   │   │   │   └── page.tsx                                       # Semua booking untuk ruangan owner
+│   │   │   ├── facility-requests/                                 # Folder permintaan fasilitas
+│   │   │   │   └── page.tsx                                       # Kelola permintaan fasilitas dari customer
+│   │   │   └── reports/                                           # Folder laporan
+│   │   │       └── page.tsx                                       # Laporan penjualan & statistik
+│   │   │
+│   │   ├── admin/                                                 # Grup admin (dengan sidebar admin)
+│   │   │   ├── layout.tsx                                         # Layout dengan sidebar khusus admin
+│   │   │   ├── dashboard/                                         # Folder dashboard admin
+│   │   │   │   └── page.tsx                                       # Dashboard admin (monitoring semua aktivitas)
+│   │   │   └── verify-rooms/                                      # Folder verifikasi ruangan
+│   │   │       └── page.tsx                                       # Verifikasi ruangan baru dari owner
+│   │   │
+│   │   ├── api/                                                   # API endpoints (backend)
+│   │   │   ├── auth/                                              # Folder auth API
+│   │   │   │   └── route.ts                                       # Auth API (NextAuth) - login, register, session
+│   │   │   ├── rooms/                                             # Folder rooms API
+│   │   │   │   ├── route.ts                                       # GET daftar ruangan, POST tambah ruangan
+│   │   │   │   └── id/                                            # Dynamic route API
+│   │   │   │       └── route.ts                                   # GET detail, PUT edit, DELETE hapus ruangan
+│   │   │   ├── bookings/                                          # Folder bookings API
+│   │   │   │   └── route.ts                                       # GET, POST booking
+│   │   │   ├── payments/                                          # Folder payments API
+│   │   │   │   └── route.ts                                       # POST payment, GET status pembayaran
+│   │   │   ├── facility-requests/                                 # Folder facility requests API
+│   │   │   │   └── route.ts                                       # GET, POST, PUT permintaan fasilitas
+│   │   │   ├── reviews/                                           # Folder reviews API
+│   │   │   │   └── route.ts                                       # GET, POST ulasan
+│   │   │   └── reports/                                           # Folder reports API
+│   │   │       └── route.ts                                       # GET data laporan penjualan
+│   │   │
+│   │   ├── layout.tsx                                             # Root layout global (HTML, body, font, providers)
 │   │   └── page.tsx                                               # Landing page (beranda)
 │   │
 │   ├── components/                                                # Komponen reusable
