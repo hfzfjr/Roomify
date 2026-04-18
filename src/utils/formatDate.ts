@@ -10,3 +10,18 @@ export function formatDateForDatabase(date: Date = new Date()) {
 
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
 }
+
+export function formatDate(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString('id-ID', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  })
+}
+
+export function formatTime(dateStr: string): string {
+  return new Date(dateStr).toLocaleTimeString('id-ID', {
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
