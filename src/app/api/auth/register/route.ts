@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { createClient } from '@/lib/supabase/server'
+import { formatDateForDatabase } from '@/utils/formatDate'
 
 export async function POST(request: Request) {
   try {
@@ -67,7 +68,7 @@ export async function POST(request: Request) {
       password: hashedPassword,
       role: 'customer',
       phone_number: null,
-      created_at: new Date().toISOString(),
+      created_at: formatDateForDatabase(),
     })
 
     if (insertError) {
