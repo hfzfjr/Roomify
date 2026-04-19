@@ -13,7 +13,7 @@ export async function GET(request: Request) {
     const supabase = await createClient()
 
     const { data, error } = await supabase
-      .from('bookings')
+      .from('booking')
       .select(`
         booking_id,
         start_time,

@@ -146,6 +146,20 @@ export default function CustomerDashboard() {
               <path d="M4 15l5 5 5-5" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </label>
+          
+          <label className="sf" htmlFor="filterType" onClick={() => filterTypeRef.current?.focus()}>
+            <select
+              id="filterType"
+              ref={filterTypeRef}
+              value={filterType}
+              onChange={e => setFilterType(e.target.value)}
+            >
+              {ROOM_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+            </select>
+            <svg width="18" height="36" viewBox="0 0 18 36" fill="none">
+              <path d="M4 15l5 5 5-5" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </label>
 
           <label className="sf" htmlFor="filterDate" onClick={() => filterDateRef.current?.focus()}>
             <input
