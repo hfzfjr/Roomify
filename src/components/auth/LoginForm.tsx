@@ -1,19 +1,37 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
 import { isValidEmail } from '@/utils/auth.utils';
+import { useAuth } from '@/hooks/useAuth';
 
-export default function LoginForm() {
+const EyeClosedIcon = (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" />
+    <circle cx="12" cy="12" r="3" />
+  </svg>
+);
+
+const EyeOpenIcon = (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M17.94 17.94A10.94 10.94 0 0 1 12 19C5 19 1 12 1 12a18.09 18.09 0 0 1 5.06-5.94" />
+    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+    <line x1="1" y1="1" x2="23" y2="23" />
+  </svg>
+);
+
+type Props = { onSwitchTab: (tab: 'login' | 'register') => void };
+
+export default function LoginForm({ onSwitchTab }: Props) {
+  const { login, isLoading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({ email: false, password: false });
-  const [isLoading, setIsLoading] = useState(false);
+  const [serverError, setServerError] = useState('');
 
   const handleLogin = async () => {
-    // Reset errors
     setErrors({ email: false, password: false });
+    setServerError('');
 
     let valid = true;
     if (!email || !isValidEmail(email)) {
@@ -24,22 +42,11 @@ export default function LoginForm() {
       setErrors(prev => ({ ...prev, password: true }));
       valid = false;
     }
-
     if (!valid) return;
 
-    setIsLoading(true);
-
-    // TODO: Replace with actual API call
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      alert('Login berhasil! Selamat datang di Roomify 🏠');
-      // window.location.href = '/customer/dashboard';
-    } catch (error) {
-      console.error('Login failed:', error);
-      alert('Login gagal. Silakan coba lagi.');
-    } finally {
-      setIsLoading(false);
+    const result = await login({ email, password });
+    if (!result.success) {
+      setServerError(result.error || 'Login gagal. Periksa kembali email dan password.');
     }
   };
 
@@ -47,9 +54,9 @@ export default function LoginForm() {
     <>
       <div className="tab-group">
         <button type="button" className="tab-btn active">Login</button>
-        <Link href="/auth/register" className="tab-btn">
+        <button type="button" className="tab-btn" onClick={() => onSwitchTab('register')}>
           Sign up
-        </Link>
+        </button>
       </div>
 
       <div className="form-view active">
@@ -85,21 +92,25 @@ export default function LoginForm() {
             <button
               type="button"
               className="toggle-pw"
-              onClick={() => setShowPassword((prev) => !prev)}
+              onClick={() => setShowPassword(prev => !prev)}
               title={showPassword ? 'Sembunyikan password' : 'Tampilkan password'}
             >
-              {showPassword ? '🙈' : '👁️'}
+              {showPassword ? EyeClosedIcon : EyeOpenIcon}
             </button>
           </div>
           <p className="error-msg">Password tidak boleh kosong.</p>
         </div>
 
+        {serverError && (
+          <p className="error-msg" style={{ display: 'block' }}>{serverError}</p>
+        )}
+
         <p className="terms">
           Dengan masuk Anda setuju dengan
-          <a href="#">Terms of Use</a> dan <a href="#">Privacy Policy</a>
+          <a href="#"> Terms of Use</a> dan <a href="#">Privacy Policy</a>
         </p>
 
-        <button 
+        <button
           className={`btn-primary ${isLoading ? 'loading' : ''}`}
           onClick={handleLogin}
           disabled={isLoading}

@@ -1,3 +1,5 @@
-export default function OwnerDashboard() {
-  return <div>Owner Dashboard</div>
+import OwnerDashboard from '@/components/dashboard/OwnerDashboard';
+
+export default function OwnerDashboardPage() {
+  return <OwnerDashboard />;
 }

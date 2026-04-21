@@ -1,12 +1,12 @@
-export default function CustomerLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+import Navbar from '@/components/layout/Navbar'
+
+export default function CustomerLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div>
-      <h1>Customer Layout</h1>
-      {children}
+    <div className="customer-layout">
+      <Navbar />
+      <main className="customer-main" style={{ marginTop: '94px' }}>
+        {children}
+      </main>
     </div>
   )
 }
