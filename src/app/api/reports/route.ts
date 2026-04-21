@@ -1,6 +1,171 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
+type CustomerRecord = {
+  customer_id: string
+  user_id: string
+}
+
+type UserRecord = {
+  user_id: string
+  name: string | null
+}
+
+type FacilityRequestRecord = {
+  request_id: string
+  booking_id: string
+  customer_id: string
+  details?: string | null
+  priority?: string | null
+  status: string
+  created_at: string
+}
+
+type BookingRevenueRecord = {
+  total_cost: number
+  status: string
+  booking_date: string
+}
+
+type ChartPoint = {
+  label: string
+  value: number
+  active: boolean
+}
+
+type CheckInRecord = {
+  check_in: string
+}
+
+function startOfDay(date: Date) {
+  const next = new Date(date)
+  next.setHours(0, 0, 0, 0)
+  return next
+}
+
+function startOfMonth(date: Date) {
+  return new Date(date.getFullYear(), date.getMonth(), 1)
+}
+
+function formatShortMonth(date: Date) {
+  return date.toLocaleDateString('id-ID', { month: 'short' })
+}
+
+function buildWeeklyCheckInChart(checkIns: CheckInRecord[], now: Date): ChartPoint[] {
+  const dayStarts = Array.from({ length: 7 }, (_, index) => {
+    const date = startOfDay(new Date(now))
+    date.setDate(date.getDate() - (6 - index))
+    return date
+  })
+
+  const dayMap = new Map(dayStarts.map((date) => [date.toISOString(), 0]))
+
+  checkIns.forEach(({ check_in }) => {
+    const dayStart = startOfDay(new Date(check_in)).toISOString()
+    if (dayMap.has(dayStart)) {
+      dayMap.set(dayStart, (dayMap.get(dayStart) || 0) + 1)
+    }
+  })
+
+  const todayKey = startOfDay(now).toISOString()
+
+  return dayStarts.map((date) => {
+    const key = date.toISOString()
+    return {
+      label: date.toLocaleDateString('en-US', { weekday: 'short' }),
+      value: dayMap.get(key) || 0,
+      active: key === todayKey,
+    }
+  })
+}
+
+function buildMonthlyCheckInChart(checkIns: CheckInRecord[], now: Date): ChartPoint[] {
+  const monthStarts = Array.from({ length: 6 }, (_, index) => {
+    return startOfMonth(new Date(now.getFullYear(), now.getMonth() - (5 - index), 1))
+  })
+
+  const monthMap = new Map(monthStarts.map((date) => [date.toISOString(), 0]))
+
+  checkIns.forEach(({ check_in }) => {
+    const checkInDate = new Date(check_in)
+    const monthStart = startOfMonth(checkInDate).toISOString()
+    if (monthMap.has(monthStart)) {
+      monthMap.set(monthStart, (monthMap.get(monthStart) || 0) + 1)
+    }
+  })
+
+  const currentMonthKey = startOfMonth(now).toISOString()
+
+  return monthStarts.map((date) => {
+    const key = date.toISOString()
+    return {
+      label: formatShortMonth(date),
+      value: monthMap.get(key) || 0,
+      active: key === currentMonthKey,
+    }
+  })
+}
+
+async function getCustomerNameMap(supabase: Awaited<ReturnType<typeof createClient>>, customerIds: string[]) {
+  if (customerIds.length === 0) {
+    return new Map<string, string>()
+  }
+
+  const { data: customerRecords, error: customerLookupError } = await supabase
+    .from('customer')
+    .select('customer_id, user_id')
+    .in('customer_id', customerIds)
+
+  if (customerLookupError) {
+    throw customerLookupError
+  }
+
+  const customerToUserId = new Map(
+    (customerRecords || [])
+      .filter((customer: CustomerRecord) => customer.customer_id && customer.user_id)
+      .map((customer: CustomerRecord) => [customer.customer_id, customer.user_id])
+  )
+
+  const unresolvedCustomerIds = customerIds.filter((customerId) => !customerToUserId.has(customerId))
+  const userIds = Array.from(
+    new Set([
+      ...Array.from(customerToUserId.values()),
+      ...unresolvedCustomerIds,
+    ].filter(Boolean))
+  )
+
+  if (userIds.length === 0) {
+    return new Map<string, string>()
+  }
+
+  const { data: usersData, error: usersError } = await supabase
+    .from('users')
+    .select('user_id, name')
+    .in('user_id', userIds)
+
+  if (usersError) {
+    throw usersError
+  }
+
+  const userNameMap = new Map((usersData || []).map((user: UserRecord) => [user.user_id, user.name]))
+
+  return new Map(
+    customerIds.map((customerId) => [
+      customerId,
+      userNameMap.get(customerToUserId.get(customerId) || customerId) || null,
+    ])
+  )
+}
+
+async function getCustomerNameMapSafe(supabase: Awaited<ReturnType<typeof createClient>>, customerIds: string[]) {
+  try {
+    return await getCustomerNameMap(supabase, customerIds)
+  } catch (error) {
+    console.warn('Customer name lookup failed:', error)
+    return new Map<string, string>()
+  }
+}
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
@@ -40,7 +205,10 @@ export async function GET(request: Request) {
             },
             rooms: [],
             facilityRequests: [],
-            chartData: []
+            chartData: {
+              weekly: [],
+              monthly: []
+            }
           }
         })
       }
@@ -59,13 +227,13 @@ export async function GET(request: Request) {
 
       // Calculate revenue from completed bookings
       const roomIds = ownerRooms?.map(room => room.room_id) || []
-      let bookings: Array<{ total_price: number; status: string; created_at: string }> = []
+      let bookings: BookingRevenueRecord[] = []
       let bookingsError = null
 
       if (roomIds.length > 0) {
         const bookingsResult = await supabase
           .from('booking')
-          .select('total_price, status, created_at')
+          .select('total_cost, status, booking_date')
           .in('room_id', roomIds)
           .eq('status', 'completed')
 
@@ -79,7 +247,7 @@ export async function GET(request: Request) {
       }
 
       // Calculate stats
-      const totalRevenue = bookings?.reduce((sum, booking) => sum + booking.total_price, 0) || 0
+      const totalRevenue = bookings?.reduce((sum, booking) => sum + booking.total_cost, 0) || 0
       const totalBookings = bookings?.length || 0
       const availableRooms = ownerRooms?.filter(room => room.is_available).length || 0
       const totalRooms = ownerRooms?.length || 0
@@ -100,14 +268,14 @@ export async function GET(request: Request) {
       if (roomIds.length > 0) {
         const currentMonthResult = await supabase
           .from('booking')
-          .select('total_price')
+          .select('total_cost')
           .in('room_id', roomIds)
-          .gte('created_at', currentMonthStart.toISOString())
-          .lt('created_at', nextMonthStart.toISOString())
+          .gte('booking_date', currentMonthStart.toISOString())
+          .lt('booking_date', nextMonthStart.toISOString())
           .eq('status', 'completed')
 
         if (!currentMonthResult.error) {
-          currentMonthRevenue = currentMonthResult.data?.reduce((sum, booking) => sum + booking.total_price, 0) || 0
+          currentMonthRevenue = currentMonthResult.data?.reduce((sum, booking: { total_cost: number }) => sum + booking.total_cost, 0) || 0
           currentMonthBookings = currentMonthResult.data?.length || 0
         } else {
           console.warn('Current month bookings query failed:', currentMonthResult.error.message)
@@ -115,14 +283,14 @@ export async function GET(request: Request) {
 
         const previousMonthResult = await supabase
           .from('booking')
-          .select('total_price')
+          .select('total_cost')
           .in('room_id', roomIds)
-          .gte('created_at', previousMonthStart.toISOString())
-          .lt('created_at', previousMonthEnd.toISOString())
+          .gte('booking_date', previousMonthStart.toISOString())
+          .lt('booking_date', previousMonthEnd.toISOString())
           .eq('status', 'completed')
 
         if (!previousMonthResult.error) {
-          previousMonthRevenue = previousMonthResult.data?.reduce((sum, booking) => sum + booking.total_price, 0) || 0
+          previousMonthRevenue = previousMonthResult.data?.reduce((sum, booking: { total_cost: number }) => sum + booking.total_cost, 0) || 0
           previousMonthBookings = previousMonthResult.data?.length || 0
         } else {
           console.warn('Previous month bookings query failed:', previousMonthResult.error.message)
@@ -138,7 +306,7 @@ export async function GET(request: Request) {
       const bookingsMonthChangePercent = calculatePercentChange(currentMonthBookings, previousMonthBookings)
 
       // Get facility requests for owner rooms via booking records
-      let facilityRequests: Array<any> = []
+      let facilityRequests: FacilityRequestRecord[] = []
       let requestsError = null
       if (roomIds.length > 0) {
         const bookingsResult = await supabase
@@ -146,7 +314,7 @@ export async function GET(request: Request) {
           .select('booking_id')
           .in('room_id', roomIds)
 
-        const bookingIds = bookingsResult.data?.map((booking: any) => booking.booking_id) || []
+        const bookingIds = bookingsResult.data?.map((booking: { booking_id: string }) => booking.booking_id) || []
 
         if (bookingIds.length > 0) {
           const requestsResult = await supabase
@@ -161,8 +329,8 @@ export async function GET(request: Request) {
           requestsError = requestsResult.error
 
           if (!requestsError) {
-            const requestBookingIds = Array.from(new Set(requests.map((request: any) => request.booking_id).filter(Boolean)))
-            const requestCustomerIds = Array.from(new Set(requests.map((request: any) => request.customer_id).filter(Boolean)))
+            const requestBookingIds = Array.from(new Set(requests.map((request: { booking_id: string }) => request.booking_id).filter(Boolean)))
+            const requestCustomerIds = Array.from(new Set(requests.map((request: { customer_id: string }) => request.customer_id).filter(Boolean)))
 
             const { data: bookingData, error: bookingError } = await supabase
               .from('booking')
@@ -172,28 +340,21 @@ export async function GET(request: Request) {
             if (bookingError) {
               requestsError = bookingError
             } else {
-              const roomIdsForRequests = Array.from(new Set((bookingData || []).map((booking: any) => booking.room_id).filter(Boolean)))
-
-              const { data: customerData, error: customerError } = await supabase
-                .from('users')
-                .select('user_id, name')
-                .in('user_id', requestCustomerIds)
+              const roomIdsForRequests = Array.from(new Set((bookingData || []).map((booking: { room_id: string }) => booking.room_id).filter(Boolean)))
 
               const { data: roomData, error: roomError } = await supabase
                 .from('room')
                 .select('room_id, name')
                 .in('room_id', roomIdsForRequests)
 
-              if (customerError) {
-                requestsError = customerError
-              } else if (roomError) {
+              if (roomError) {
                 requestsError = roomError
               } else {
-                const bookingMap = new Map((bookingData || []).map((booking: any) => [booking.booking_id, booking.room_id]))
-                const customerMap = new Map((customerData || []).map((customer: any) => [customer.user_id, customer.name]))
-                const roomMap = new Map((roomData || []).map((room: any) => [room.room_id, room.name]))
+                const customerMap = await getCustomerNameMapSafe(supabase, requestCustomerIds)
+                const bookingMap = new Map((bookingData || []).map((booking: { booking_id: string; room_id: string }) => [booking.booking_id, booking.room_id]))
+                const roomMap = new Map((roomData || []).map((room: { room_id: string; name: string }) => [room.room_id, room.name]))
 
-                facilityRequests = requests.map((request: any) => ({
+                facilityRequests = requests.map((request: FacilityRequestRecord) => ({
                   ...request,
                   message: request.details,
                   customer_name: customerMap.get(request.customer_id) || null,
@@ -209,19 +370,22 @@ export async function GET(request: Request) {
         console.warn('Error fetching facility requests:', requestsError.message)
       }
 
-      // Get chart data (bookings per day for last 7 days)
-      const sevenDaysAgo = new Date()
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+      // Get chart data (check-in trend for weekly and monthly view)
+      const sevenDaysAgo = startOfDay(new Date())
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6)
+      const sixMonthsAgo = startOfMonth(new Date())
+      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5)
 
-      let chartData: Array<{ created_at: string }> = []
+      let chartData: CheckInRecord[] = []
       let chartError = null
       if (roomIds.length > 0) {
         const chartResult = await supabase
           .from('booking')
-          .select('created_at')
+          .select('check_in')
           .in('room_id', roomIds)
-          .gte('created_at', sevenDaysAgo.toISOString())
-          .eq('status', 'completed')
+          .gte('check_in', sixMonthsAgo.toISOString())
+          .neq('status', 'cancelled')
+          .not('check_in', 'is', null)
 
         chartData = chartResult.data || []
         chartError = chartResult.error
@@ -232,25 +396,12 @@ export async function GET(request: Request) {
         chartData = []
       }
 
-      // Process chart data
-      const chartMap: { [key: string]: number } = {}
-      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-
-      // Initialize with 0
-      days.forEach(day => chartMap[day] = 0)
-
-      // Count bookings per day
-      chartData?.forEach(booking => {
-        const date = new Date(booking.created_at)
-        const dayName = days[date.getDay()]
-        chartMap[dayName]++
-      })
-
-      const processedChartData = days.map(day => ({
-        label: day,
-        value: chartMap[day],
-        active: day === days[new Date().getDay()]
-      }))
+      const nowForChart = new Date()
+      const weeklyCheckIns = chartData.filter(({ check_in }) => new Date(check_in) >= sevenDaysAgo)
+      const processedChartData = {
+        weekly: buildWeeklyCheckInChart(weeklyCheckIns, nowForChart),
+        monthly: buildMonthlyCheckInChart(chartData, nowForChart),
+      }
 
       return NextResponse.json({
         success: true,

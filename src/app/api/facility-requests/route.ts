@@ -1,6 +1,86 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
+type CustomerRecord = {
+  customer_id: string
+  user_id: string
+}
+
+type UserRecord = {
+  user_id: string
+  name: string | null
+}
+
+type BookingRoomRecord = {
+  booking_id: string
+  room_id: string
+}
+
+type RoomRecord = {
+  room_id: string
+  name: string
+}
+
+async function getCustomerNameMap(supabase: Awaited<ReturnType<typeof createClient>>, customerIds: string[]) {
+  if (customerIds.length === 0) {
+    return new Map<string, string>()
+  }
+
+  const { data: customerRecords, error: customerLookupError } = await supabase
+    .from('customer')
+    .select('customer_id, user_id')
+    .in('customer_id', customerIds)
+
+  if (customerLookupError) {
+    throw customerLookupError
+  }
+
+  const customerToUserId = new Map(
+    (customerRecords || [])
+      .filter((customer: CustomerRecord) => customer.customer_id && customer.user_id)
+      .map((customer: CustomerRecord) => [customer.customer_id, customer.user_id])
+  )
+
+  const unresolvedCustomerIds = customerIds.filter((customerId) => !customerToUserId.has(customerId))
+  const userIds = Array.from(
+    new Set([
+      ...Array.from(customerToUserId.values()),
+      ...unresolvedCustomerIds,
+    ].filter(Boolean))
+  )
+
+  if (userIds.length === 0) {
+    return new Map<string, string>()
+  }
+
+  const { data: usersData, error: usersError } = await supabase
+    .from('users')
+    .select('user_id, name')
+    .in('user_id', userIds)
+
+  if (usersError) {
+    throw usersError
+  }
+
+  const userNameMap = new Map((usersData || []).map((user: UserRecord) => [user.user_id, user.name]))
+
+  return new Map(
+    customerIds.map((customerId) => [
+      customerId,
+      userNameMap.get(customerToUserId.get(customerId) || customerId) || null,
+    ])
+  )
+}
+
+async function getCustomerNameMapSafe(supabase: Awaited<ReturnType<typeof createClient>>, customerIds: string[]) {
+  try {
+    return await getCustomerNameMap(supabase, customerIds)
+  } catch (error) {
+    console.warn('Customer name lookup failed:', error)
+    return new Map<string, string>()
+  }
+}
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
@@ -31,11 +111,7 @@ export async function GET(request: Request) {
         .eq('booking_id', requestData.booking_id)
         .single()
 
-      const { data: customerData } = await supabase
-        .from('users')
-        .select('user_id, name')
-        .eq('user_id', requestData.customer_id)
-        .single()
+      const customerMap = await getCustomerNameMapSafe(supabase, [requestData.customer_id].filter(Boolean))
 
       const { data: roomData } = await supabase
         .from('room')
@@ -48,7 +124,7 @@ export async function GET(request: Request) {
         data: {
           ...requestData,
           message: requestData.details,
-          customer_name: customerData?.name,
+          customer_name: customerMap.get(requestData.customer_id) || null,
           room_name: roomData?.name,
         }
       })
@@ -94,7 +170,7 @@ export async function GET(request: Request) {
         .select('booking_id')
         .in('room_id', roomIds)
 
-      bookingIds = bookingsResult.data?.map((booking: any) => booking.booking_id) || []
+      bookingIds = bookingsResult.data?.map((booking: { booking_id: string }) => booking.booking_id) || []
     }
 
     if (bookingIds.length === 0) {
@@ -112,8 +188,8 @@ export async function GET(request: Request) {
     }
 
     const requests = data || []
-    const bookingIdsForLookup = Array.from(new Set(requests.map((request: any) => request.booking_id).filter(Boolean)))
-    const customerIds = Array.from(new Set(requests.map((request: any) => request.customer_id).filter(Boolean)))
+    const bookingIdsForLookup = Array.from(new Set(requests.map((request: { booking_id: string }) => request.booking_id).filter(Boolean)))
+    const customerIds = Array.from(new Set(requests.map((request: { customer_id: string }) => request.customer_id).filter(Boolean)))
 
     const { data: bookingData, error: bookingError } = await supabase
       .from('booking')
@@ -124,16 +200,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ success: false, message: bookingError.message }, { status: 500 })
     }
 
-    const roomIdsForRequests = Array.from(new Set((bookingData || []).map((booking: any) => booking.room_id).filter(Boolean)))
-
-    const { data: customerData, error: customerError } = await supabase
-      .from('users')
-      .select('user_id, name')
-      .in('user_id', customerIds)
-
-    if (customerError) {
-      return NextResponse.json({ success: false, message: customerError.message }, { status: 500 })
-    }
+    const customerMap = await getCustomerNameMapSafe(supabase, customerIds)
 
     const { data: roomData, error: roomError } = await supabase
       .from('room')
@@ -144,11 +211,10 @@ export async function GET(request: Request) {
       return NextResponse.json({ success: false, message: roomError.message }, { status: 500 })
     }
 
-    const bookingMap = new Map((bookingData || []).map((booking: any) => [booking.booking_id, booking.room_id]))
-    const customerMap = new Map((customerData || []).map((customer: any) => [customer.user_id, customer.name]))
-    const roomMap = new Map((roomData || []).map((room: any) => [room.room_id, room.name]))
+    const bookingMap = new Map((bookingData || []).map((booking: BookingRoomRecord) => [booking.booking_id, booking.room_id]))
+    const roomMap = new Map((roomData || []).map((room: RoomRecord) => [room.room_id, room.name]))
 
-    const mappedData = requests.map((request: any) => ({
+    const mappedData = requests.map((request: { request_id: string; booking_id: string; customer_id: string; details?: string | null }) => ({
       ...request,
       message: request.details,
       customer_name: customerMap.get(request.customer_id) || null,

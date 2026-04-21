@@ -292,6 +292,10 @@
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
 }
 
+.grid2 > .card:first-child {
+  min-height: 540px;
+}
+
 .cardHeader {
   display: flex;
   align-items: center;
@@ -334,18 +338,20 @@
 
 /* CHART */
 .chartWrap {
-  height: 155px;
+  flex: 1;
+  height: 390px;
   display: flex;
   align-items: flex-end;
-  gap: 10px;
-  padding-top: 10px;
+  gap: 14px;
+  padding: 28px 8px 8px 12px;
 }
 
 .chartCol {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  justify-content: flex-end;
+  gap: 10px;
   flex: 1;
 }
 
@@ -355,10 +361,11 @@
   display: flex;
   align-items: flex-end;
   justify-content: center;
+  padding-top: 10px;
 }
 
 .bar {
-  width: 70%;
+  width: min(52px, 78%);
   border-radius: 6px 6px 0 0;
   transition: height 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -372,27 +379,35 @@
 }
 
 .chartLabel {
-  font-size: 11px;
+  font-size: 16px;
   color: var(--gray-400);
-  font-weight: 600;
+  font-weight: 700;
+  min-height: 22px;
 }
 
 .chartY {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  height: 155px;
-  margin-right: 6px;
+  height: 390px;
+  min-width: 24px;
+  margin-right: 12px;
+  padding-top: 28px;
+  padding-bottom: 8px;
 }
 
 .chartY span {
-  font-size: 10px;
+  font-size: 16px;
   color: var(--gray-400);
   text-align: right;
+  font-weight: 600;
 }
 
 .chartContainer {
   display: flex;
+  align-items: stretch;
+  min-height: 390px;
+  margin-top: 6px;
 }
 
 /* REQUEST CARD */
@@ -404,6 +419,29 @@
   padding: 4px 10px;
   border-radius: 20px;
   border: 1.5px solid var(--cyan-dark);
+}
+
+.requestList {
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.requestList::-webkit-scrollbar {
+  width: 8px;
+}
+
+.requestList::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.requestList::-webkit-scrollbar-thumb {
+  background: rgba(0, 184, 217, 0.28);
+  border-radius: 999px;
+}
+
+.requestList::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 184, 217, 0.45);
 }
 
 .requestItem {

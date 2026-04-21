@@ -26,12 +26,12 @@ export interface Room {
 
 export interface Booking {
   booking_id: string
-  start_time: string
-  end_time: string
-  total_price: number
+  booking_date: string
+  check_in: string
+  check_out: string
+  total_cost: number
   status: 'pending' | 'confirmed' | 'cancelled' | 'completed'
-  created_at: string
-  rooms: {
+  room: {
     room_id: string
     name: string
     location: string
