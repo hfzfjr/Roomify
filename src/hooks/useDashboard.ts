@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 
 interface OwnerDashboardData {
   stats: {
@@ -28,28 +28,40 @@ interface OwnerDashboardData {
     status: string
     created_at: string
   }>
-  chartData: Array<{
-    label: string
-    value: number
-    active: boolean
-  }>
+  chartData: {
+    weekly: Array<{
+      label: string
+      value: number
+      active: boolean
+    }>
+    monthly: Array<{
+      label: string
+      value: number
+      active: boolean
+    }>
+  }
 }
 
 export function useOwnerDashboard(userId: string | null) {
   const [data, setData] = useState<OwnerDashboardData | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!userId) {
-      setLoading(false)
       return
     }
 
     const fetchDashboardData = async () => {
+      let timeoutId: ReturnType<typeof setTimeout> | undefined
       try {
         setLoading(true)
-        const response = await fetch(`/api/reports?type=owner&user_id=${encodeURIComponent(userId)}`)
+        const controller = new AbortController()
+        timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
+
+        const response = await fetch(`/api/reports?type=owner&user_id=${encodeURIComponent(userId)}`, {
+          signal: controller.signal
+        })
 
         if (!response.ok) {
           const errorBody = await response.text()
@@ -65,8 +77,34 @@ export function useOwnerDashboard(userId: string | null) {
           throw new Error(result.message || 'Failed to fetch dashboard data')
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred')
+        const errorMsg = err instanceof Error && err.name === 'AbortError'
+          ? 'Dashboard request timed out after 30 seconds'
+          : err instanceof Error
+            ? err.message
+            : 'An error occurred'
+        setError(errorMsg)
+        console.error('Dashboard error:', errorMsg)
+        // Set empty data so it's not stuck in loading
+        setData({
+          stats: {
+            totalRevenue: 0,
+            totalBookings: 0,
+            availableRooms: 0,
+            totalRooms: 0,
+            revenueMonthChangePercent: null,
+            bookingsMonthChangePercent: null
+          },
+          rooms: [],
+          facilityRequests: [],
+          chartData: {
+            weekly: [],
+            monthly: []
+          }
+        })
       } finally {
+        if (timeoutId) {
+          clearTimeout(timeoutId)
+        }
         setLoading(false)
       }
     }
@@ -158,11 +196,12 @@ export function useAdminDashboard() {
   return { data, loading, error }
 }
 
-export function useFacilityRequests(userId: string | null) {
-  const [requests, setRequests] = useState<any[]>([])
+export function useFacilityRequests(userId: string | null, options?: { autoFetch?: boolean }) {
+  const [requests, setRequests] = useState<OwnerDashboardData['facilityRequests']>([])
   const [loading, setLoading] = useState(false)
+  const autoFetch = options?.autoFetch ?? true
 
-  const fetchRequests = async () => {
+  const fetchRequests = useCallback(async () => {
     if (!userId) return
 
     try {
@@ -178,7 +217,7 @@ export function useFacilityRequests(userId: string | null) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [userId])
 
   const updateRequestStatus = async (requestId: string, status: string) => {
     try {
@@ -205,8 +244,16 @@ export function useFacilityRequests(userId: string | null) {
   }
 
   useEffect(() => {
-    fetchRequests()
-  }, [userId])
+    if (!userId || !autoFetch) {
+      return
+    }
+
+    const timeoutId = setTimeout(() => {
+      void fetchRequests()
+    }, 0)
+
+    return () => clearTimeout(timeoutId)
+  }, [autoFetch, fetchRequests, userId])
 
   return { requests, loading, refetch: fetchRequests, updateRequestStatus }
 }

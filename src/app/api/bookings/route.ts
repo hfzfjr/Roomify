@@ -12,24 +12,38 @@ export async function GET(request: Request) {
 
     const supabase = await createClient()
 
+    const { data: customerRecord, error: customerLookupError } = await supabase
+      .from('customer')
+      .select('customer_id')
+      .eq('user_id', user_id)
+      .maybeSingle()
+
+    if (customerLookupError) {
+      return NextResponse.json({ success: false, message: customerLookupError.message }, { status: 500 })
+    }
+
+    if (!customerRecord?.customer_id) {
+      return NextResponse.json({ success: true, data: [] })
+    }
+
     const { data, error } = await supabase
       .from('booking')
       .select(`
         booking_id,
-        start_time,
-        end_time,
-        total_price,
+        booking_date,
+        check_in,
+        check_out,
+        total_cost,
         status,
-        created_at,
-        rooms (
+        room (
           room_id,
           name,
           location,
           images
         )
       `)
-      .eq('user_id', user_id)
-      .order('created_at', { ascending: false })
+      .eq('customer_id', customerRecord.customer_id)
+      .order('booking_date', { ascending: false })
 
     if (error) {
       return NextResponse.json({ success: false, message: error.message }, { status: 500 })
