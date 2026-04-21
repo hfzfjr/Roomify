@@ -2,26 +2,50 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Room, User } from '@/types'
+import { Room } from '@/types'
 import { formatRupiah } from '@/utils/formatRupiah'
+import { getLocationOptionLabel, getLocationQueryValue, getLocationSearchText, type Location } from '@/utils/locations'
 
-const ROOM_TYPES = ['Semua tipe', 'Meeting Room', 'Conference Room', 'Co-working', 'Studio']
+const ROOM_TYPES = [
+  { label: 'Semua tipe', value: '' },
+  { label: 'Meeting Room', value: 'meeting_room' },
+  { label: 'Seminar Room', value: 'seminar_room' },
+  { label: 'Studio', value: 'studio' },
+  { label: 'Training Room', value: 'training_room' },
+  { label: 'Coworking Space', value: 'coworking_space' },
+  { label: 'Event Hall', value: 'event_hall' }
+]
 const PLACEHOLDER = '/images/gambarRuangan.png'
 
 export default function CustomerDashboard() {
   const router = useRouter()
-  const [user, setUser] = useState<User | null>(null)
   const [recommended, setRecommended] = useState<Room[]>([])
   const [available, setAvailable] = useState<Room[]>([])
+  const [locations, setLocations] = useState<Location[]>([])
   const [loadingRec, setLoadingRec] = useState(true)
   const [loadingAvail, setLoadingAvail] = useState(true)
+  const [loadingLoc, setLoadingLoc] = useState(true)
 
-  const [filterType, setFilterType] = useState('Semua tipe')
+  const [filterLocation, setFilterLocation] = useState<Location | null>(null)
+  const [locationSearchQuery, setLocationSearchQuery] = useState('')
+  const [filteredLocations, setFilteredLocations] = useState<Location[]>([])
+  const [showLocationDropdown, setShowLocationDropdown] = useState(false)
+  const [filterType, setFilterType] = useState('')
   const [filterDate, setFilterDate] = useState('')
   const [filterCapacity, setFilterCapacity] = useState('')
+  const filterLocationRef = useRef<HTMLInputElement | null>(null)
   const filterTypeRef = useRef<HTMLSelectElement | null>(null)
   const filterDateRef = useRef<HTMLInputElement | null>(null)
   const filterCapacityRef = useRef<HTMLInputElement | null>(null)
+  const normalizedLocationQuery = locationSearchQuery.trim().toLowerCase()
+  const selectedLocationLabel = filterLocation ? getLocationOptionLabel(filterLocation).trim().toLowerCase() : ''
+  const isLocationSelected = Boolean(
+    filterLocation &&
+    normalizedLocationQuery.length > 0 &&
+    selectedLocationLabel === normalizedLocationQuery
+  )
+  const isLocationSelectionPending = normalizedLocationQuery.length > 0 && !isLocationSelected
+  const visibleAvailable = isLocationSelectionPending ? [] : available
 
   useEffect(() => {
     const stored = localStorage.getItem('user')
@@ -29,28 +53,57 @@ export default function CustomerDashboard() {
       router.push('/auth/login')
       return
     }
-    setUser(JSON.parse(stored))
-    fetchRecommended()
-    fetchAvailable()
-  }, [])
+    let isMounted = true
 
-  async function fetchRecommended() {
-    setLoadingRec(true)
-    try {
-      const res = await fetch('/api/rooms?limit=4')
-      const json = await res.json()
-      if (json.success) setRecommended(json.data ?? [])
-    } catch {
+    async function loadDashboardData() {
+      try {
+        const [locationsRes, recommendedRes, availableRes] = await Promise.all([
+          fetch('/api/locations'),
+          fetch('/api/rooms?limit=4'),
+          fetch('/api/rooms')
+        ])
+
+        const [locationsJson, recommendedJson, availableJson] = await Promise.all([
+          locationsRes.json(),
+          recommendedRes.json(),
+          availableRes.json()
+        ])
+
+        if (!isMounted) {
+          return
+        }
+
+        if (locationsJson.success) setLocations(locationsJson.data ?? [])
+        if (recommendedJson.success) setRecommended(recommendedJson.data ?? [])
+        if (availableJson.success) setAvailable(availableJson.data ?? [])
+      } catch {
+      } finally {
+        if (!isMounted) {
+          return
+        }
+
+        setLoadingLoc(false)
+        setLoadingRec(false)
+        setLoadingAvail(false)
+      }
     }
-    setLoadingRec(false)
-  }
 
-  async function fetchAvailable(type?: string, capacity?: string) {
+    void loadDashboardData()
+
+    return () => {
+      isMounted = false
+    }
+  }, [router])
+
+  async function fetchAvailable(type?: string, capacity?: string, location?: Location) {
     setLoadingAvail(true)
     try {
       const params = new URLSearchParams()
-      if (type && type !== 'Semua tipe') params.set('type', type)
+      if (type) params.set('type', type)
       if (capacity) params.set('capacity', capacity)
+      if (location?.id != null) params.set('location_id', String(location.id))
+      if (location) params.set('location_name', getLocationQueryValue(location))
+      if (location?.type) params.set('location_type', location.type)
       if (filterDate) params.set('date', filterDate)
 
       const res = await fetch(`/api/rooms?${params.toString()}`)
@@ -62,7 +115,40 @@ export default function CustomerDashboard() {
   }
 
   function handleSearch() {
-    fetchAvailable(filterType, filterCapacity)
+    if (isLocationSelectionPending) {
+      return
+    }
+
+    void fetchAvailable(filterType, filterCapacity, isLocationSelected ? filterLocation ?? undefined : undefined)
+  }
+
+  function handleLocationSearch(query: string) {
+    setLocationSearchQuery(query)
+    const normalizedQuery = query.trim().toLowerCase()
+
+    if (normalizedQuery.length === 0) {
+      setFilteredLocations([])
+      setFilterLocation(null)
+      setShowLocationDropdown(false)
+      return
+    }
+
+    if (!filterLocation || selectedLocationLabel !== normalizedQuery) {
+      setFilterLocation(null)
+    }
+
+    const filtered = locations.filter(loc =>
+      getLocationSearchText(loc).includes(normalizedQuery)
+    )
+
+    setFilteredLocations(filtered)
+    setShowLocationDropdown(true)
+  }
+
+  function handleLocationSelect(location: Location) {
+    setFilterLocation(location)
+    setLocationSearchQuery(getLocationOptionLabel(location))
+    setShowLocationDropdown(false)
   }
 
   function renderRoomCard(room: Room) {
@@ -133,19 +219,56 @@ export default function CustomerDashboard() {
         </div>
 
         <div className="dashboard-search-row">
-          <label className="sf" htmlFor="filterType" onClick={() => filterTypeRef.current?.focus()}>
-            <select
-              id="filterType"
-              ref={filterTypeRef}
-              value={filterType}
-              onChange={e => setFilterType(e.target.value)}
-            >
-              {ROOM_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-            </select>
-            <svg width="18" height="36" viewBox="0 0 18 36" fill="none">
-              <path d="M4 15l5 5 5-5" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+          <div className={`sf sf-search-location${isLocationSelectionPending ? ' sf-location-invalid' : ''}`}>
+            <input
+              id="filterLocation"
+              ref={filterLocationRef}
+              type="text"
+              className="sf-location-input"
+              placeholder="Lokasi"
+              value={locationSearchQuery}
+              disabled={loadingLoc}
+              onChange={e => handleLocationSearch(e.target.value)}
+              onFocus={() => {
+                if (locationSearchQuery.trim().length > 0 && filteredLocations.length > 0) {
+                  setShowLocationDropdown(true)
+                }
+              }}
+              onBlur={() => setShowLocationDropdown(false)}
+              aria-invalid={isLocationSelectionPending}
+            />
+            <svg className="sf-location-icon" width="42" height="42" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="M12 21c-3.2-3.2-6-6.49-6-10a6 6 0 1 1 12 0c0 3.51-2.8 6.8-6 10Z"
+                stroke="white"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <circle cx="12" cy="11" r="2.5" stroke="white" strokeWidth="1.8" />
             </svg>
-          </label>
+            {showLocationDropdown && (
+              <div className="sf-location-dropdown">
+                {filteredLocations.map((loc, idx) => (
+                  <button
+                    type="button"
+                    key={`${loc.city}-${loc.province}-${idx}`}
+                    className={`sf-location-option${filterLocation?.id === loc.id ? ' selected' : ''}`}
+                    onMouseDown={e => e.preventDefault()}
+                    onClick={() => handleLocationSelect(loc)}
+                    style={{
+                      borderBottom: idx < filteredLocations.length - 1 ? '1px solid rgba(15, 23, 42, 0.08)' : 'none'
+                    }}
+                  >
+                    {getLocationOptionLabel(loc)}
+                  </button>
+                ))}
+                {filteredLocations.length === 0 && (
+                  <div className="sf-location-empty">Provinsi atau kota tidak ditemukan</div>
+                )}
+              </div>
+            )}
+          </div>
           
           <label className="sf" htmlFor="filterType" onClick={() => filterTypeRef.current?.focus()}>
             <select
@@ -154,7 +277,11 @@ export default function CustomerDashboard() {
               value={filterType}
               onChange={e => setFilterType(e.target.value)}
             >
-              {ROOM_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+              {ROOM_TYPES.map(roomType => (
+                <option key={roomType.value || 'all'} value={roomType.value}>
+                  {roomType.label}
+                </option>
+              ))}
             </select>
             <svg width="18" height="36" viewBox="0 0 18 36" fill="none">
               <path d="M4 15l5 5 5-5" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -206,7 +333,12 @@ export default function CustomerDashboard() {
             </svg>
           </label>
 
-          <button type="button" className="dashboard-btn-cari" onClick={handleSearch}>
+          <button
+            type="button"
+            className="dashboard-btn-cari"
+            onClick={handleSearch}
+            disabled={isLocationSelectionPending}
+          >
             Cari
           </button>
         </div>
@@ -253,11 +385,15 @@ export default function CustomerDashboard() {
                   <div key={index} className="dashboard-room-card-skeleton" />
                 ))}
               </div>
-            ) : available.length === 0 ? (
-              <p className="dashboard-empty">Tidak ada ruangan yang sesuai filter.</p>
+            ) : visibleAvailable.length === 0 ? (
+              <p className="dashboard-empty">
+                {isLocationSelectionPending
+                  ? 'Pilih provinsi atau kota dari dropdown untuk menampilkan hasil.'
+                  : 'Tidak ada ruangan yang sesuai filter.'}
+              </p>
             ) : (
               <div className="dashboard-cards-grid">
-                {available.map(renderRoomCard)}
+                {visibleAvailable.map(renderRoomCard)}
               </div>
             )}
           </div>

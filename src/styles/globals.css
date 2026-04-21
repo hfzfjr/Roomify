@@ -533,7 +533,7 @@ header {
   background: var(--cyan);
   border-radius: 24px;
   padding: 40px 50px 50px;
-  overflow: hidden;
+  overflow: visible;
   box-shadow: 0 0 12px 1px rgba(0,0,0,0.25);
 }
 
@@ -610,6 +610,72 @@ header {
   border: 1px solid #E8E8E8;
   border-radius: 12px;
   cursor: pointer;
+}
+
+.sf-search-location {
+  position: relative;
+  gap: 16px;
+}
+
+.sf-location-input {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+}
+
+.sf-location-icon {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+}
+
+.sf-location-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  max-height: 240px;
+  overflow-y: auto;
+  background: #ffffff;
+  border: 1px solid rgba(255,255,255,0.5);
+  border-radius: 18px;
+  box-shadow: 0 16px 36px rgba(15,23,42,0.18);
+  z-index: 20;
+}
+
+.sf-location-option,
+.sf-location-empty {
+  width: 100%;
+  padding: 16px 20px;
+  text-align: left;
+  font-family: var(--font-family);
+  font-size: 16px;
+}
+
+.sf-location-option {
+  border: none;
+  background: #ffffff;
+  color: #0f172a;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.sf-location-option:hover,
+.sf-location-option.selected {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.sf-location-empty {
+  color: #64748b;
+  cursor: default;
+}
+
+.sf-location-invalid {
+  border-color: rgba(255,255,255,0.95);
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.15);
 }
 
 .sf svg {
@@ -693,6 +759,13 @@ header {
 .dashboard-btn-cari:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+.dashboard-btn-cari:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+  transform: none;
+  box-shadow: none;
 }
 
 .dashboard-main {
@@ -886,6 +959,7 @@ header {
   .dashboard-hero { height: 400px; margin-top: -94px; }
   .dashboard-hero-img { object-fit: cover; height: 100%; }
   .sf { min-width: 100%; height: 56px; padding: 16px 18px; font-size: 14px; }
+  .sf-location-option, .sf-location-empty { padding: 14px 18px; font-size: 15px; }
   .dashboard-btn-cari { width: 100%; padding: 14px; font-size: 14px; }
   .dashboard-sc-text { margin-bottom: 30px; }
   .dashboard-sc-text h2 { font-size: 24px; }
@@ -906,6 +980,8 @@ header {
   .dashboard-sc-text h2 { font-size: 20px; }
   .dashboard-sc-text p { font-size: 14px; }
   .sf { height: 50px; padding: 12px 16px; font-size: 13px; }
+  .sf-location-icon { width: 28px; height: 28px; }
+  .sf-location-option, .sf-location-empty { padding: 12px 16px; font-size: 14px; }
   .dashboard-btn-cari { height: 50px; padding: 12px; font-size: 13px; }
   .dashboard-cards-container { padding: 20px 16px; }
   .dashboard-section-row { flex-direction: column; align-items: flex-start; gap: 8px; }
@@ -953,6 +1029,8 @@ header {
   .dashboard-sc-text h2 { font-size: 18px; }
   .dashboard-sc-text p { font-size: 12px; }
   .sf { height: 45px; padding: 10px 14px; font-size: 12px; }
+  .sf-search-location { gap: 12px; }
+  .sf-location-option, .sf-location-empty { padding: 12px 14px; font-size: 13px; }
   .dashboard-btn-cari { height: 45px; padding: 10px; font-size: 12px; }
 }
 
