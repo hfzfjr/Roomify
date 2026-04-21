@@ -25,7 +25,7 @@ export function getLocationSearchText(location: Location): string {
 
 export function getLocationOptionLabel(location: Location): string {
   if (location.type === 'province') {
-    return location.province
+    return `Prov. ${location.province}`
   }
 
   if (location.regionType === 'kota') {
@@ -33,7 +33,7 @@ export function getLocationOptionLabel(location: Location): string {
   }
 
   if (location.regionType === 'kabupaten') {
-    return `Kabupaten ${location.city}`
+    return `Kab. ${location.city}`
   }
 
   return location.city
@@ -41,4 +41,12 @@ export function getLocationOptionLabel(location: Location): string {
 
 export function getLocationQueryValue(location: Location): string {
   return location.type === 'province' ? location.province : location.city
+}
+
+export function getLocationOptionSubtitle(location: Location): string {
+  if (location.type === 'province') {
+    return location.province
+  }
+
+  return `${location.city}, ${location.province}`
 }
