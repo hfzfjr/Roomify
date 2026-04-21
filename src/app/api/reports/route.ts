@@ -523,17 +523,49 @@ export async function GET(request: Request) {
       const ownersMonthChangePercent = calculatePercentChange(currentOwnersCount, previousOwnersCount)
       const roomsMonthChangePercent = calculatePercentChange(currentRoomsCount, previousRoomsCount)
 
-      // Get pending verifications (users with pending status)
-      const { data: pendingVerifications, error: verificationsError } = await supabase
-        .from('users')
-        .select('user_id, name, email, created_at')
+      let pendingVerifications: Array<{
+        user_id: string
+        name: string
+        email: string
+        created_at: string
+      }> = []
+
+      const { data: pendingOwnerApplications, error: verificationsError } = await supabase
+        .from('owner')
+        .select('owner_id, user_id, applied_at, status')
         .eq('status', 'pending')
-        .eq('role', 'owner')
-        .order('created_at', { ascending: false })
+        .order('applied_at', { ascending: false })
         .limit(10)
 
       if (verificationsError) {
         console.warn('Error fetching verifications:', verificationsError.message)
+      } else {
+        const pendingUserIds = Array.from(new Set((pendingOwnerApplications || []).map((application: { user_id: string }) => application.user_id).filter(Boolean)))
+
+        if (pendingUserIds.length > 0) {
+          const { data: verificationUsers, error: verificationUsersError } = await supabase
+            .from('users')
+            .select('user_id, name, email')
+            .in('user_id', pendingUserIds)
+
+          if (verificationUsersError) {
+            console.warn('Error fetching verification users:', verificationUsersError.message)
+          } else {
+            const verificationUserMap = new Map(
+              (verificationUsers || []).map((verificationUser: { user_id: string; name: string; email: string }) => [verificationUser.user_id, verificationUser])
+            )
+
+            pendingVerifications = (pendingOwnerApplications || []).map((application: { user_id: string; applied_at: string }) => {
+              const verificationUser = verificationUserMap.get(application.user_id)
+              return {
+                user_id: application.user_id,
+                name: verificationUser?.name || 'Unknown User',
+                email: verificationUser?.email || '-',
+                created_at: application.applied_at,
+              }
+            })
+          }
+        }
       }
 
       // Get chart data (user registrations per day for last 7 days)

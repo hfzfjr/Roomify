@@ -55,6 +55,12 @@ export default function CustomerDashboard() {
   )
   const isLocationSelectionPending = normalizedLocationQuery.length > 0 && !isLocationSelected
   const visibleAvailable = isLocationSelectionPending ? [] : available
+  const hasActiveFilters = Boolean(
+    normalizedLocationQuery.length > 0 ||
+    filterType ||
+    filterDate ||
+    filterCapacity.trim().length > 0
+  )
   const selectedDate = filterDate ? parseISO(filterDate) : null
   const selectedTypeLabel = ROOM_TYPES.find(roomType => roomType.value === filterType)?.label ?? ROOM_TYPES[0].label
   const calendarDays = eachDayOfInterval({
@@ -262,9 +268,11 @@ export default function CustomerDashboard() {
       </div>
 
       <div className="dashboard-search-card">
-        <div className="dashboard-sc-circle dashboard-sc-c1" />
-        <div className="dashboard-sc-circle dashboard-sc-c2" />
-        <div className="dashboard-sc-circle dashboard-sc-c3" />
+        <div className="dashboard-search-bg" aria-hidden="true">
+          <div className="dashboard-sc-circle dashboard-sc-c1" />
+          <div className="dashboard-sc-circle dashboard-sc-c2" />
+          <div className="dashboard-sc-circle dashboard-sc-c3" />
+        </div>
 
         <div className="dashboard-sc-text">
           <h2>Temukan ruangan yang tepat</h2>
@@ -533,30 +541,32 @@ export default function CustomerDashboard() {
       </div>
 
       <main className="dashboard-main">
-        <section className="dashboard-section">
-          <div className="dashboard-section-row">
-            <span className="dashboard-section-title">Rekomendasi</span>
-            <button className="dashboard-see-all" onClick={() => router.push('/customer/rooms')}>
-              Lihat selengkapnya
-            </button>
-          </div>
+        {!hasActiveFilters && (
+          <section className="dashboard-section">
+            <div className="dashboard-section-row">
+              <span className="dashboard-section-title">Rekomendasi</span>
+              <button className="dashboard-see-all" onClick={() => router.push('/customer/rooms')}>
+                Lihat selengkapnya
+              </button>
+            </div>
 
-          <div className="dashboard-cards-container">
-            {loadingRec ? (
-              <div className="dashboard-cards-grid">
-                {Array.from({ length: 4 }).map((_, index) => (
-                  <div key={index} className="dashboard-room-card-skeleton" />
-                ))}
-              </div>
-            ) : recommended.length === 0 ? (
-              <p className="dashboard-empty">Belum ada ruangan tersedia.</p>
-            ) : (
-              <div className="dashboard-cards-grid">
-                {recommended.map(renderRoomCard)}
-              </div>
-            )}
-          </div>
-        </section>
+            <div className="dashboard-cards-container">
+              {loadingRec ? (
+                <div className="dashboard-cards-grid">
+                  {Array.from({ length: 4 }).map((_, index) => (
+                    <div key={index} className="dashboard-room-card-skeleton" />
+                  ))}
+                </div>
+              ) : recommended.length === 0 ? (
+                <p className="dashboard-empty">Belum ada ruangan tersedia.</p>
+              ) : (
+                <div className="dashboard-cards-grid">
+                  {recommended.map(renderRoomCard)}
+                </div>
+              )}
+            </div>
+          </section>
+        )}
 
         <section className="dashboard-section">
           <div className="dashboard-section-row">

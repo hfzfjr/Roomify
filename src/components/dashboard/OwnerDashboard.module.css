@@ -92,6 +92,32 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
+.accountMenu {
+  position: relative;
+  padding: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.sidebarUserButton {
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  color: #ffffff;
+  text-align: left;
+  transition: transform 0.18s ease, opacity 0.2s ease;
+}
+
+.sidebarUserButton:hover,
+.sidebarUserButton.menuOpen {
+  transform: translateY(-1px);
+  opacity: 0.98;
+}
+
 .userAvatar {
   width: 42px;
   height: 42px;
@@ -119,9 +145,149 @@
   color: rgba(255, 255, 255, 0.8);
 }
 
+.userMenuCaret {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.92);
+  flex-shrink: 0;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.sidebarUserButton.menuOpen .userMenuCaret {
+  background: rgba(255, 255, 255, 0.22);
+  transform: rotate(180deg);
+}
+
+.accountDropdown {
+  position: absolute;
+  top: calc(100% - 6px);
+  left: 16px;
+  right: 16px;
+  background: rgba(255, 255, 255, 0.97);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 20px;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.16);
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  z-index: 220;
+}
+
+.accountDropdownHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 18px 14px;
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.12), rgba(255, 139, 253, 0.12));
+  border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+.accountDropdownName {
+  font-size: 15px;
+  font-weight: 800;
+  color: #111827;
+}
+
+.accountDropdownRole {
+  font-size: 12px;
+  font-weight: 700;
+  color: #6B7280;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.accountDropdownItem {
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
+  padding: 14px 18px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.accountDropdownItem:hover {
+  background: rgba(0, 212, 255, 0.08);
+  color: #0891b2;
+}
+
+.accountDropdownItem.danger:hover {
+  background: rgba(239, 68, 68, 0.08);
+  color: #dc2626;
+}
+
 .sidebarNav {
   padding: 12px 0;
   flex: 1;
+}
+
+.sidebarCta {
+  margin-top: auto;
+  padding: 24px 16px 28px;
+}
+
+.sidebarCtaButton {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  border: 1px solid #E8E8E8;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  cursor: pointer;
+  text-align: left;
+  transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.sidebarCtaButton:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.22);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
+}
+
+.sidebarCtaIcon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #ffffff;
+  color: var(--cyan-dark);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.sidebarCtaCopy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.sidebarCtaCopy strong {
+  font-size: 16px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.sidebarCtaCopy span {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.82);
+  line-height: 1.35;
 }
 
 .navItem {
@@ -144,6 +310,12 @@
 .navItem.active {
   background: rgba(255, 255, 255, 0.25);
   color: #fff;
+}
+
+.navIcon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
 }
 
 .navItem svg {
@@ -293,7 +465,7 @@
 }
 
 .grid2 > .card:first-child {
-  min-height: 540px;
+  min-height: 440px;
 }
 
 .cardHeader {
@@ -480,7 +652,8 @@
   font-weight: 600;
   padding: 4px 12px;
   border-radius: 40px;
-  margin-bottom: 15px;
+  margin-top: 5px;
+  margin-bottom: 7px;
   border: 1.5px solid var(--cyan-dark);
 }
 
@@ -544,6 +717,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 16px;
   margin-bottom: 16px;
 }
 
@@ -551,6 +725,14 @@
   font-size: 20px;
   font-weight: 500;
   color: var(--gray-900);
+}
+
+.tableActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .searchBox {
@@ -561,6 +743,25 @@
   border-radius: 40px;
   padding: 12px 20px;
   width: 300px;
+}
+
+.addRoomButton {
+  height: 50px;
+  padding: 0 18px;
+  border: 1px solid #E8E8E8;
+  border-radius: 40px;
+  background: var(--cyan);
+  color: #ffffff;
+  font-family: 'Nunito', sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+.addRoomButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(0, 184, 217, 0.2);
 }
 
 .searchBox input {
@@ -644,4 +845,23 @@
   color: #f87171;
   border-color: #f87171;
   background: transparent;
+}
+
+@media (max-width: 900px) {
+  .tableHeader {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .tableActions {
+    justify-content: stretch;
+  }
+
+  .searchBox {
+    width: 100%;
+  }
+
+  .addRoomButton {
+    width: 100%;
+  }
 }

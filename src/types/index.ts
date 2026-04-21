@@ -9,6 +9,7 @@ export interface User {
   name: string
   email: string
   role: UserRole
+  phone_number?: string | null
 }
 
 export interface Room {

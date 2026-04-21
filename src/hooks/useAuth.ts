@@ -38,7 +38,7 @@ export function useAuth() {
       const role = result.user.role;
       const dashboardMap: { [key: string]: string } = {
         customer: '/customer/dashboard',
-        owner: '/owner/dashboard',
+        owner: '/customer/dashboard',
         admin: '/admin/dashboard',
       };
 

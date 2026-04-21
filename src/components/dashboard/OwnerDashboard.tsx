@@ -1,7 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import styles from './OwnerDashboard.module.css';
+import DashboardIcon from '@/components/icons/DashboardIcon';
+import ReviewsIcon from '@/components/icons/ReviewsIcon';
+import ReportsIcon from '@/components/icons/ReportsIcon';
+import HelpIcon from '@/components/icons/HelpIcon';
 import { useOwnerDashboard, useFacilityRequests } from '@/hooks/useDashboard';
 
 interface SessionUser {
@@ -33,6 +38,7 @@ type ChartPeriod = 'weekly' | 'monthly';
 const chartVisualHeight = 300;
 
 export default function OwnerDashboard() {
+  const router = useRouter();
   const [user] = useState<SessionUser | null>(() => getStoredUser());
   const { data: dashboardData, loading: dashboardLoading, error: dashboardError, refetch } = useOwnerDashboard(user?.user_id || null);
   const { updateRequestStatus } = useFacilityRequests(user?.user_id || null, { autoFetch: false });
@@ -40,6 +46,25 @@ export default function OwnerDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeNav, setActiveNav] = useState(0);
   const [chartPeriod, setChartPeriod] = useState<ChartPeriod>('weekly');
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const accountMenuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!accountMenuRef.current) {
+        return;
+      }
+
+      if (!accountMenuRef.current.contains(event.target as Node)) {
+        setAccountMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   // Filter rooms based on search
   const filteredRooms = dashboardData?.rooms.filter(room =>
@@ -59,6 +84,18 @@ export default function OwnerDashboard() {
     if (success) {
       refetch();
     }
+  };
+
+  const handleProfileClick = () => {
+    setAccountMenuOpen(false);
+    router.push('/customer/profile');
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setAccountMenuOpen(false);
+    router.push('/auth/login');
   };
 
   const formatCurrency = (amount: number) => {
@@ -141,33 +178,82 @@ export default function OwnerDashboard() {
           <img src="/images/roomify-putih.png" alt="Roomify" className={styles.logoImage} />
         </div>
 
-        <div className={styles.sidebarUser}>
-          <div className={styles.userAvatar}>{user?.name?.charAt(0).toUpperCase() || 'U'}</div>
-          <div className={styles.userInfo}>
-            <strong>{user?.name || 'User'}</strong>
-            <span>Owner</span>
-          </div>
+        <div className={styles.accountMenu} ref={accountMenuRef}>
+          <button
+            type="button"
+            className={`${styles.sidebarUserButton} ${accountMenuOpen ? styles.menuOpen : ''}`}
+            onClick={() => setAccountMenuOpen((current) => !current)}
+            aria-haspopup="menu"
+            aria-expanded={accountMenuOpen}
+          >
+            <div className={styles.userAvatar}>{user?.name?.charAt(0).toUpperCase() || 'U'}</div>
+            <div className={styles.userInfo}>
+              <strong>{user?.name || 'User'}</strong>
+              <span>Owner</span>
+            </div>
+            <span className={styles.userMenuCaret} aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                <path d="m6 9 6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </span>
+          </button>
+
+          {accountMenuOpen && (
+            <div className={styles.accountDropdown} role="menu">
+              <div className={styles.accountDropdownHeader}>
+                <span className={styles.accountDropdownName}>{user?.name || 'User'}</span>
+                <span className={styles.accountDropdownRole}>OWNER</span>
+              </div>
+              <button type="button" className={styles.accountDropdownItem} onClick={handleProfileClick}>
+                Profil
+              </button>
+              <button
+                type="button"
+                className={`${styles.accountDropdownItem} ${styles.danger}`}
+                onClick={handleLogout}
+              >
+                Logout
+              </button>
+            </div>
+          )}
         </div>
 
         <nav className={styles.sidebarNav}>
           {[
-            { icon: '□', label: 'Dashboard' },
-            { icon: '👤', label: 'Profil' },
-            { icon: '💬', label: 'Reviews & Feedback' },
-            { icon: '📊', label: 'Sales Reports' },
-            { icon: '➕', label: 'Tambah Ruangan' },
-            { icon: '❓', label: 'Help' },
+            { Icon: DashboardIcon, label: 'Dashboard' },
+            { Icon: ReviewsIcon, label: 'Review & Feedback' },
+            { Icon: ReportsIcon, label: 'Laporan Transaksi' },
+            { Icon: HelpIcon, label: 'Bantuan' },
           ].map((item, index) => (
             <div
               key={index}
               className={`${styles.navItem} ${activeNav === index ? styles.active : ''}`}
               onClick={() => setActiveNav(index)}
             >
-              <span>{item.icon}</span>
+              <item.Icon className={styles.navIcon} />
               {item.label}
             </div>
           ))}
         </nav>
+
+        <div className={styles.sidebarCta}>
+          <button
+            type="button"
+            className={styles.sidebarCtaButton}
+            onClick={() => router.push('/customer/dashboard')}
+          >
+            <span className={styles.sidebarCtaIcon} aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                <circle cx="11" cy="11" r="6.5" />
+                <path d="m20 20-3.8-3.8" strokeLinecap="round" />
+              </svg>
+            </span>
+            <span className={styles.sidebarCtaCopy}>
+              <strong>Cari Ruangan</strong>
+              <span>Jelajahi katalog ruangan</span>
+            </span>
+          </button>
+        </div>
       </aside>
 
       {/* MAIN */}
@@ -369,17 +455,26 @@ export default function OwnerDashboard() {
           <div className={styles.tableCard}>
             <div className={styles.tableHeader}>
               <span className={styles.tableTitle}>Daftar Ruangan</span>
-              <div className={styles.searchBox}>
-                <input
-                  type="text"
-                  placeholder="Cari ruangan"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <circle cx="11" cy="11" r="8" />
-                  <path d="m21 21-4.35-4.35" />
-                </svg>
+              <div className={styles.tableActions}>
+                <div className={styles.searchBox}>
+                  <input
+                    type="text"
+                    placeholder="Cari ruangan"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <circle cx="11" cy="11" r="8" />
+                    <path d="m21 21-4.35-4.35" />
+                  </svg>
+                </div>
+                <button
+                  type="button"
+                  className={styles.addRoomButton}
+                  onClick={() => router.push('/owner/rooms/add')}
+                >
+                  Tambah Ruangan
+                </button>
               </div>
             </div>
 
@@ -451,3 +546,5 @@ export default function OwnerDashboard() {
     </div>
   );
 }
+
+
