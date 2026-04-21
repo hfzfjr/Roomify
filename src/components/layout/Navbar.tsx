@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { User } from '@/types'
 import DashboardIcon from '@/components/icons/DashboardIcon';
 import ReviewsIcon from '@/components/icons/ReviewsIcon';
-import ReportsIcon from '@/components/icons/ReportsIcon';
 import HelpIcon from '@/components/icons/HelpIcon';
 
 type OwnerApplicationStatus = 'pending' | 'active' | 'rejected' | null
@@ -156,14 +155,6 @@ export default function Navbar() {
           <a href="#" className="sb-item" onClick={(e) => { e.preventDefault(); router.push('/customer/bookings'); }}>
             <ReviewsIcon className="sb-icon" />
             Riwayat
-          </a>
-          <a href="#" className="sb-item" onClick={(e) => { e.preventDefault(); router.push('/customer/reviews'); }}>
-            <ReportsIcon className="sb-icon" />
-            Review & Feedback
-          </a>
-          <a href="#" className="sb-item" onClick={(e) => { e.preventDefault(); router.push('/owner/reports'); }}>
-            <ReportsIcon className="sb-icon" />
-            Laporan Transaksi
           </a>
           <a href="#" className="sb-item" onClick={(e) => { e.preventDefault(); }}>
             <HelpIcon className="sb-icon" />
