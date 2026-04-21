@@ -214,12 +214,16 @@ export async function GET(request: Request) {
     const bookingMap = new Map((bookingData || []).map((booking: BookingRoomRecord) => [booking.booking_id, booking.room_id]))
     const roomMap = new Map((roomData || []).map((room: RoomRecord) => [room.room_id, room.name]))
 
-    const mappedData = requests.map((request: { request_id: string; booking_id: string; customer_id: string; details?: string | null }) => ({
-      ...request,
-      message: request.details,
-      customer_name: customerMap.get(request.customer_id) || null,
-      room_name: roomMap.get(bookingMap.get(request.booking_id)) || null,
-    }))
+    const mappedData = requests.map((request: { request_id: string; booking_id: string; customer_id: string; details?: string | null }) => {
+      const roomId = bookingMap.get(request.booking_id)
+
+      return {
+        ...request,
+        message: request.details,
+        customer_name: customerMap.get(request.customer_id) || null,
+        room_name: roomId ? roomMap.get(roomId) || null : null,
+      }
+    })
 
     return NextResponse.json({ success: true, data: mappedData })
   } catch (error) {

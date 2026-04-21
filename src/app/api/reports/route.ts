@@ -354,12 +354,16 @@ export async function GET(request: Request) {
                 const bookingMap = new Map((bookingData || []).map((booking: { booking_id: string; room_id: string }) => [booking.booking_id, booking.room_id]))
                 const roomMap = new Map((roomData || []).map((room: { room_id: string; name: string }) => [room.room_id, room.name]))
 
-                facilityRequests = requests.map((request: FacilityRequestRecord) => ({
-                  ...request,
-                  message: request.details,
-                  customer_name: customerMap.get(request.customer_id) || null,
-                  room_name: roomMap.get(bookingMap.get(request.booking_id)) || null,
-                }))
+                facilityRequests = requests.map((request: FacilityRequestRecord) => {
+                  const roomId = bookingMap.get(request.booking_id)
+
+                  return {
+                    ...request,
+                    message: request.details,
+                    customer_name: customerMap.get(request.customer_id) || null,
+                    room_name: roomId ? roomMap.get(roomId) || null : null,
+                  }
+                })
               }
             }
           }
