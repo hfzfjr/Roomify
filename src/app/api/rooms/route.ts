@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { isPendingPaymentExpired } from '@/utils/booking'
 
 type RegionLocation = {
   region_id: string
@@ -143,7 +144,7 @@ export async function GET(request: Request) {
 
       const { data: bookedRooms, error: bookingError } = await supabase
         .from('booking')
-        .select('room_id')
+        .select('room_id, status, booking_date')
         .in('room_id', roomIds)
         .lt('check_in', dayEnd)
         .gt('check_out', dayStart)
@@ -153,7 +154,11 @@ export async function GET(request: Request) {
         return NextResponse.json({ success: false, message: bookingError.message }, { status: 500 })
       }
 
-      const bookedRoomIds = new Set((bookedRooms ?? []).map(booking => booking.room_id))
+      const bookedRoomIds = new Set(
+        (bookedRooms ?? [])
+          .filter(booking => !isPendingPaymentExpired(booking.status, booking.booking_date))
+          .map(booking => booking.room_id)
+      )
       rooms = rooms.filter(room => !bookedRoomIds.has(room.room_id))
     }
 

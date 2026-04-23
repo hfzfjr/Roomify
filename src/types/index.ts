@@ -52,6 +52,7 @@ export interface Booking {
   total_cost: number
   status: BookingStatus
   notes?: string | null
+  payment_due_at?: string | null
   room: {
     room_id: string
     name: string

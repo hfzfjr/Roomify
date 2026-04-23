@@ -220,14 +220,14 @@ export default function CustomerDashboard() {
           <img src={image} alt={room.name} onError={e => { (e.target as HTMLImageElement).src = PLACEHOLDER }} />
         </div>
         <div className="dashboard-room-info">
-          <div className="dashboard-room-name">{room.name}</div>
+          <div className="dashboard-room-name dashboard-room-ellipsis" title={room.name}>{room.name}</div>
           <div className="dashboard-meta-row">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2">
               <path strokeLinecap="round" strokeLinejoin="round" d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
               <circle cx="9" cy="7" r="4" />
               <path strokeLinecap="round" strokeLinejoin="round" d="M23 21v-2a4 4 0 0 0-3-3.87" />
             </svg>
-            <span>{room.capacity} orang</span>
+            <span className="dashboard-room-ellipsis" title={`${room.capacity} orang`}>{room.capacity} orang</span>
           </div>
           <div className="dashboard-meta-row">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="1.5">
@@ -236,14 +236,14 @@ export default function CustomerDashboard() {
               <line x1="12" y1="12" x2="12" y2="16" />
               <line x1="10" y1="14" x2="14" y2="14" />
             </svg>
-            <span>{facilities}</span>
+            <span className="dashboard-room-ellipsis" title={facilities}>{facilities}</span>
           </div>
           <div className="dashboard-meta-row">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="1.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z" />
               <circle cx="12" cy="11" r="3" />
             </svg>
-            <span>{room.location}</span>
+            <span className="dashboard-room-ellipsis" title={room.location}>{room.location}</span>
           </div>
         </div>
         <div className="dashboard-card-btns">

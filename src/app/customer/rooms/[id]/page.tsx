@@ -29,70 +29,49 @@ export default async function CustomerRoomDetailPage({
           <span>{room.name}</span>
         </div>
 
-        <section className="room-detail-hero">
-          <div className="room-detail-media">
-            <img src={image} alt={room.name} />
-          </div>
-
-          <div className="room-detail-overview">
-            <div className="room-detail-badges">
-              <span className="room-detail-chip neutral">{getRoomTypeLabel(room.type)}</span>
-              <span className={`room-detail-chip ${room.is_available ? 'success' : 'danger'}`}>
-                {room.is_available ? 'Bisa dibooking' : 'Sedang penuh'}
-              </span>
-            </div>
-
-            <h1>{room.name}</h1>
-            <p>{room.description || 'Ruangan ini siap digunakan untuk meeting, presentasi, dan kebutuhan kolaborasi tim Anda.'}</p>
-
-            <div className="room-detail-stats">
-              <div className="room-detail-stat">
-                <span>Kapasitas</span>
-                <strong>{room.capacity} orang</strong>
-              </div>
-              <div className="room-detail-stat">
-                <span>Harga</span>
-                <strong>{formatRupiah(room.price_per_hour)}/jam</strong>
-              </div>
-              <div className="room-detail-stat">
-                <span>Lokasi</span>
-                <strong>{room.location}</strong>
-              </div>
-              <div className="room-detail-stat">
-                <span>Area</span>
-                <strong>{[room.region_name, room.province_name].filter(Boolean).join(', ') || 'Bandung'}</strong>
-              </div>
-            </div>
-          </div>
-        </section>
-
         <div className="room-detail-content">
           <div className="room-detail-main">
-            <section className="room-detail-section">
-              <div className="room-detail-section-head">
-                <span className="room-detail-section-kicker">Overview</span>
-                <h2>Informasi utama ruangan</h2>
+            <section className="room-detail-media">
+              <img src={image} alt={room.name} />
+            </section>
+
+            <section className="room-detail-overview">
+              <div className="room-detail-badges">
+                <span className="room-detail-chip neutral">{getRoomTypeLabel(room.type)}</span>
+                <span className={`room-detail-chip ${room.is_available ? 'success' : 'danger'}`}>
+                  {room.is_available ? 'Bisa dibooking' : 'Sedang penuh'}
+                </span>
               </div>
-              <div className="room-detail-card-grid">
-                <article className="room-detail-info-card">
-                  <span className="room-detail-label">Alamat</span>
+
+              <h1>{room.name}</h1>
+              <p>{room.description || 'Ruangan ini siap digunakan untuk meeting, presentasi, dan kebutuhan kolaborasi tim Anda.'}</p>
+
+              <div className="room-detail-stats">
+                <div className="room-detail-stat">
+                  <span>Kapasitas</span>
+                  <strong>{room.capacity} orang</strong>
+                </div>
+                <div className="room-detail-stat">
+                  <span>Harga</span>
+                  <strong>{formatRupiah(room.price_per_hour)}/jam</strong>
+                </div>
+                <div className="room-detail-stat">
+                  <span>Lokasi</span>
                   <strong>{room.location}</strong>
-                  <p>Akses mudah untuk tamu, meeting internal, maupun kegiatan event harian.</p>
-                </article>
-                <article className="room-detail-info-card">
-                  <span className="room-detail-label">Status ruangan</span>
-                  <strong>{room.status || (room.is_available ? 'active' : 'inactive')}</strong>
-                  <p>Data status diambil langsung dari tabel room agar kondisi ketersediaan tetap sinkron.</p>
-                </article>
-                <article className="room-detail-info-card">
-                  <span className="room-detail-label">Jadwal mendatang</span>
-                  <strong>{room.upcoming_booking_count ?? 0} booking aktif</strong>
-                  <p>
-                    {room.next_booking
-                      ? `Booking terdekat ${formatDate(room.next_booking.check_in)} pukul ${formatTime(room.next_booking.check_in)}.`
-                      : 'Belum ada jadwal aktif dalam waktu dekat.'}
-                  </p>
-                </article>
+                </div>
+                <div className="room-detail-stat">
+                  <span>Area</span>
+                  <strong>{[room.region_name, room.province_name].filter(Boolean).join(', ') || 'Bandung'}</strong>
+                </div>
+              </div>
+
+              <div className="room-detail-inline-note">
+                <span>Jadwal mendatang</span>
+                <strong>
+                  {room.next_booking
+                    ? `Booking berikutnya ${formatDate(room.next_booking.check_in)} pukul ${formatTime(room.next_booking.check_in)} - ${formatTime(room.next_booking.check_out)}`
+                    : 'Belum ada jadwal aktif dalam waktu dekat.'}
+                </strong>
               </div>
             </section>
 
@@ -100,6 +79,9 @@ export default async function CustomerRoomDetailPage({
               <div className="room-detail-section-head">
                 <span className="room-detail-section-kicker">Facilities</span>
                 <h2>Fasilitas yang tersedia</h2>
+                <p className="room-detail-section-copy">
+                  Fasilitas berikut tersedia di ruangan ini dan bisa membantu Anda menilai kecocokan room sebelum booking.
+                </p>
               </div>
               <div className="room-detail-facilities">
                 {room.facilities.length > 0 ? (

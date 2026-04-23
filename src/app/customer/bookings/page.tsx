@@ -1,17 +1,18 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Booking, User } from '@/types'
+import { formatPaymentCountdown, getRemainingPaymentMs } from '@/utils/booking'
 import { formatDate, formatTime } from '@/utils/formatDate'
 import { formatRupiah } from '@/utils/formatRupiah'
 import { ROOM_IMAGE_PLACEHOLDER } from '@/utils/room'
 
 function getBookingStatusLabel(status: Booking['status']) {
-  if (status === 'confirmed') return 'Terkonfirmasi'
+  if (status === 'confirmed') return 'Lunas'
   if (status === 'completed') return 'Selesai'
   if (status === 'cancelled') return 'Dibatalkan'
-  return 'Menunggu'
+  return 'Menunggu Pembayaran'
 }
 
 export default function CustomerBookings() {
@@ -19,6 +20,24 @@ export default function CustomerBookings() {
   const [bookings, setBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [actionLoadingId, setActionLoadingId] = useState<string | null>(null)
+  const [currentUserId, setCurrentUserId] = useState('')
+  const [nowTimestamp, setNowTimestamp] = useState(() => Date.now())
+
+  const refreshBookings = useCallback(async () => {
+    if (!currentUserId) {
+      return
+    }
+
+    const response = await fetch(`/api/bookings?user_id=${encodeURIComponent(currentUserId)}`)
+    const result = await response.json()
+
+    if (!response.ok || !result.success) {
+      throw new Error(result.message || 'Gagal memuat daftar booking.')
+    }
+
+    setBookings(result.data ?? [])
+  }, [currentUserId])
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user')
@@ -33,6 +52,7 @@ export default function CustomerBookings() {
     async function loadBookings() {
       try {
         const user = JSON.parse(storedUser) as User
+        setCurrentUserId(user.user_id)
         const response = await fetch(`/api/bookings?user_id=${encodeURIComponent(user.user_id)}`)
         const result = await response.json()
 
@@ -61,6 +81,71 @@ export default function CustomerBookings() {
     }
   }, [router])
 
+  useEffect(() => {
+    const hasPendingBookings = bookings.some(booking => booking.status === 'pending')
+
+    if (!hasPendingBookings) {
+      return
+    }
+
+    const timer = window.setInterval(() => {
+      setNowTimestamp(Date.now())
+    }, 1000)
+
+    return () => window.clearInterval(timer)
+  }, [bookings])
+
+  useEffect(() => {
+    const hasExpiredPendingBooking = bookings.some(
+      booking => booking.status === 'pending' && getRemainingPaymentMs(booking.booking_date, nowTimestamp) === 0
+    )
+
+    if (!hasExpiredPendingBooking || actionLoadingId) {
+      return
+    }
+
+    const refreshTimer = window.setTimeout(() => {
+      void refreshBookings()
+    }, 0)
+
+    return () => window.clearTimeout(refreshTimer)
+  }, [actionLoadingId, bookings, nowTimestamp, refreshBookings])
+
+  async function handleBookingAction(bookingId: string, action: 'confirm_payment' | 'cancel') {
+    if (!currentUserId) {
+      return
+    }
+
+    setActionLoadingId(bookingId)
+    setError('')
+
+    try {
+      const response = await fetch('/api/bookings', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          booking_id: bookingId,
+          user_id: currentUserId,
+          action
+        })
+      })
+
+      const result = await response.json()
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || 'Aksi booking gagal diproses.')
+      }
+
+      await refreshBookings()
+    } catch (actionError) {
+      setError(actionError instanceof Error ? actionError.message : 'Aksi booking gagal diproses.')
+    } finally {
+      setActionLoadingId(null)
+    }
+  }
+
   return (
     <div className="customer-bookings-page">
       <section className="customer-bookings-hero">
@@ -86,6 +171,9 @@ export default function CustomerBookings() {
           <div className="customer-bookings-grid">
             {bookings.map(booking => {
               const image = booking.room?.images?.[0] ?? ROOM_IMAGE_PLACEHOLDER
+              const isPendingPayment = booking.status === 'pending'
+              const remainingPaymentMs = isPendingPayment ? getRemainingPaymentMs(booking.booking_date, nowTimestamp) : 0
+              const isPayingOrCancelling = actionLoadingId === booking.booking_id
 
               return (
                 <article key={booking.booking_id} className="customer-booking-card">
@@ -105,9 +193,16 @@ export default function CustomerBookings() {
                         <span className="customer-booking-id">{booking.booking_id}</span>
                         <h2>{booking.room?.name || 'Ruangan'}</h2>
                       </div>
-                      <span className={`customer-booking-status ${booking.status}`}>
-                        {getBookingStatusLabel(booking.status)}
-                      </span>
+                      <div className="customer-booking-status-wrap">
+                        <span className={`customer-booking-status ${booking.status}`}>
+                          {getBookingStatusLabel(booking.status)}
+                        </span>
+                        {isPendingPayment && (
+                          <span className="customer-booking-countdown">
+                            {formatPaymentCountdown(remainingPaymentMs)}
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     <div className="customer-booking-meta">
@@ -133,13 +228,37 @@ export default function CustomerBookings() {
                       <p className="customer-booking-notes">{booking.notes}</p>
                     )}
 
-                    <button
-                      type="button"
-                      className="customer-booking-action"
-                      onClick={() => router.push(`/customer/rooms/${booking.room.room_id}?booking_id=${booking.booking_id}`)}
-                    >
-                      Lihat detail ruangan
-                    </button>
+                    <div className="customer-booking-actions">
+                      {isPendingPayment && (
+                        <button
+                          type="button"
+                          className="customer-booking-action"
+                          disabled={isPayingOrCancelling || remainingPaymentMs <= 0}
+                          onClick={() => handleBookingAction(booking.booking_id, 'confirm_payment')}
+                        >
+                          {isPayingOrCancelling ? 'Memproses...' : 'Bayar sekarang'}
+                        </button>
+                      )}
+
+                      <button
+                        type="button"
+                        className="customer-booking-action secondary"
+                        onClick={() => router.push(`/customer/rooms/${booking.room.room_id}?booking_id=${booking.booking_id}`)}
+                      >
+                        Lihat detail ruangan
+                      </button>
+
+                      {isPendingPayment && (
+                        <button
+                          type="button"
+                          className="customer-booking-action danger"
+                          disabled={isPayingOrCancelling}
+                          onClick={() => handleBookingAction(booking.booking_id, 'cancel')}
+                        >
+                          {isPayingOrCancelling ? 'Memproses...' : 'Cancel booking'}
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </article>
               )

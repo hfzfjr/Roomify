@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { RoomDetail, UpcomingBooking } from '@/types'
+import { isPendingPaymentExpired } from '@/utils/booking'
 import { formatDateForDatabase } from '@/utils/formatDate'
 import { normalizeRoom } from '@/utils/room'
 
@@ -33,7 +34,9 @@ type AmenityRecord = {
   amenity: string
 }
 
-type BookingRecord = UpcomingBooking
+type BookingRecord = UpcomingBooking & {
+  booking_date: string
+}
 
 export async function getRoomDetail(roomId: string): Promise<RoomDetail | null> {
   const supabase = await createClient()
@@ -96,7 +99,7 @@ export async function getRoomDetail(roomId: string): Promise<RoomDetail | null> 
   const now = formatDateForDatabase()
   const { data: upcomingBookings, error: bookingError } = await supabase
     .from('booking')
-    .select('booking_id, check_in, check_out, status')
+    .select('booking_id, booking_date, check_in, check_out, status')
     .eq('room_id', roomId)
     .gte('check_out', now)
     .neq('status', 'cancelled')
@@ -114,13 +117,17 @@ export async function getRoomDetail(roomId: string): Promise<RoomDetail | null> 
     facilities: (amenities ?? []).map(item => item.amenity)
   })
 
+  const activeUpcomingBookings = (upcomingBookings ?? []).filter(
+    booking => !isPendingPaymentExpired(booking.status, booking.booking_date)
+  )
+
   return {
     ...normalizedRoom,
     status: room.status ?? null,
     created_at: room.created_at ?? null,
     region_name: regionName,
     province_name: provinceName,
-    upcoming_booking_count: upcomingBookings?.length ?? 0,
-    next_booking: upcomingBookings?.[0] ?? null
+    upcoming_booking_count: activeUpcomingBookings.length,
+    next_booking: activeUpcomingBookings[0] ?? null
   }
 }

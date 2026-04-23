@@ -5,7 +5,6 @@ import { addMonths, eachDayOfInterval, endOfMonth, endOfWeek, format, getMonth, 
 import { useRouter } from 'next/navigation'
 import { RoomDetail, User } from '@/types'
 import { formatRupiah } from '@/utils/formatRupiah'
-import { formatDate, formatTime } from '@/utils/formatDate'
 
 interface Props {
   room: RoomDetail
@@ -13,6 +12,10 @@ interface Props {
 
 const WEEK_DAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
 const MONTH_OPTIONS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+const DEFAULT_BOOKING_DURATION_MINUTES = 120
+const BOOKING_TIME_STEP_MINUTES = 30
+const MAX_START_TIME = '23:00'
+const MAX_END_TIME = '23:30'
 
 function getTodayValue() {
   const today = new Date()
@@ -29,14 +32,92 @@ function getStartOfToday() {
   return today
 }
 
+function formatDateValue(date: Date) {
+  return format(date, 'yyyy-MM-dd')
+}
+
+function formatTimeValue(date: Date) {
+  return format(date, 'HH:mm')
+}
+
+function addMinutes(date: Date, minutes: number) {
+  return new Date(date.getTime() + minutes * 60 * 1000)
+}
+
+function roundUpToBookingSlot(baseDate: Date = new Date()) {
+  const rounded = new Date(baseDate)
+  rounded.setSeconds(0, 0)
+
+  const minutes = rounded.getMinutes()
+
+  if (minutes === 0 || minutes === 30) {
+    return rounded
+  }
+
+  if (minutes < 30) {
+    rounded.setMinutes(30, 0, 0)
+    return rounded
+  }
+
+  rounded.setHours(rounded.getHours() + 1, 0, 0, 0)
+  return rounded
+}
+
+function isSameCalendarDay(left: Date, right: Date) {
+  return left.getFullYear() === right.getFullYear()
+    && left.getMonth() === right.getMonth()
+    && left.getDate() === right.getDate()
+}
+
+function getInitialBookingValues(baseDate: Date = new Date()) {
+  let startDateTime = roundUpToBookingSlot(baseDate)
+  let endDateTime = addMinutes(startDateTime, DEFAULT_BOOKING_DURATION_MINUTES)
+
+  if (!isSameCalendarDay(startDateTime, endDateTime)) {
+    startDateTime = roundUpToBookingSlot(new Date(startDateTime.getFullYear(), startDateTime.getMonth(), startDateTime.getDate() + 1, 0, 0, 0, 0))
+    endDateTime = addMinutes(startDateTime, DEFAULT_BOOKING_DURATION_MINUTES)
+  }
+
+  return {
+    bookingDate: formatDateValue(startDateTime),
+    startTime: formatTimeValue(startDateTime),
+    endTime: formatTimeValue(endDateTime),
+    calendarMonth: startDateTime
+  }
+}
+
+function getMinimumEndTime(startTimeValue: string) {
+  const [hours, minutes] = startTimeValue.split(':').map(Number)
+
+  if (!Number.isFinite(hours) || !Number.isFinite(minutes)) {
+    return '00:30'
+  }
+
+  const baseDate = new Date(2000, 0, 1, hours, minutes, 0, 0)
+  const minimumEndDate = addMinutes(baseDate, BOOKING_TIME_STEP_MINUTES)
+  return formatTimeValue(minimumEndDate)
+}
+
+function normalizeTimeInput(value: string) {
+  const [hours, minutes] = value.split(':').map(Number)
+
+  if (!Number.isFinite(hours) || !Number.isFinite(minutes)) {
+    return value
+  }
+
+  const normalizedDate = roundUpToBookingSlot(new Date(2000, 0, 1, hours, minutes, 0, 0))
+  return formatTimeValue(normalizedDate)
+}
+
 export default function RoomBookingPanel({ room }: Props) {
   const router = useRouter()
-  const [bookingDate, setBookingDate] = useState(getTodayValue())
-  const [startTime, setStartTime] = useState('09:00')
-  const [endTime, setEndTime] = useState('11:00')
+  const initialBookingValues = getInitialBookingValues()
+  const [bookingDate, setBookingDate] = useState(() => initialBookingValues.bookingDate)
+  const [startTime, setStartTime] = useState(() => initialBookingValues.startTime)
+  const [endTime, setEndTime] = useState(() => initialBookingValues.endTime)
   const [facilityRequest, setFacilityRequest] = useState('')
   const [showDatePicker, setShowDatePicker] = useState(false)
-  const [calendarMonth, setCalendarMonth] = useState(() => new Date())
+  const [calendarMonth, setCalendarMonth] = useState(() => initialBookingValues.calendarMonth)
   const [activeDateMenu, setActiveDateMenu] = useState<'month' | 'year' | null>(null)
   const [userName] = useState<string | null>(() => {
     if (typeof window === 'undefined') {
@@ -63,6 +144,10 @@ export default function RoomBookingPanel({ room }: Props) {
   const dateTriggerRef = useRef<HTMLButtonElement | null>(null)
 
   const selectedDate = bookingDate ? parseISO(bookingDate) : null
+  const nextAvailableSlot = roundUpToBookingSlot()
+  const todayValue = getTodayValue()
+  const minimumTodayStartTime = formatTimeValue(nextAvailableSlot)
+  const minimumEndTime = getMinimumEndTime(startTime)
   const checkInDate = bookingDate && startTime ? new Date(`${bookingDate}T${startTime}:00`) : null
   const checkOutDate = bookingDate && endTime ? new Date(`${bookingDate}T${endTime}:00`) : null
   const durationHours = checkInDate && checkOutDate && checkOutDate > checkInDate
@@ -96,10 +181,43 @@ export default function RoomBookingPanel({ room }: Props) {
   }, [showDatePicker])
 
   function handleDateSelect(date: Date) {
-    setBookingDate(format(date, 'yyyy-MM-dd'))
+    const nextBookingDate = format(date, 'yyyy-MM-dd')
+    const nextStartTime = nextBookingDate === todayValue && startTime < minimumTodayStartTime
+      ? minimumTodayStartTime
+      : startTime
+    const nextMinimumEndTime = getMinimumEndTime(nextStartTime)
+
+    setBookingDate(nextBookingDate)
+    setStartTime(nextStartTime)
+
+    if (endTime < nextMinimumEndTime) {
+      setEndTime(nextMinimumEndTime)
+    }
+
     setCalendarMonth(date)
     setShowDatePicker(false)
     setActiveDateMenu(null)
+  }
+
+  function handleStartTimeChange(value: string) {
+    const normalizedValue = normalizeTimeInput(value)
+    const clampedValue = normalizedValue > MAX_START_TIME ? MAX_START_TIME : normalizedValue
+    const nextStartTime = bookingDate === todayValue && clampedValue < minimumTodayStartTime
+      ? minimumTodayStartTime
+      : clampedValue
+    const nextMinimumEndTime = getMinimumEndTime(nextStartTime)
+
+    setStartTime(nextStartTime)
+
+    if (endTime < nextMinimumEndTime) {
+      setEndTime(nextMinimumEndTime)
+    }
+  }
+
+  function handleEndTimeChange(value: string) {
+    const normalizedValue = normalizeTimeInput(value)
+    const clampedValue = normalizedValue > MAX_END_TIME ? MAX_END_TIME : normalizedValue
+    setEndTime(clampedValue < minimumEndTime ? minimumEndTime : clampedValue)
   }
 
   async function handleBooking() {
@@ -151,7 +269,8 @@ export default function RoomBookingPanel({ room }: Props) {
           date: bookingDate,
           start_time: startTime,
           end_time: endTime,
-          notes: facilityRequest
+          notes: facilityRequest,
+          additional_message: facilityRequest
         })
       })
 
@@ -330,9 +449,11 @@ export default function RoomBookingPanel({ room }: Props) {
           <span>Jam mulai</span>
           <input
             type="time"
-            step={3600}
+            step={1800}
             value={startTime}
-            onChange={event => setStartTime(event.target.value)}
+            min={bookingDate === todayValue ? minimumTodayStartTime : '00:00'}
+            max={MAX_START_TIME}
+            onChange={event => handleStartTimeChange(event.target.value)}
           />
         </label>
 
@@ -340,14 +461,16 @@ export default function RoomBookingPanel({ room }: Props) {
           <span>Jam selesai</span>
           <input
             type="time"
-            step={3600}
+            step={1800}
             value={endTime}
-            onChange={event => setEndTime(event.target.value)}
+            min={minimumEndTime}
+            max={MAX_END_TIME}
+            onChange={event => handleEndTimeChange(event.target.value)}
           />
         </label>
 
         <label className="room-booking-field full">
-          <span>Facility request</span>
+          <span>PESAN TAMBAHAN</span>
           <textarea
             rows={4}
             value={facilityRequest}
@@ -367,13 +490,6 @@ export default function RoomBookingPanel({ room }: Props) {
           <strong>{durationHours > 0 ? formatRupiah(totalCost) : '-'}</strong>
         </div>
       </div>
-
-      {room.next_booking && (
-        <div className="room-booking-note">
-          Booking berikutnya {formatDate(room.next_booking.check_in)} pukul{' '}
-          {formatTime(room.next_booking.check_in)} - {formatTime(room.next_booking.check_out)}.
-        </div>
-      )}
 
       {error && <p className="room-booking-feedback error">{error}</p>}
       {success && <p className="room-booking-feedback success">{success}</p>}
