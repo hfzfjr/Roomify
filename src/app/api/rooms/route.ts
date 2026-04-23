@@ -30,7 +30,7 @@ export async function GET(request: Request) {
     // First get rooms
     let roomQuery = supabase
       .from('room')
-      .select('room_id, name, capacity, price_per_hour, location, region_id, is_available, description, type')
+      .select('room_id, name, capacity, price_per_hour, location, region_id, is_available, description, type, image_url')
       .eq('is_available', true)
 
     if (type) roomQuery = roomQuery.eq('type', type)
@@ -190,6 +190,8 @@ export async function GET(request: Request) {
     // Combine rooms with their amenities
     const roomsWithAmenities = rooms.map(room => ({
       ...room,
+      image_url: room.image_url ?? null,
+      images: room.image_url ? [room.image_url] : [],
       facilities: amenitiesByRoom[room.room_id] || []
     }))
 

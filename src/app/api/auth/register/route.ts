@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
+import { ensureCustomerRecord } from '@/lib/customer'
 import { createClient } from '@/lib/supabase/server'
 import { formatDateForDatabase } from '@/utils/formatDate'
 
@@ -75,6 +76,16 @@ export async function POST(request: Request) {
       console.error('Supabase insert error:', insertError)
       return NextResponse.json(
         { success: false, message: 'Gagal membuat akun baru.' },
+        { status: 500 }
+      )
+    }
+
+    try {
+      await ensureCustomerRecord(newUserId)
+    } catch (customerError) {
+      console.error('Customer profile creation error:', customerError)
+      return NextResponse.json(
+        { success: false, message: 'Akun berhasil dibuat, tetapi profil customer gagal disiapkan.' },
         { status: 500 }
       )
     }

@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
+import { ensureCustomerRecord } from '@/lib/customer'
 import { createClient } from '@/lib/supabase/server'
+import { formatDateForDatabase } from '@/utils/formatDate'
 
 type CustomerRecord = {
   customer_id: string
@@ -86,6 +88,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
     const user_id = searchParams.get('user_id') // owner id
     const request_id = searchParams.get('request_id')
+    const booking_id = searchParams.get('booking_id')
 
     const supabase = await createClient()
 
@@ -128,6 +131,41 @@ export async function GET(request: Request) {
           room_name: roomData?.name,
         }
       })
+    }
+
+    if (booking_id && user_id) {
+      const customerRecord = await ensureCustomerRecord(user_id)
+
+      const { data: bookingRecord, error: bookingLookupError } = await supabase
+        .from('booking')
+        .select('booking_id, customer_id')
+        .eq('booking_id', booking_id)
+        .maybeSingle()
+
+      if (bookingLookupError) {
+        return NextResponse.json({ success: false, message: bookingLookupError.message }, { status: 500 })
+      }
+
+      if (!bookingRecord) {
+        return NextResponse.json({ success: false, message: 'Booking tidak ditemukan.' }, { status: 404 })
+      }
+
+      if (bookingRecord.customer_id !== customerRecord.customer_id) {
+        return NextResponse.json({ success: false, message: 'Booking ini bukan milik customer yang sedang login.' }, { status: 403 })
+      }
+
+      const { data: requests, error: requestsError } = await supabase
+        .from('facility_request')
+        .select('request_id, booking_id, customer_id, details, priority, status, created_at')
+        .eq('booking_id', booking_id)
+        .eq('customer_id', customerRecord.customer_id)
+        .order('created_at', { ascending: false })
+
+      if (requestsError) {
+        return NextResponse.json({ success: false, message: requestsError.message }, { status: 500 })
+      }
+
+      return NextResponse.json({ success: true, data: requests ?? [] })
     }
 
     if (!user_id) {
@@ -226,7 +264,7 @@ export async function GET(request: Request) {
     })
 
     return NextResponse.json({ success: true, data: mappedData })
-  } catch (error) {
+  } catch {
     return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 })
   }
 }
@@ -234,23 +272,63 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { room_id, user_id, message } = body
+    const { booking_id, room_id, user_id, message } = body
 
-    if (!room_id || !user_id || !message) {
-      return NextResponse.json({ success: false, message: 'room_id, user_id, and message are required' }, { status: 400 })
+    if (!booking_id || !room_id || !user_id || !message) {
+      return NextResponse.json({ success: false, message: 'booking_id, room_id, user_id, and message are required' }, { status: 400 })
     }
 
     const supabase = await createClient()
+    const customerRecord = await ensureCustomerRecord(user_id)
+
+    const { data: bookingRecord, error: bookingLookupError } = await supabase
+      .from('booking')
+      .select('booking_id, room_id, customer_id')
+      .eq('booking_id', booking_id)
+      .maybeSingle()
+
+    if (bookingLookupError) {
+      return NextResponse.json({ success: false, message: bookingLookupError.message }, { status: 500 })
+    }
+
+    if (!bookingRecord) {
+      return NextResponse.json({ success: false, message: 'Booking tidak ditemukan.' }, { status: 404 })
+    }
+
+    if (bookingRecord.room_id !== room_id) {
+      return NextResponse.json({ success: false, message: 'Room tidak cocok dengan booking yang dipilih.' }, { status: 400 })
+    }
+
+    if (bookingRecord.customer_id !== customerRecord.customer_id) {
+      return NextResponse.json({ success: false, message: 'Anda tidak dapat mengirim facility request untuk booking ini.' }, { status: 403 })
+    }
+
+    const { data: requestIds, error: requestIdsError } = await supabase
+      .from('facility_request')
+      .select('request_id')
+
+    if (requestIdsError) {
+      return NextResponse.json({ success: false, message: requestIdsError.message }, { status: 500 })
+    }
+
+    const nextRequestId = `fr-${String(
+      (requestIds ?? [])
+        .map((item: { request_id: string }) => Number(item.request_id?.split('-')[1] ?? 0))
+        .reduce((max, current) => Math.max(max, current), 0) + 1
+    ).padStart(2, '0')}`
 
     const { data, error } = await supabase
       .from('facility_request')
       .insert({
-        room_id,
-        user_id,
-        message,
-        status: 'pending'
+        request_id: nextRequestId,
+        booking_id,
+        customer_id: customerRecord.customer_id,
+        details: message,
+        priority: 'normal',
+        status: 'pending',
+        created_at: formatDateForDatabase()
       })
-      .select()
+      .select('request_id, booking_id, customer_id, details, priority, status, created_at')
       .single()
 
     if (error) {
@@ -258,7 +336,7 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ success: true, data })
-  } catch (error) {
+  } catch {
     return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 })
   }
 }
@@ -293,7 +371,7 @@ export async function PATCH(request: Request) {
     }
 
     return NextResponse.json({ success: true, data })
-  } catch (error) {
+  } catch {
     return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 })
   }
 }

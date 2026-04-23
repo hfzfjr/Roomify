@@ -3,6 +3,8 @@
 // =============================================
 
 export type UserRole = 'customer' | 'owner' | 'admin'
+export type BookingStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed'
+export type FacilityRequestStatus = 'pending' | 'approved' | 'rejected'
 
 export interface User {
   user_id: string
@@ -23,6 +25,23 @@ export interface Room {
   type?: string
   facilities: string[]
   images?: string[]
+  image_url?: string | null
+}
+
+export interface UpcomingBooking {
+  booking_id: string
+  check_in: string
+  check_out: string
+  status: BookingStatus
+}
+
+export interface RoomDetail extends Room {
+  status?: string | null
+  created_at?: string | null
+  region_name?: string | null
+  province_name?: string | null
+  upcoming_booking_count?: number
+  next_booking?: UpcomingBooking | null
 }
 
 export interface Booking {
@@ -31,11 +50,25 @@ export interface Booking {
   check_in: string
   check_out: string
   total_cost: number
-  status: 'pending' | 'confirmed' | 'cancelled' | 'completed'
+  status: BookingStatus
+  notes?: string | null
   room: {
     room_id: string
     name: string
     location: string
     images: string[]
+    image_url?: string | null
   }
+}
+
+export interface FacilityRequest {
+  request_id: string
+  booking_id: string
+  customer_id: string
+  details: string
+  priority: string
+  status: FacilityRequestStatus
+  created_at: string
+  room_name?: string | null
+  customer_name?: string | null
 }
