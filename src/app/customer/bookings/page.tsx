@@ -47,13 +47,14 @@ export default function CustomerBookings() {
       return
     }
 
+    const parsedUser = JSON.parse(storedUser) as User
+
     let isMounted = true
 
     async function loadBookings() {
       try {
-        const user = JSON.parse(storedUser) as User
-        setCurrentUserId(user.user_id)
-        const response = await fetch(`/api/bookings?user_id=${encodeURIComponent(user.user_id)}`)
+        setCurrentUserId(parsedUser.user_id)
+        const response = await fetch(`/api/bookings?user_id=${encodeURIComponent(parsedUser.user_id)}`)
         const result = await response.json()
 
         if (!response.ok || !result.success) {

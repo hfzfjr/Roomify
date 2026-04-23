@@ -4,6 +4,13 @@ import { ensureCustomerRecord } from '@/lib/customer'
 import { getPaymentDeadline, isPendingPaymentExpired } from '@/utils/booking'
 import { formatDateForDatabase } from '@/utils/formatDate'
 
+type BookingRoomRecord = {
+  room_id: string
+  name: string
+  location: string
+  image_url?: string | null
+}
+
 function getNextBookingId(existingIds: Array<{ booking_id: string }>) {
   const nextIteration = existingIds
     .map(item => Number(item.booking_id?.split('-')[1] ?? 0))
@@ -23,6 +30,24 @@ function getNextFacilityRequestId(existingIds: Array<{ request_id: string }>) {
 function isHalfHourSlot(date: Date) {
   const minutes = date.getMinutes()
   return minutes === 0 || minutes === 30
+}
+
+function normalizeBookingRoom(room: BookingRoomRecord | BookingRoomRecord[] | null) {
+  if (!room) {
+    return null
+  }
+
+  const normalizedRoom = Array.isArray(room) ? room[0] : room
+
+  if (!normalizedRoom) {
+    return null
+  }
+
+  return {
+    ...normalizedRoom,
+    image_url: normalizedRoom.image_url ?? null,
+    images: normalizedRoom.image_url ? [normalizedRoom.image_url] : []
+  }
 }
 
 async function expirePendingBookings(supabase: Awaited<ReturnType<typeof createClient>>) {
@@ -102,13 +127,7 @@ export async function GET(request: Request) {
     const normalizedData = (data ?? []).map(booking => ({
       ...booking,
       payment_due_at: booking.booking_date ? getPaymentDeadline(booking.booking_date).toISOString() : null,
-      room: booking.room
-        ? {
-            ...booking.room,
-            image_url: booking.room.image_url ?? null,
-            images: booking.room.image_url ? [booking.room.image_url] : []
-          }
-        : null
+      room: normalizeBookingRoom(booking.room as BookingRoomRecord | BookingRoomRecord[] | null)
     }))
 
     return NextResponse.json({ success: true, data: normalizedData })
