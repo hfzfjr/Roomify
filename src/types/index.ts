@@ -41,6 +41,7 @@ export interface RoomDetail extends Room {
   region_name?: string | null
   province_name?: string | null
   upcoming_booking_count?: number
+  upcoming_bookings?: UpcomingBooking[]
   next_booking?: UpcomingBooking | null
 }
 

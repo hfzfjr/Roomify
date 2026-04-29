@@ -112,7 +112,7 @@ export default function CustomerBookings() {
     return () => window.clearTimeout(refreshTimer)
   }, [actionLoadingId, bookings, nowTimestamp, refreshBookings])
 
-  async function handleBookingAction(bookingId: string, action: 'confirm_payment' | 'cancel') {
+  async function handleBookingAction(bookingId: string, action: 'cancel') {
     if (!currentUserId) {
       return
     }
@@ -234,10 +234,10 @@ export default function CustomerBookings() {
                         <button
                           type="button"
                           className="customer-booking-action"
-                          disabled={isPayingOrCancelling || remainingPaymentMs <= 0}
-                          onClick={() => handleBookingAction(booking.booking_id, 'confirm_payment')}
+                          disabled={remainingPaymentMs <= 0}
+                          onClick={() => router.push(`/customer/payments/${booking.booking_id}`)}
                         >
-                          {isPayingOrCancelling ? 'Memproses...' : 'Bayar sekarang'}
+                          Bayar sekarang
                         </button>
                       )}
 

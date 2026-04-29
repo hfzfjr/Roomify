@@ -1,21 +1,46 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
-import { addMonths, eachDayOfInterval, endOfMonth, endOfWeek, format, getMonth, getYear, isSameDay, isSameMonth, parseISO, setMonth, setYear, startOfMonth, startOfWeek, subMonths } from 'date-fns'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import {
+  addMonths,
+  eachDayOfInterval,
+  endOfMonth,
+  endOfWeek,
+  format,
+  getMonth,
+  getYear,
+  isSameDay,
+  isSameMonth,
+  parseISO,
+  setMonth,
+  setYear,
+  startOfMonth,
+  startOfWeek,
+  subMonths
+} from 'date-fns'
+import { id as localeId } from 'date-fns/locale'
 import { useRouter } from 'next/navigation'
 import { RoomDetail, User } from '@/types'
-import { formatRupiah } from '@/utils/formatRupiah'
 
 interface Props {
   room: RoomDetail
 }
 
+type AvailabilityState = 'idle' | 'available' | 'unavailable' | 'invalid'
+
+type ActiveBooking = {
+  bookingId: string
+  checkIn: Date
+  checkOut: Date
+}
+
 const WEEK_DAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
 const MONTH_OPTIONS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-const DEFAULT_BOOKING_DURATION_MINUTES = 120
 const BOOKING_TIME_STEP_MINUTES = 30
 const MAX_START_TIME = '23:00'
 const MAX_END_TIME = '23:30'
+const SCHEDULE_OPEN_HOUR = 8
+const SCHEDULE_CLOSE_HOUR = 22
 
 function getTodayValue() {
   const today = new Date()
@@ -30,10 +55,6 @@ function getStartOfToday() {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
   return today
-}
-
-function formatDateValue(date: Date) {
-  return format(date, 'yyyy-MM-dd')
 }
 
 function formatTimeValue(date: Date) {
@@ -63,29 +84,6 @@ function roundUpToBookingSlot(baseDate: Date = new Date()) {
   return rounded
 }
 
-function isSameCalendarDay(left: Date, right: Date) {
-  return left.getFullYear() === right.getFullYear()
-    && left.getMonth() === right.getMonth()
-    && left.getDate() === right.getDate()
-}
-
-function getInitialBookingValues(baseDate: Date = new Date()) {
-  let startDateTime = roundUpToBookingSlot(baseDate)
-  let endDateTime = addMinutes(startDateTime, DEFAULT_BOOKING_DURATION_MINUTES)
-
-  if (!isSameCalendarDay(startDateTime, endDateTime)) {
-    startDateTime = roundUpToBookingSlot(new Date(startDateTime.getFullYear(), startDateTime.getMonth(), startDateTime.getDate() + 1, 0, 0, 0, 0))
-    endDateTime = addMinutes(startDateTime, DEFAULT_BOOKING_DURATION_MINUTES)
-  }
-
-  return {
-    bookingDate: formatDateValue(startDateTime),
-    startTime: formatTimeValue(startDateTime),
-    endTime: formatTimeValue(endDateTime),
-    calendarMonth: startDateTime
-  }
-}
-
 function getMinimumEndTime(startTimeValue: string) {
   const [hours, minutes] = startTimeValue.split(':').map(Number)
 
@@ -109,16 +107,44 @@ function normalizeTimeInput(value: string) {
   return formatTimeValue(normalizedDate)
 }
 
+function toMinutes(value: string) {
+  const [hours, minutes] = value.split(':').map(Number)
+  return (hours * 60) + minutes
+}
+
+function fromMinutes(totalMinutes: number) {
+  const hours = String(Math.floor(totalMinutes / 60)).padStart(2, '0')
+  const minutes = String(totalMinutes % 60).padStart(2, '0')
+  return `${hours}:${minutes}`
+}
+
+function buildTimeOptions(minValue: string, maxValue: string) {
+  const options: string[] = []
+  const minMinutes = toMinutes(minValue)
+  const maxMinutes = toMinutes(maxValue)
+
+  for (let current = minMinutes; current <= maxMinutes; current += BOOKING_TIME_STEP_MINUTES) {
+    options.push(fromMinutes(current))
+  }
+
+  return options
+}
+
+function isOverlapping(startDate: Date, endDate: Date, booking: ActiveBooking) {
+  return startDate < booking.checkOut && endDate > booking.checkIn
+}
+
 export default function RoomBookingPanel({ room }: Props) {
   const router = useRouter()
-  const initialBookingValues = getInitialBookingValues()
-  const [bookingDate, setBookingDate] = useState(() => initialBookingValues.bookingDate)
-  const [startTime, setStartTime] = useState(() => initialBookingValues.startTime)
-  const [endTime, setEndTime] = useState(() => initialBookingValues.endTime)
+  const [bookingDate, setBookingDate] = useState('')
+  const [startTime, setStartTime] = useState('')
+  const [endTime, setEndTime] = useState('')
   const [facilityRequest, setFacilityRequest] = useState('')
   const [showDatePicker, setShowDatePicker] = useState(false)
-  const [calendarMonth, setCalendarMonth] = useState(() => initialBookingValues.calendarMonth)
+  const [calendarMonth, setCalendarMonth] = useState(() => new Date())
   const [activeDateMenu, setActiveDateMenu] = useState<'month' | 'year' | null>(null)
+  const [showScheduleModal, setShowScheduleModal] = useState(false)
+  const [showConfirmModal, setShowConfirmModal] = useState(false)
   const [userName] = useState<string | null>(() => {
     if (typeof window === 'undefined') {
       return null
@@ -147,18 +173,99 @@ export default function RoomBookingPanel({ room }: Props) {
   const nextAvailableSlot = roundUpToBookingSlot()
   const todayValue = getTodayValue()
   const minimumTodayStartTime = formatTimeValue(nextAvailableSlot)
-  const minimumEndTime = getMinimumEndTime(startTime)
-  const checkInDate = bookingDate && startTime ? new Date(`${bookingDate}T${startTime}:00`) : null
-  const checkOutDate = bookingDate && endTime ? new Date(`${bookingDate}T${endTime}:00`) : null
-  const durationHours = checkInDate && checkOutDate && checkOutDate > checkInDate
-    ? (checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60)
-    : 0
-  const totalCost = durationHours * room.price_per_hour
+  const minimumStartTime = bookingDate === todayValue ? minimumTodayStartTime : '00:00'
+  const minimumEndTime = startTime ? getMinimumEndTime(startTime) : getMinimumEndTime(minimumStartTime)
   const calendarDays = eachDayOfInterval({
     start: startOfWeek(startOfMonth(calendarMonth), { weekStartsOn: 0 }),
     end: endOfWeek(endOfMonth(calendarMonth), { weekStartsOn: 0 })
   })
   const yearOptions = Array.from({ length: 11 }, (_, index) => getYear(new Date()) - 5 + index)
+
+  const activeBookings = useMemo<ActiveBooking[]>(() => {
+    return (room.upcoming_bookings ?? [])
+      .map(booking => {
+        const checkIn = new Date(booking.check_in)
+        const checkOut = new Date(booking.check_out)
+
+        if (Number.isNaN(checkIn.getTime()) || Number.isNaN(checkOut.getTime())) {
+          return null
+        }
+
+        return {
+          bookingId: booking.booking_id,
+          checkIn,
+          checkOut
+        }
+      })
+      .filter((booking): booking is ActiveBooking => booking !== null)
+  }, [room.upcoming_bookings])
+
+  const startTimeOptions = useMemo(() => buildTimeOptions(minimumStartTime, MAX_START_TIME), [minimumStartTime])
+  const endTimeOptions = useMemo(() => buildTimeOptions(minimumEndTime, MAX_END_TIME), [minimumEndTime])
+  const effectiveStartTime = startTime && startTimeOptions.includes(startTime) ? startTime : ''
+  const effectiveEndTime = endTime && endTimeOptions.includes(endTime) ? endTime : ''
+  const checkInDate = bookingDate && effectiveStartTime ? new Date(`${bookingDate}T${effectiveStartTime}:00`) : null
+  const checkOutDate = bookingDate && effectiveEndTime ? new Date(`${bookingDate}T${effectiveEndTime}:00`) : null
+  const durationHours = checkInDate && checkOutDate && checkOutDate > checkInDate
+    ? (checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60)
+    : 0
+  const totalCost = durationHours * room.price_per_hour
+  const slotAvailability: { state: AvailabilityState; message: string } = (() => {
+    if (!bookingDate || !effectiveStartTime || !effectiveEndTime) {
+      return {
+        state: 'idle',
+        message: 'Pilih tanggal dan jam untuk melihat ketersediaan ruangan'
+      }
+    }
+
+    if (!checkInDate || !checkOutDate || checkOutDate <= checkInDate) {
+      return {
+        state: 'invalid',
+        message: 'Jam selesai harus lebih besar dari jam mulai.'
+      }
+    }
+
+    if (!room.is_available) {
+      return {
+        state: 'unavailable',
+        message: 'Ruangan sedang tidak tersedia untuk dibooking.'
+      }
+    }
+
+    const hasConflict = activeBookings.some(booking => isOverlapping(checkInDate, checkOutDate, booking))
+
+    if (hasConflict) {
+      return {
+        state: 'unavailable',
+        message: 'Ruangan sudah dibook pada jam yang Anda pilih.'
+      }
+    }
+
+    return {
+      state: 'available',
+      message: 'Ruangan tersedia pada jam yang Anda pilih!'
+    }
+  })()
+  const scheduleSlots: Array<{ label: string; isBooked: boolean }> = (() => {
+    if (!bookingDate) {
+      return []
+    }
+
+    const slots: Array<{ label: string; isBooked: boolean }> = []
+
+    for (let hour = SCHEDULE_OPEN_HOUR; hour < SCHEDULE_CLOSE_HOUR; hour += 1) {
+      const slotStart = new Date(`${bookingDate}T${String(hour).padStart(2, '0')}:00:00`)
+      const slotEnd = new Date(`${bookingDate}T${String(hour + 1).padStart(2, '0')}:00:00`)
+      const isBooked = activeBookings.some(booking => isOverlapping(slotStart, slotEnd, booking))
+
+      slots.push({
+        label: `${format(slotStart, 'HH:mm')} - ${format(slotEnd, 'HH:mm')}`,
+        isBooked
+      })
+    }
+
+    return slots
+  })()
 
   useEffect(() => {
     function handlePointerDown(event: MouseEvent) {
@@ -182,21 +289,24 @@ export default function RoomBookingPanel({ room }: Props) {
 
   function handleDateSelect(date: Date) {
     const nextBookingDate = format(date, 'yyyy-MM-dd')
-    const nextStartTime = nextBookingDate === todayValue && startTime < minimumTodayStartTime
+    const nextStartTime = nextBookingDate === todayValue && startTime && startTime < minimumTodayStartTime
       ? minimumTodayStartTime
       : startTime
-    const nextMinimumEndTime = getMinimumEndTime(nextStartTime)
 
     setBookingDate(nextBookingDate)
     setStartTime(nextStartTime)
 
-    if (endTime < nextMinimumEndTime) {
-      setEndTime(nextMinimumEndTime)
+    if (endTime && nextStartTime) {
+      const nextMinimumEndTime = getMinimumEndTime(nextStartTime)
+      if (endTime < nextMinimumEndTime) {
+        setEndTime(nextMinimumEndTime)
+      }
     }
 
     setCalendarMonth(date)
     setShowDatePicker(false)
     setActiveDateMenu(null)
+    setError('')
   }
 
   function handleStartTimeChange(value: string) {
@@ -209,18 +319,31 @@ export default function RoomBookingPanel({ room }: Props) {
 
     setStartTime(nextStartTime)
 
-    if (endTime < nextMinimumEndTime) {
+    if (endTime && endTime < nextMinimumEndTime) {
       setEndTime(nextMinimumEndTime)
     }
+
+    setError('')
   }
 
   function handleEndTimeChange(value: string) {
     const normalizedValue = normalizeTimeInput(value)
     const clampedValue = normalizedValue > MAX_END_TIME ? MAX_END_TIME : normalizedValue
     setEndTime(clampedValue < minimumEndTime ? minimumEndTime : clampedValue)
+    setError('')
   }
 
-  async function handleBooking() {
+  function openScheduleModal() {
+    if (!bookingDate) {
+      setError('Pilih tanggal terlebih dahulu untuk melihat jadwal ruangan.')
+      return
+    }
+
+    setError('')
+    setShowScheduleModal(true)
+  }
+
+  function handleOpenConfirmBooking() {
     setError('')
     setSuccess('')
 
@@ -229,7 +352,27 @@ export default function RoomBookingPanel({ room }: Props) {
       return
     }
 
+    if (!bookingDate || !effectiveStartTime || !effectiveEndTime) {
+      setError('Tanggal dan waktu booking wajib diisi.')
+      return
+    }
+
+    if (!checkInDate || !checkOutDate || checkOutDate <= checkInDate) {
+      setError('Jam selesai harus lebih besar dari jam mulai.')
+      return
+    }
+
+    if (slotAvailability.state !== 'available') {
+      setError('Jadwal yang dipilih belum tersedia. Silakan pilih slot lain.')
+      return
+    }
+
+    setShowConfirmModal(true)
+  }
+
+  async function submitBooking() {
     const storedUser = localStorage.getItem('user')
+
     if (!storedUser) {
       router.push('/auth/login')
       return
@@ -245,16 +388,6 @@ export default function RoomBookingPanel({ room }: Props) {
       return
     }
 
-    if (!bookingDate || !startTime || !endTime) {
-      setError('Tanggal dan waktu booking wajib diisi.')
-      return
-    }
-
-    if (!checkInDate || !checkOutDate || checkOutDate <= checkInDate) {
-      setError('Jam selesai harus lebih besar dari jam mulai.')
-      return
-    }
-
     setIsSubmitting(true)
 
     try {
@@ -267,8 +400,8 @@ export default function RoomBookingPanel({ room }: Props) {
           user_id: user.user_id,
           room_id: room.room_id,
           date: bookingDate,
-          start_time: startTime,
-          end_time: endTime,
+          start_time: effectiveStartTime,
+          end_time: effectiveEndTime,
           notes: facilityRequest,
           additional_message: facilityRequest
         })
@@ -281,7 +414,14 @@ export default function RoomBookingPanel({ room }: Props) {
       }
 
       setSuccess(result.message || 'Booking berhasil dibuat.')
+      const createdBookingId = result?.data?.booking_id as string | null | undefined
+      setShowConfirmModal(false)
       setTimeout(() => {
+        if (createdBookingId) {
+          router.push(`/customer/payments/${createdBookingId}`)
+          return
+        }
+
         router.push('/customer/bookings')
       }, 900)
     } catch (bookingError) {
@@ -296,212 +436,277 @@ export default function RoomBookingPanel({ room }: Props) {
   }
 
   return (
-    <aside className="room-booking-panel">
-      <div className="room-booking-head">
-        <span className={`room-booking-status ${room.is_available ? 'available' : 'unavailable'}`}>
-          {room.is_available ? 'Tersedia' : 'Tidak tersedia'}
-        </span>
-        <div className="room-booking-price">
-          <strong>{formatRupiah(room.price_per_hour)}</strong>
-          <span>/jam</span>
+    <>
+      <aside className="customer-room-booking-panel">
+        <div className="customer-room-booking-head">
+          <h2>Booking Ruangan</h2>
+          <p>Atas nama <strong>{userName || 'Customer'}</strong></p>
         </div>
-        <p>
-          {userName
-            ? `Booking cepat atas nama ${userName}.`
-            : 'Login customer akan dipakai otomatis saat membuat booking.'}
-        </p>
-      </div>
 
-      <div className="room-booking-grid">
-        <div className="room-booking-field full room-booking-date-field" ref={datePickerRef}>
-          <span>Tanggal booking</span>
-          <button
-            ref={dateTriggerRef}
-            type="button"
-            className="sf-date-trigger room-booking-date-trigger"
-            onClick={() => {
-              setCalendarMonth(selectedDate ?? new Date())
-              setActiveDateMenu(null)
-              setShowDatePicker(prev => !prev)
-            }}
-          >
-            <span className={`sf-date-value room-booking-date-value${bookingDate ? ' has-value' : ''}`}>
-              {selectedDate ? format(selectedDate, 'dd/MM/yyyy') : 'dd/mm/yyyy'}
-            </span>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <rect x="3" y="4" width="18" height="18" rx="2" />
-              <line x1="16" y1="2" x2="16" y2="6" />
-              <line x1="8" y1="2" x2="8" y2="6" />
-              <line x1="3" y1="10" x2="21" y2="10" />
-            </svg>
-          </button>
+        <div className={`customer-room-availability-banner ${slotAvailability.state}`}>
+          <span className="customer-room-availability-icon" aria-hidden="true">
+            {slotAvailability.state === 'available' ? (
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3">
+                <path strokeLinecap="round" strokeLinejoin="round" d="m5 12 5 5L20 7" />
+              </svg>
+            ) : (
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3">
+                <circle cx="12" cy="12" r="9" />
+                <line x1="12" y1="7" x2="12" y2="13" />
+                <circle cx="12" cy="17" r="1" fill="currentColor" stroke="none" />
+              </svg>
+            )}
+          </span>
+          <p>{slotAvailability.message}</p>
+        </div>
 
-          {showDatePicker && (
-            <div className="sf-date-dropdown room-booking-date-dropdown">
-              <div className="sf-date-toolbar">
-                <button type="button" className="sf-date-nav" onClick={() => setCalendarMonth(prev => subMonths(prev, 1))} aria-label="Previous month">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="m15 18-6-6 6-6" />
-                  </svg>
-                </button>
+        <div className="customer-room-booking-grid">
+          <div className="room-booking-field full room-booking-date-field" ref={datePickerRef}>
+            <span>Pilih tanggal</span>
+            <button
+              ref={dateTriggerRef}
+              type="button"
+              className="sf-date-trigger room-booking-date-trigger"
+              onClick={() => {
+                setCalendarMonth(selectedDate ?? new Date())
+                setActiveDateMenu(null)
+                setShowDatePicker(prev => !prev)
+              }}
+            >
+              <span className={`sf-date-value room-booking-date-value${bookingDate ? ' has-value' : ''}`}>
+                {selectedDate ? format(selectedDate, 'dd/MM/yyyy') : 'dd/mm/yyyy'}
+              </span>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" />
+                <line x1="16" y1="2" x2="16" y2="6" />
+                <line x1="8" y1="2" x2="8" y2="6" />
+                <line x1="3" y1="10" x2="21" y2="10" />
+              </svg>
+            </button>
 
-                <div className="sf-date-selects">
-                  <div className="sf-date-menu-wrap">
-                    <button
-                      type="button"
-                      className={`sf-date-select-button${activeDateMenu === 'month' ? ' open' : ''}`}
-                      onClick={() => setActiveDateMenu(prev => (prev === 'month' ? null : 'month'))}
-                    >
-                      <span>{MONTH_OPTIONS[getMonth(calendarMonth)]}</span>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6" />
-                      </svg>
-                    </button>
+            {showDatePicker && (
+              <div className="sf-date-dropdown room-booking-date-dropdown">
+                <div className="sf-date-toolbar">
+                  <button type="button" className="sf-date-nav" onClick={() => setCalendarMonth(prev => subMonths(prev, 1))} aria-label="Previous month">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="m15 18-6-6 6-6" />
+                    </svg>
+                  </button>
 
-                    {activeDateMenu === 'month' && (
-                      <div className="sf-date-menu">
-                        {MONTH_OPTIONS.map((monthLabel, index) => (
-                          <button
-                            key={monthLabel}
-                            type="button"
-                            className={`sf-date-menu-option${getMonth(calendarMonth) === index ? ' selected' : ''}`}
-                            onClick={() => {
-                              setCalendarMonth(prev => setMonth(prev, index))
-                              setActiveDateMenu(null)
-                            }}
-                          >
-                            {monthLabel}
-                          </button>
-                        ))}
-                      </div>
-                    )}
+                  <div className="sf-date-selects">
+                    <div className="sf-date-menu-wrap">
+                      <button
+                        type="button"
+                        className={`sf-date-select-button${activeDateMenu === 'month' ? ' open' : ''}`}
+                        onClick={() => setActiveDateMenu(prev => (prev === 'month' ? null : 'month'))}
+                      >
+                        <span>{MONTH_OPTIONS[getMonth(calendarMonth)]}</span>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6" />
+                        </svg>
+                      </button>
+
+                      {activeDateMenu === 'month' && (
+                        <div className="sf-date-menu">
+                          {MONTH_OPTIONS.map((monthLabel, index) => (
+                            <button
+                              key={monthLabel}
+                              type="button"
+                              className={`sf-date-menu-option${getMonth(calendarMonth) === index ? ' selected' : ''}`}
+                              onClick={() => {
+                                setCalendarMonth(prev => setMonth(prev, index))
+                                setActiveDateMenu(null)
+                              }}
+                            >
+                              {monthLabel}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="sf-date-menu-wrap">
+                      <button
+                        type="button"
+                        className={`sf-date-select-button${activeDateMenu === 'year' ? ' open' : ''}`}
+                        onClick={() => setActiveDateMenu(prev => (prev === 'year' ? null : 'year'))}
+                      >
+                        <span>{getYear(calendarMonth)}</span>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6" />
+                        </svg>
+                      </button>
+
+                      {activeDateMenu === 'year' && (
+                        <div className="sf-date-menu sf-date-menu-years">
+                          {yearOptions.map(year => (
+                            <button
+                              key={year}
+                              type="button"
+                              className={`sf-date-menu-option${getYear(calendarMonth) === year ? ' selected' : ''}`}
+                              onClick={() => {
+                                setCalendarMonth(prev => setYear(prev, year))
+                                setActiveDateMenu(null)
+                              }}
+                            >
+                              {year}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
 
-                  <div className="sf-date-menu-wrap">
-                    <button
-                      type="button"
-                      className={`sf-date-select-button${activeDateMenu === 'year' ? ' open' : ''}`}
-                      onClick={() => setActiveDateMenu(prev => (prev === 'year' ? null : 'year'))}
-                    >
-                      <span>{getYear(calendarMonth)}</span>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6" />
-                      </svg>
-                    </button>
-
-                    {activeDateMenu === 'year' && (
-                      <div className="sf-date-menu sf-date-menu-years">
-                        {yearOptions.map(year => (
-                          <button
-                            key={year}
-                            type="button"
-                            className={`sf-date-menu-option${getYear(calendarMonth) === year ? ' selected' : ''}`}
-                            onClick={() => {
-                              setCalendarMonth(prev => setYear(prev, year))
-                              setActiveDateMenu(null)
-                            }}
-                          >
-                            {year}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                  <button type="button" className="sf-date-nav" onClick={() => setCalendarMonth(prev => addMonths(prev, 1))} aria-label="Next month">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="m9 18 6-6-6-6" />
+                    </svg>
+                  </button>
                 </div>
 
-                <button type="button" className="sf-date-nav" onClick={() => setCalendarMonth(prev => addMonths(prev, 1))} aria-label="Next month">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="m9 18 6-6-6-6" />
-                  </svg>
-                </button>
-              </div>
+                <div className="sf-date-weekdays">
+                  {WEEK_DAYS.map(day => (
+                    <span key={day}>{day}</span>
+                  ))}
+                </div>
 
-              <div className="sf-date-weekdays">
-                {WEEK_DAYS.map(day => (
-                  <span key={day}>{day}</span>
+                <div className="sf-date-grid">
+                  {calendarDays.map(day => {
+                    const isCurrentMonth = isSameMonth(day, calendarMonth)
+                    const isSelectedDay = selectedDate ? isSameDay(day, selectedDate) : false
+                    const isPastDay = day < getStartOfToday()
+
+                    return (
+                      <button
+                        key={day.toISOString()}
+                        type="button"
+                        className={`sf-date-cell${isSelectedDay ? ' selected' : ''}${isCurrentMonth ? '' : ' muted'}`}
+                        onClick={() => handleDateSelect(day)}
+                        disabled={isPastDay}
+                      >
+                        {format(day, 'd')}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="room-booking-field">
+            <span>Waktu mulai</span>
+            <div className="customer-room-select-wrap">
+              <select value={effectiveStartTime} onChange={event => handleStartTimeChange(event.target.value)}>
+                <option value="">--:--</option>
+                {startTimeOptions.map(option => (
+                  <option key={option} value={option}>{option}</option>
                 ))}
-              </div>
-
-              <div className="sf-date-grid">
-                {calendarDays.map(day => {
-                  const isCurrentMonth = isSameMonth(day, calendarMonth)
-                  const isSelectedDay = selectedDate ? isSameDay(day, selectedDate) : false
-                  const isPastDay = day < getStartOfToday()
-
-                  return (
-                    <button
-                      key={day.toISOString()}
-                      type="button"
-                      className={`sf-date-cell${isSelectedDay ? ' selected' : ''}${isCurrentMonth ? '' : ' muted'}`}
-                      onClick={() => handleDateSelect(day)}
-                      disabled={isPastDay}
-                    >
-                      {format(day, 'd')}
-                    </button>
-                  )
-                })}
-              </div>
+              </select>
             </div>
-          )}
+          </div>
+
+          <div className="room-booking-field">
+            <span>Waktu selesai</span>
+            <div className="customer-room-select-wrap">
+              <select value={effectiveEndTime} onChange={event => handleEndTimeChange(event.target.value)}>
+                <option value="">--:--</option>
+                {endTimeOptions.map(option => (
+                  <option key={option} value={option}>{option}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <button type="button" className="customer-room-view-schedule" onClick={openScheduleModal}>
+            Lihat jadwal
+          </button>
+
+          <label className="room-booking-field full">
+            <span>Tambahkan pesan</span>
+            <textarea
+              rows={4}
+              value={facilityRequest}
+              onChange={event => setFacilityRequest(event.target.value)}
+              placeholder="Contoh: saya butuh tambahan whiteboard dan spidol berwarna merah"
+            />
+          </label>
         </div>
 
-        <label className="room-booking-field">
-          <span>Jam mulai</span>
-          <input
-            type="time"
-            step={1800}
-            value={startTime}
-            min={bookingDate === todayValue ? minimumTodayStartTime : '00:00'}
-            max={MAX_START_TIME}
-            onChange={event => handleStartTimeChange(event.target.value)}
-          />
-        </label>
-
-        <label className="room-booking-field">
-          <span>Jam selesai</span>
-          <input
-            type="time"
-            step={1800}
-            value={endTime}
-            min={minimumEndTime}
-            max={MAX_END_TIME}
-            onChange={event => handleEndTimeChange(event.target.value)}
-          />
-        </label>
-
-        <label className="room-booking-field full">
-          <span>PESAN TAMBAHAN</span>
-          <textarea
-            rows={4}
-            value={facilityRequest}
-            onChange={event => setFacilityRequest(event.target.value)}
-            placeholder="Contoh: mohon siapkan whiteboard tambahan, kabel HDMI, atau power strip."
-          />
-        </label>
-      </div>
-
-      <div className="room-booking-summary">
-        <div>
-          <span>Durasi</span>
-          <strong>{durationHours > 0 ? `${durationHours} jam` : '-'}</strong>
+        <div className="customer-room-booking-summary">
+          <div>
+            <span>Durasi</span>
+            <strong>{durationHours > 0 ? `${durationHours} jam` : '-'}</strong>
+          </div>
+          <div>
+            <span>Estimasi total</span>
+            <strong>{durationHours > 0 ? `Rp ${new Intl.NumberFormat('id-ID').format(totalCost)}` : '-'}</strong>
+          </div>
         </div>
-        <div>
-          <span>Estimasi total</span>
-          <strong>{durationHours > 0 ? formatRupiah(totalCost) : '-'}</strong>
+
+        {error && <p className="room-booking-feedback error">{error}</p>}
+        {success && <p className="room-booking-feedback success">{success}</p>}
+
+        <button
+          type="button"
+          className="room-booking-button customer-room-booking-button"
+          disabled={isSubmitting || !room.is_available}
+          onClick={handleOpenConfirmBooking}
+        >
+          {isSubmitting ? 'Memproses booking...' : 'Booking Sekarang'}
+        </button>
+      </aside>
+
+      {showScheduleModal && (
+        <div className="customer-room-modal-backdrop" role="presentation" onClick={() => setShowScheduleModal(false)}>
+          <div className="customer-room-schedule-modal" role="dialog" aria-modal="true" onClick={event => event.stopPropagation()}>
+            <div className="customer-room-schedule-head">
+              <h3>Jadwal Ruangan</h3>
+              <p>
+                <strong>{room.name}</strong>
+                <span>&nbsp;• {selectedDate ? format(selectedDate, 'd MMMM yyyy', { locale: localeId }) : '-'}</span>
+              </p>
+            </div>
+
+            <div className="customer-room-schedule-list">
+              {scheduleSlots.map(slot => (
+                <div key={slot.label} className="customer-room-schedule-row">
+                  <span>{slot.label}</span>
+                  <strong className={slot.isBooked ? 'booked' : 'available'}>
+                    {slot.isBooked ? 'Sudah dibook' : 'Tersedia'}
+                  </strong>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
-      </div>
+      )}
 
-      {error && <p className="room-booking-feedback error">{error}</p>}
-      {success && <p className="room-booking-feedback success">{success}</p>}
+      {showConfirmModal && (
+        <div className="customer-room-modal-backdrop" role="presentation" onClick={() => setShowConfirmModal(false)}>
+          <div className="customer-room-confirm-modal" role="dialog" aria-modal="true" onClick={event => event.stopPropagation()}>
+            <div className="customer-room-confirm-icon">
+              <svg width="70" height="70" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <path d="M3 20h6l.8-3H3z" />
+                <path d="m9.8 17 5.9-2.1c.8-.3 1.7.2 2 1 .3.8-.2 1.7-1 2l-4.7 1.7H8.9" />
+                <path d="M14 11c1.7 0 3-1.3 3-3s-1.3-3-3-3-3 1.3-3 3 1.3 3 3 3Z" />
+              </svg>
+            </div>
 
-      <button
-        type="button"
-        className="room-booking-button"
-        disabled={isSubmitting || !room.is_available}
-        onClick={handleBooking}
-      >
-        {isSubmitting ? 'Memproses booking...' : 'Booking sekarang'}
-      </button>
-    </aside>
+            <h4>Booking sekarang?</h4>
+            <p>Pastikan jadwal dan detail ruangan sudah sesuai sebelum lanjut ke pembayaran</p>
+
+            <div className="customer-room-confirm-actions">
+              <button type="button" className="cancel" onClick={() => setShowConfirmModal(false)}>
+                Tidak
+              </button>
+              <button type="button" className="confirm" onClick={submitBooking} disabled={isSubmitting}>
+                {isSubmitting ? 'Memproses...' : 'Ya'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   )
 }
+

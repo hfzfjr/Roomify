@@ -128,6 +128,7 @@ export async function getRoomDetail(roomId: string): Promise<RoomDetail | null> 
     region_name: regionName,
     province_name: provinceName,
     upcoming_booking_count: activeUpcomingBookings.length,
+    upcoming_bookings: activeUpcomingBookings,
     next_booking: activeUpcomingBookings[0] ?? null
   }
 }

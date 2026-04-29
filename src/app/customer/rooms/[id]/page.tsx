@@ -1,10 +1,10 @@
-import Link from 'next/link'
-import { notFound } from 'next/navigation'
 import RoomBookingPanel from '@/components/rooms/RoomBookingPanel'
+import RoomImageCarousel from '@/components/rooms/RoomImageCarousel'
+import { notFound } from 'next/navigation'
 import { getRoomDetail } from '@/lib/rooms'
 import { formatDate, formatTime } from '@/utils/formatDate'
 import { formatRupiah } from '@/utils/formatRupiah'
-import { getRoomTypeLabel, ROOM_IMAGE_PLACEHOLDER } from '@/utils/room'
+import { getRoomTypeLabel } from '@/utils/room'
 
 export default async function CustomerRoomDetailPage({
   params
@@ -18,80 +18,68 @@ export default async function CustomerRoomDetailPage({
     notFound()
   }
 
-  const image = room.images?.[0] ?? ROOM_IMAGE_PLACEHOLDER
+  const roomAddress = [room.location, room.region_name, room.province_name].filter(Boolean).join(', ')
 
   return (
-    <div className="room-detail-page">
-      <div className="room-detail-shell">
-        <div className="room-detail-breadcrumb">
-          <Link href="/customer/rooms">Daftar ruangan</Link>
-          <span>/</span>
-          <span>{room.name}</span>
-        </div>
+    <div className="customer-room-detail-page">
+      <div className="customer-room-detail-shell">
+        <div className="customer-room-detail-grid">
+          <div className="customer-room-detail-main">
+            <section className="customer-room-card">
+              <RoomImageCarousel images={room.images ?? []} alt={room.name} />
 
-        <div className="room-detail-content">
-          <div className="room-detail-main">
-            <section className="room-detail-media">
-              <img src={image} alt={room.name} />
+              <div className="customer-room-card-body">
+                <div className="customer-room-card-top">
+                  <span className="customer-room-chip">{getRoomTypeLabel(room.type)}</span>
+                  <span className="customer-room-price">{formatRupiah(room.price_per_hour)}<small>/jam</small></span>
+                </div>
+
+                <div className="customer-room-card-title-wrap">
+                  <h1>{room.name}</h1>
+                  <p>{roomAddress || 'Bandung, Jawa Barat'}</p>
+                </div>
+
+                <div className="customer-room-card-meta">
+                  <span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 17.3 5.8 21l1.6-7-5.4-4.7 7.1-.6L12 2l2.9 6.7 7.1.6-5.4 4.7 1.6 7z" />
+                    </svg>
+                    {room.upcoming_booking_count && room.upcoming_booking_count > 0
+                      ? `${room.upcoming_booking_count} jadwal aktif`
+                      : 'Belum ada jadwal aktif'}
+                  </span>
+                  <span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M16 11c1.7 0 3-1.3 3-3s-1.3-3-3-3-3 1.3-3 3 1.3 3 3 3Zm-8 0c1.7 0 3-1.3 3-3S9.7 5 8 5 5 6.3 5 8s1.3 3 3 3Zm0 2c-2.7 0-5 1.3-5 3v2h10v-2c0-1.7-2.3-3-5-3Zm8 0c-.3 0-.6 0-.9.1 1.2.8 1.9 1.8 1.9 2.9v2h6v-2c0-1.7-2.3-3-5-3Z" />
+                    </svg>
+                    {room.capacity} orang
+                  </span>
+                </div>
+              </div>
             </section>
 
-            <section className="room-detail-overview">
-              <div className="room-detail-badges">
-                <span className="room-detail-chip neutral">{getRoomTypeLabel(room.type)}</span>
-                <span className={`room-detail-chip ${room.is_available ? 'success' : 'danger'}`}>
-                  {room.is_available ? 'Bisa dibooking' : 'Sedang penuh'}
-                </span>
-              </div>
+            <section className="customer-room-about">
+              <h2>Tentang Ruangan</h2>
+              <p>
+                {room.description || 'Ruangan ini siap digunakan untuk meeting, presentasi, dan kebutuhan kolaborasi tim Anda.'}
+              </p>
 
-              <h1>{room.name}</h1>
-              <p>{room.description || 'Ruangan ini siap digunakan untuk meeting, presentasi, dan kebutuhan kolaborasi tim Anda.'}</p>
-
-              <div className="room-detail-stats">
-                <div className="room-detail-stat">
-                  <span>Kapasitas</span>
-                  <strong>{room.capacity} orang</strong>
-                </div>
-                <div className="room-detail-stat">
-                  <span>Harga</span>
-                  <strong>{formatRupiah(room.price_per_hour)}/jam</strong>
-                </div>
-                <div className="room-detail-stat">
-                  <span>Lokasi</span>
-                  <strong>{room.location}</strong>
-                </div>
-                <div className="room-detail-stat">
-                  <span>Area</span>
-                  <strong>{[room.region_name, room.province_name].filter(Boolean).join(', ') || 'Bandung'}</strong>
-                </div>
-              </div>
-
-              <div className="room-detail-inline-note">
-                <span>Jadwal mendatang</span>
+              <div className="customer-room-about-inline">
+                <span>Jadwal terdekat</span>
                 <strong>
                   {room.next_booking
-                    ? `Booking berikutnya ${formatDate(room.next_booking.check_in)} pukul ${formatTime(room.next_booking.check_in)} - ${formatTime(room.next_booking.check_out)}`
-                    : 'Belum ada jadwal aktif dalam waktu dekat.'}
+                    ? `${formatDate(room.next_booking.check_in)} • ${formatTime(room.next_booking.check_in)} - ${formatTime(room.next_booking.check_out)}`
+                    : 'Belum ada jadwal booking dalam waktu dekat'}
                 </strong>
               </div>
-            </section>
 
-            <section className="room-detail-section">
-              <div className="room-detail-section-head">
-                <span className="room-detail-section-kicker">Facilities</span>
-                <h2>Fasilitas yang tersedia</h2>
-                <p className="room-detail-section-copy">
-                  Fasilitas berikut tersedia di ruangan ini dan bisa membantu Anda menilai kecocokan room sebelum booking.
-                </p>
-              </div>
-              <div className="room-detail-facilities">
+              <div className="customer-room-facilities">
                 {room.facilities.length > 0 ? (
                   room.facilities.map(facility => (
-                    <span key={facility} className="room-detail-facility">
-                      {facility}
-                    </span>
+                    <span key={facility}>{facility}</span>
                   ))
                 ) : (
-                  <p className="room-detail-muted">Belum ada data fasilitas tambahan untuk ruangan ini.</p>
+                  <p className="customer-room-muted">Belum ada data fasilitas tambahan untuk ruangan ini.</p>
                 )}
               </div>
             </section>
@@ -103,3 +91,4 @@ export default async function CustomerRoomDetailPage({
     </div>
   )
 }
+

@@ -1,5 +1,5 @@
-/* =============================================
-   ROOMIFY – Global Styles
+﻿/* =============================================
+   ROOMIFY â€“ Global Styles
    ============================================= */
 
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
@@ -388,7 +388,7 @@ body {
   background: #f4f6f9;
 }
 
-/* ── Navbar ── */
+/* â”€â”€ Navbar â”€â”€ */
 /* HEADER */
 header {
   display: flex; flex-direction: row; align-items: center;
@@ -635,7 +635,7 @@ header {
 .sb-item:hover { background: rgba(255,255,255,0.25); }
 .sb-item.active { background: rgba(255,255,255,0.5); border-bottom: none; }
 
-/* ── Dashboard ── */
+/* â”€â”€ Dashboard â”€â”€ */
 .dashboard {
   padding-bottom: 60px;
   background: #f4f6f9;
@@ -2715,3 +2715,1563 @@ header {
   }
 }
 
+.customer-room-detail-page {
+  padding: 0 0 40px;
+}
+
+.customer-room-detail-shell {
+  width: min(1640px, calc(100% - 48px));
+  margin: 0 auto;
+}
+
+.customer-room-detail-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(340px, 620px);
+  gap: 28px;
+  align-items: start;
+}
+
+.customer-room-detail-main {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.customer-room-card,
+.customer-room-about,
+.customer-room-booking-panel {
+  border-radius: 28px;
+  border: 1px solid #cfd7db;
+  background: #f5f5f5;
+}
+
+.customer-room-card {
+  padding: 20px;
+}
+
+.customer-room-gallery {
+  position: relative;
+  border-radius: 22px;
+  overflow: hidden;
+  border: 1px solid #d4dce0;
+  background: #ffffff;
+}
+
+.customer-room-gallery img {
+  width: 100%;
+  height: 600px;
+  object-fit: cover;
+  display: block;
+}
+
+.customer-room-gallery-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #12c5e5;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.customer-room-gallery-nav.prev {
+  left: 22px;
+}
+
+.customer-room-gallery-nav.next {
+  right: 22px;
+}
+
+.customer-room-gallery-dots {
+  position: absolute;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+}
+
+.customer-room-gallery-dots button {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+}
+
+.customer-room-gallery-dots button.active {
+  width: 26px;
+  border-radius: 999px;
+  background: #12c5e5;
+}
+
+.customer-room-card-body {
+  padding: 18px 6px 8px;
+}
+
+.customer-room-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.customer-room-chip {
+  min-height: 48px;
+  padding: 0 18px;
+  border-radius: 14px;
+  border: 2px solid #11c2e8;
+  color: #11c2e8;
+  font-size: 34px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  font-weight: 700;
+}
+
+.customer-room-price {
+  min-height: 58px;
+  padding: 0 18px;
+  border-radius: 14px;
+  background: #14c3e6;
+  color: #ffffff;
+  font-size: 50px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  font-weight: 700;
+}
+
+.customer-room-price small {
+  font-size: 31px;
+}
+
+.customer-room-card-title-wrap {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 18px;
+  align-items: end;
+  margin-top: 16px;
+}
+
+.customer-room-card-title-wrap h1 {
+  margin: 0;
+  color: #0b0b0b;
+  font-size: 64px;
+  letter-spacing: -0.02em;
+}
+
+.customer-room-card-title-wrap p {
+  margin: 0;
+  font-size: 41px;
+  color: #54545c;
+  line-height: 1.34;
+}
+
+.customer-room-card-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.customer-room-card-meta span {
+  min-height: 52px;
+  padding: 0 18px;
+  border: 2px solid #12c5e5;
+  border-radius: 14px;
+  color: #11c2e8;
+  font-size: 38px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.customer-room-about {
+  padding: 30px;
+}
+
+.customer-room-about h2 {
+  margin: 0;
+  font-size: 38px;
+  color: #0c0c0f;
+}
+
+.customer-room-about p {
+  margin: 12px 0 0;
+  color: #525a63;
+  font-size: 22px;
+  line-height: 1.64;
+}
+
+.customer-room-about-inline {
+  margin-top: 18px;
+  padding: 16px 18px;
+  border-radius: 16px;
+  border: 1px solid #cfd8dd;
+  background: #edf2f4;
+}
+
+.customer-room-about-inline span {
+  display: block;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #6e7680;
+}
+
+.customer-room-about-inline strong {
+  margin-top: 6px;
+  display: block;
+  font-size: 20px;
+  color: #191c21;
+}
+
+.customer-room-facilities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.customer-room-facilities span {
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(17, 194, 232, 0.55);
+  background: rgba(17, 194, 232, 0.08);
+  display: inline-flex;
+  align-items: center;
+  color: #1886a6;
+  font-weight: 600;
+}
+
+.customer-room-muted {
+  margin: 0;
+  color: #707780;
+  font-size: 16px;
+}
+
+.customer-room-booking-panel {
+  position: sticky;
+  top: 108px;
+  padding: 28px;
+}
+
+.customer-room-booking-head h2 {
+  margin: 0;
+  color: #07080a;
+  font-size: 38px;
+}
+
+.customer-room-booking-head p {
+  margin: 6px 0 0;
+  color: #5b5e66;
+  font-size: 20px;
+}
+
+.customer-room-booking-head p strong {
+  color: #111318;
+}
+
+.customer-room-availability-banner {
+  margin-top: 22px;
+  border-radius: 14px;
+  min-height: 78px;
+  padding: 12px 16px;
+  border: 2px solid #14c3e6;
+  background: rgba(20, 195, 230, 0.19);
+  color: #08b7df;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.customer-room-availability-banner p {
+  margin: 0;
+  font-size: 19px;
+  line-height: 1.25;
+}
+
+.customer-room-availability-banner.unavailable,
+.customer-room-availability-banner.invalid {
+  border-color: #ff1c1c;
+  background: rgba(255, 28, 28, 0.18);
+  color: #ff1c1c;
+}
+
+.customer-room-availability-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 999px;
+  border: 2px solid currentColor;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.customer-room-booking-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 20px;
+  align-items: end;
+}
+
+.room-booking-field span {
+  margin-bottom: 8px;
+  font-size: 19px;
+  color: #26282d;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.customer-room-select-wrap {
+  position: relative;
+}
+
+.customer-room-select-wrap::after {
+  content: '';
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  width: 0;
+  height: 0;
+  transform: translateY(-24%);
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 10px solid #535860;
+  pointer-events: none;
+}
+
+.customer-room-select-wrap select,
+.room-booking-field textarea,
+.room-booking-date-trigger {
+  width: 100%;
+  min-height: 56px;
+  border-radius: 16px;
+  border: 1px solid #d3d5da;
+  background: #e9e9ea;
+  padding: 0 16px;
+  color: #6b6f75;
+  font-size: 18px;
+  font-family: var(--font-family);
+}
+
+.customer-room-select-wrap select {
+  appearance: none;
+  cursor: pointer;
+}
+
+.room-booking-date-trigger {
+  justify-content: space-between;
+}
+
+.room-booking-date-trigger svg {
+  color: #5f6268;
+}
+
+.room-booking-date-value {
+  font-size: 18px;
+  color: #979ba1;
+}
+
+.room-booking-date-value.has-value {
+  color: #5b6066;
+}
+
+.room-booking-field textarea {
+  min-height: 164px;
+  padding-top: 16px;
+  padding-bottom: 16px;
+  resize: vertical;
+}
+
+.customer-room-view-schedule {
+  min-height: 56px;
+  border-radius: 14px;
+  border: 2px solid #13bfe5;
+  background: rgba(19, 191, 229, 0.16);
+  color: #10bde5;
+  font-size: 20px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.customer-room-booking-summary {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.customer-room-booking-summary div {
+  border: 1px solid #d2d8dc;
+  border-radius: 14px;
+  background: #edf1f3;
+  padding: 12px 14px;
+}
+
+.customer-room-booking-summary span {
+  display: block;
+  color: #6f7780;
+  font-size: 14px;
+}
+
+.customer-room-booking-summary strong {
+  display: block;
+  margin-top: 4px;
+  color: #111214;
+  font-size: 18px;
+}
+
+.customer-room-booking-button {
+  width: 100%;
+  min-height: 74px;
+  margin-top: 18px;
+  border-radius: 999px;
+  font-size: 40px;
+  box-shadow: none;
+}
+
+.customer-room-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.6);
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.customer-room-schedule-modal {
+  width: min(920px, 100%);
+  max-height: calc(100vh - 60px);
+  overflow-y: auto;
+  border-radius: 26px;
+  border: 1px solid #cfd7db;
+  background: #f5f5f5;
+}
+
+.customer-room-schedule-head {
+  padding: 24px 28px 20px;
+  border-bottom: 1px solid #d8d9db;
+}
+
+.customer-room-schedule-head h3 {
+  margin: 0;
+  font-size: 54px;
+  color: #0f1113;
+}
+
+.customer-room-schedule-head p {
+  margin: 8px 0 0;
+  color: #595e65;
+  font-size: 25px;
+}
+
+.customer-room-schedule-list {
+  padding: 18px 28px 26px;
+  display: grid;
+  gap: 10px;
+}
+
+.customer-room-schedule-row {
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+}
+
+.customer-room-schedule-row span {
+  color: #5b5f66;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.customer-room-schedule-row strong {
+  min-height: 60px;
+  border-radius: 10px;
+  border: 2px solid #11c2e8;
+  background: rgba(17, 194, 232, 0.17);
+  color: #09b9df;
+  font-size: 43px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.customer-room-schedule-row strong.booked {
+  border-color: #ff1d1d;
+  background: rgba(255, 29, 29, 0.19);
+  color: #ff1212;
+}
+
+.customer-room-confirm-modal {
+  width: min(880px, 100%);
+  border-radius: 30px;
+  border: 1px solid #d0d6db;
+  background: #f5f5f5;
+  padding: 34px 30px;
+  text-align: center;
+}
+
+.customer-room-confirm-icon {
+  width: 136px;
+  height: 136px;
+  margin: 0 auto;
+  border-radius: 50%;
+  border: 2px solid #12c4e7;
+  color: #12c4e7;
+  display: grid;
+  place-items: center;
+}
+
+.customer-room-confirm-modal h4 {
+  margin: 26px 0 0;
+  color: #0a0c0f;
+  font-size: 64px;
+}
+
+.customer-room-confirm-modal p {
+  margin: 18px auto 0;
+  width: min(640px, 100%);
+  color: #1f2228;
+  font-size: 51px;
+  line-height: 1.2;
+}
+
+.customer-room-confirm-actions {
+  margin-top: 34px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.customer-room-confirm-actions button {
+  min-height: 84px;
+  border: none;
+  border-radius: 18px;
+  font-family: var(--font-family);
+  font-size: 62px;
+  cursor: pointer;
+}
+
+.customer-room-confirm-actions button.cancel {
+  background: #d8d8da;
+  color: #5b5f65;
+}
+
+.customer-room-confirm-actions button.confirm {
+  background: #17c2e5;
+  color: #ffffff;
+}
+
+@media (max-width: 1400px) {
+  .customer-room-gallery img {
+    height: 460px;
+  }
+
+  .customer-room-chip,
+  .customer-room-price,
+  .customer-room-price small,
+  .customer-room-card-title-wrap h1,
+  .customer-room-card-title-wrap p,
+  .customer-room-card-meta span,
+  .customer-room-booking-button,
+  .customer-room-schedule-head h3,
+  .customer-room-schedule-row strong,
+  .customer-room-confirm-modal h4,
+  .customer-room-confirm-modal p,
+  .customer-room-confirm-actions button {
+    font-size: clamp(20px, 2.5vw, 40px);
+  }
+}
+
+@media (max-width: 1120px) {
+  .customer-room-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .customer-room-booking-panel {
+    position: static;
+  }
+}
+
+@media (max-width: 760px) {
+  .customer-room-detail-shell {
+    width: calc(100% - 24px);
+  }
+
+  .customer-room-card,
+  .customer-room-about,
+  .customer-room-booking-panel,
+  .customer-room-confirm-modal,
+  .customer-room-schedule-modal {
+    border-radius: 18px;
+  }
+
+  .customer-room-gallery img {
+    height: 260px;
+  }
+
+  .customer-room-card-title-wrap {
+    grid-template-columns: 1fr;
+  }
+
+  .customer-room-card-meta {
+    align-items: flex-start;
+  }
+
+  .customer-room-booking-grid,
+  .customer-room-booking-summary,
+  .customer-room-confirm-actions,
+  .customer-room-schedule-row {
+    grid-template-columns: 1fr;
+  }
+
+  .customer-room-schedule-row strong {
+    min-height: 44px;
+  }
+
+  .customer-room-booking-button {
+    min-height: 56px;
+    font-size: 24px;
+  }
+
+  .customer-room-confirm-modal p {
+    width: 100%;
+    font-size: 22px;
+  }
+
+  .customer-room-confirm-actions button {
+    min-height: 58px;
+    font-size: 28px;
+  }
+}
+
+/* Customer room detail scale-down overrides */
+.customer-room-detail-page { padding: 0 0 28px; }
+.customer-room-detail-shell { width: min(1320px, calc(100% - 32px)); }
+.customer-room-detail-grid { grid-template-columns: minmax(0, 1fr) minmax(320px, 500px); gap: 18px; }
+.customer-room-card,
+.customer-room-about,
+.customer-room-booking-panel { border-radius: 18px; }
+.customer-room-card { padding: 14px; }
+.customer-room-gallery { border-radius: 18px; }
+.customer-room-gallery img { height: 420px; }
+.customer-room-gallery-nav { width: 40px; height: 40px; }
+.customer-room-gallery-nav.prev { left: 16px; }
+.customer-room-gallery-nav.next { right: 16px; }
+.customer-room-gallery-dots { bottom: 14px; }
+.customer-room-gallery-dots button.active { width: 22px; }
+.customer-room-card-body { padding: 12px 4px 4px; }
+.customer-room-chip { min-height: 36px; padding: 0 12px; border-radius: 10px; font-size: 14px; }
+.customer-room-price { min-height: 42px; padding: 0 12px; border-radius: 10px; font-size: 28px; }
+.customer-room-price small { font-size: 16px; }
+.customer-room-card-title-wrap { gap: 14px; margin-top: 12px; }
+.customer-room-card-title-wrap h1 { font-size: 32px; }
+.customer-room-card-title-wrap p { font-size: 16px; line-height: 1.3; }
+.customer-room-card-meta span { min-height: 38px; padding: 0 12px; border-radius: 10px; font-size: 15px; gap: 8px; }
+.customer-room-about { padding: 18px; }
+.customer-room-about h2 { font-size: 28px; }
+.customer-room-about p { font-size: 16px; line-height: 1.5; }
+.customer-room-about-inline { margin-top: 16px; padding: 14px 16px; border-radius: 14px; }
+.customer-room-about-inline strong { font-size: 17px; }
+.customer-room-facilities span { min-height: 34px; padding: 0 12px; font-size: 14px; }
+.customer-room-booking-panel { padding: 18px; }
+.customer-room-booking-head h2 { font-size: 24px; }
+.customer-room-booking-head p { font-size: 15px; }
+.customer-room-availability-banner { margin-top: 14px; border-radius: 10px; min-height: 54px; padding: 9px 12px; gap: 10px; }
+.customer-room-availability-banner p { font-size: 14px; }
+.customer-room-availability-icon { width: 32px; height: 32px; }
+.customer-room-booking-grid { gap: 12px; margin-top: 16px; }
+.customer-room-booking-grid .room-booking-field span { font-size: 13px; }
+.customer-room-select-wrap::after { right: 14px; border-left-width: 7px; border-right-width: 7px; border-top-width: 9px; }
+.customer-room-select-wrap select,
+.room-booking-field textarea,
+.room-booking-date-trigger { min-height: 44px; border-radius: 12px; padding: 0 12px; font-size: 13px; }
+.room-booking-date-value { font-size: 13px; }
+.room-booking-field textarea { min-height: 104px; padding-top: 12px; padding-bottom: 12px; }
+.customer-room-view-schedule { min-height: 44px; border-radius: 10px; font-size: 15px; }
+.customer-room-booking-summary { margin-top: 14px; }
+.customer-room-booking-summary div { padding: 10px 12px; }
+.customer-room-booking-summary span { font-size: 13px; }
+.customer-room-booking-summary strong { font-size: 14px; }
+.customer-room-booking-button { min-height: 50px; margin-top: 12px; font-size: 16px; }
+.customer-room-schedule-modal { width: min(760px, 100%); border-radius: 18px; }
+.customer-room-schedule-head { padding: 14px 16px 12px; }
+.customer-room-schedule-head h3 { font-size: 20px; }
+.customer-room-schedule-head p { font-size: 14px; }
+.customer-room-schedule-list { padding: 12px 16px 16px; gap: 8px; }
+.customer-room-schedule-row { grid-template-columns: 140px minmax(0, 1fr); gap: 8px; }
+.customer-room-schedule-row span { font-size: 14px; }
+.customer-room-schedule-row strong { min-height: 38px; font-size: 16px; }
+.customer-room-confirm-modal { width: min(640px, 100%); border-radius: 18px; padding: 18px 16px; }
+.customer-room-confirm-icon { width: 76px; height: 76px; }
+.customer-room-confirm-modal h4 { margin-top: 14px; font-size: 24px; }
+.customer-room-confirm-modal p { margin-top: 8px; width: min(440px, 100%); font-size: 15px; line-height: 1.35; }
+.customer-room-confirm-actions { margin-top: 16px; gap: 10px; }
+.customer-room-confirm-actions button { min-height: 48px; border-radius: 10px; font-size: 17px; }
+
+@media (max-width: 1400px) {
+  .customer-room-gallery img { height: 360px; }
+}
+
+@media (max-width: 1120px) {
+  .customer-room-detail-shell { width: calc(100% - 28px); }
+  .customer-room-detail-grid { grid-template-columns: 1fr; gap: 14px; }
+  .customer-room-booking-panel { position: static; }
+}
+
+@media (max-width: 900px) {
+  .customer-room-gallery img { height: 320px; }
+  .customer-room-card-title-wrap { grid-template-columns: 1fr; gap: 8px; }
+  .customer-room-card-meta { align-items: flex-start; }
+}
+
+@media (max-width: 760px) {
+  .customer-room-card,
+  .customer-room-about,
+  .customer-room-booking-panel,
+  .customer-room-confirm-modal,
+  .customer-room-schedule-modal { border-radius: 16px; }
+  .customer-room-card-title-wrap h1 { font-size: 26px; }
+  .customer-room-card-title-wrap p { font-size: 15px; }
+  .customer-room-chip,
+  .customer-room-price,
+  .customer-room-card-meta span { font-size: 13px; }
+  .customer-room-booking-head h2 { font-size: 20px; }
+  .customer-room-booking-grid,
+  .customer-room-booking-summary,
+  .customer-room-confirm-actions,
+  .customer-room-schedule-row { grid-template-columns: 1fr; }
+  .customer-room-schedule-row strong { font-size: 15px; }
+  .customer-room-booking-button { font-size: 15px; }
+  .customer-room-confirm-modal h4 { font-size: 22px; }
+  .customer-room-confirm-modal p { font-size: 14px; }
+  .customer-room-confirm-actions button { font-size: 16px; }
+}
+
+@media (max-width: 640px) {
+  .customer-room-detail-shell { width: calc(100% - 20px); }
+  .customer-room-card,
+  .customer-room-about,
+  .customer-room-booking-panel { padding: 14px; }
+  .customer-room-gallery img { height: 240px; }
+  .customer-room-gallery-nav { width: 36px; height: 36px; }
+  .customer-room-booking-summary div { padding: 9px 10px; }
+}
+
+/* Payment pages */
+body.hide-global-navbar .header {
+  display: none !important;
+}
+
+body.hide-global-navbar .customer-main {
+  margin-top: 0 !important;
+}
+
+.customer-payment-page {
+  background: #dff3f8;
+  min-height: calc(100vh - 120px);
+  padding-bottom: 28px;
+}
+
+.customer-payment-topbar,
+.customer-payment-subheader {
+  width: 100%;
+  min-height: 74px;
+  padding: 0 20px;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.customer-payment-topbar button,
+.customer-payment-subheader button {
+  width: 34px;
+  height: 34px;
+  border: none;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #111827;
+}
+
+.customer-payment-topbar h1,
+.customer-payment-subheader h1 {
+  margin: 0;
+  font-size: 22px;
+  color: #0f172a;
+}
+
+.customer-payment-shell {
+  width: min(1320px, calc(100% - 32px));
+  margin: 16px auto 0;
+}
+
+.customer-payment-layout,
+.customer-process-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 460px);
+  gap: 16px;
+  align-items: start;
+}
+
+.customer-payment-main,
+.customer-process-main {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.customer-payment-card,
+.customer-payment-summary {
+  padding: 20px;
+}
+
+.customer-payment-card,
+.customer-payment-summary,
+.customer-process-side-card,
+.customer-process-wait-card {
+  border-radius: 16px;
+  border: 1px solid #d5dde3;
+  background: #ffffff;
+}
+
+.customer-payment-room-row {
+  display: grid;
+  grid-template-columns: 170px minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  padding: 14px 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.customer-payment-room-row img {
+  width: 170px;
+  height: 94px;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.customer-payment-room-meta h3 {
+  margin: 0;
+  font-size: 28px;
+  color: #0f172a;
+}
+
+.customer-payment-room-meta p {
+  margin: 6px 0 0;
+  font-size: 15px;
+  color: #4b5563;
+  line-height: 1.45;
+}
+
+.customer-payment-room-row span {
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid #0bbbe7;
+  background: rgba(11, 187, 231, 0.08);
+  display: inline-flex;
+  align-items: center;
+  color: #08add4;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.customer-payment-info-grid {
+  padding: 12px 16px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 20px;
+}
+
+.customer-payment-info-list {
+  padding: 10px 16px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+}
+
+.customer-payment-info-list div {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  border-bottom: 1px dashed #e8ebef;
+  padding-bottom: 6px;
+}
+
+.customer-payment-info-list span {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.customer-payment-info-list strong {
+  color: #0f172a;
+  font-size: 15px;
+  text-align: right;
+}
+
+.customer-payment-info-grid div {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  border-bottom: 1px dashed #e8ebef;
+  padding-bottom: 6px;
+}
+
+.customer-payment-info-grid span {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.customer-payment-info-grid strong {
+  color: #0f172a;
+  font-size: 15px;
+  text-align: right;
+}
+
+.customer-payment-facilities {
+  padding: 12px 16px 16px;
+}
+
+.customer-payment-facilities h4 {
+  margin: 0 0 10px;
+  font-size: 17px;
+  color: #1f2937;
+}
+
+.customer-payment-facilities > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.customer-payment-facilities span {
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid #11c4e6;
+  background: rgba(17, 196, 230, 0.12);
+  color: #09b0d8;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.customer-payment-facilities span svg {
+  flex-shrink: 0;
+}
+
+.customer-payment-method-section .customer-payment-method-list {
+  display: grid;
+  gap: 10px;
+}
+
+.customer-payment-method-item {
+  border: 1px solid #d6dde3;
+  border-radius: 12px;
+  min-height: 72px;
+  padding: 12px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.customer-payment-method-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.customer-payment-method-meta img {
+  width: 44px;
+  height: 20px;
+  object-fit: contain;
+}
+
+.customer-payment-method-fallback {
+  width: 44px;
+  height: 20px;
+  border-radius: 4px;
+  border: 1px solid #bfd4dd;
+  color: #60707a;
+  font-size: 10px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.customer-payment-method-item.active {
+  border-color: #07b8df;
+  background: rgba(7, 184, 223, 0.07);
+}
+
+.customer-payment-method-item strong {
+  color: #0f172a;
+  font-size: 17px;
+}
+
+.customer-payment-method-item p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.customer-payment-method-item input[type='radio'] {
+  width: 18px;
+  height: 18px;
+  accent-color: #06b6d4;
+}
+
+.customer-payment-summary {
+  position: sticky;
+  top: 108px;
+  overflow: hidden;
+}
+
+.customer-payment-summary-lines {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.customer-payment-summary-lines div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.customer-payment-summary-lines span {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.customer-payment-summary-lines strong {
+  color: #111827;
+  font-size: 15px;
+}
+
+.customer-payment-summary-total {
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 12px 0 5px;
+}
+
+.customer-payment-summary-total span {
+  color: #374151;
+  font-size: 15px;
+}
+
+.customer-payment-summary-total strong {
+  color: #07b8df;
+  font-size: 25px;
+}
+
+.customer-payment-summary-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.customer-payment-summary-actions button,
+.customer-process-actions button {
+  min-height: 44px;
+  border-radius: 10px;
+  border: 1px solid #d2d8df;
+  font-family: var(--font-family);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.customer-payment-summary-actions button.secondary,
+.customer-process-actions button.secondary {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.customer-payment-summary-actions button.primary,
+.customer-process-actions button.primary {
+  border-color: #07b8df;
+  background: #16c1e6;
+  color: #ffffff;
+}
+
+.customer-payment-summary-actions button:disabled,
+.customer-process-actions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.customer-process-wait-card {
+  padding: 16px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  background: rgba(17, 196, 230, 0.2);
+  border-color: #08b9e0;
+}
+
+.customer-process-wait-icon img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  color: #ffffff;
+  display: grid;
+  place-items: center;
+  font-size: 30px;
+  flex-shrink: 0;
+}
+
+.customer-process-wait-card h2 {
+  margin: 0;
+  color: #0e7490;
+  font-size: 26px;
+}
+
+.customer-process-wait-card p {
+  margin: 4px 0 0;
+  color: #0b839f;
+  font-size: 16px;
+}
+
+.customer-process-deadline {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.customer-process-deadline span {
+  color: #0c90ad;
+  font-size: 14px;
+}
+
+.customer-process-deadline strong {
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 10px;
+  background: #11c4e7;
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  font-size: 16px;
+}
+
+.customer-process-instruction-card header h2 {
+  font-size: 24px;
+}
+
+.customer-process-instruction-card header p {
+  font-size: 15px;
+}
+
+.customer-process-va-box {
+  margin: 12px 16px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: rgba(17, 196, 230, 0.16);
+}
+
+.customer-process-va-box span {
+  display: block;
+  color: #1f2937;
+  font-size: 15px;
+}
+
+.customer-process-va-box strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 22px;
+  letter-spacing: 0.12em;
+}
+
+.customer-process-va-box button {
+  margin-top: 12px;
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 9px;
+  border: 1px solid #06b6d4;
+  background: #d7f4fb;
+  color: #06a9cc;
+  font-family: var(--font-family);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.customer-process-step-list {
+  padding: 0 16px 12px;
+}
+
+.customer-process-step-item {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  padding: 10px 0;
+  border-top: 1px solid #e5e7eb;
+}
+
+.customer-process-step-item span {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid #06b6d4;
+  background: rgba(6, 182, 212, 0.12);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #0891b2;
+  font-size: 20px;
+}
+
+.customer-process-step-item h4 {
+  margin: 0;
+  font-size: 18px;
+  color: #111827;
+}
+
+.customer-process-step-item p {
+  margin: 4px 0 0;
+  color: #4b5563;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.customer-process-actions {
+  padding: 10px 16px 16px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.customer-process-side-card {
+  position: sticky;
+  top: 108px;
+  min-height: 150px;
+  padding: 14px 16px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.customer-process-side-card img {
+  width: 200px;
+  max-width: 100%;
+}
+
+.customer-process-side-card span {
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 10px;
+  font-size: 15px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.customer-process-side-card span.pending {
+  border: 1px solid #ef4444;
+  background: rgba(239, 68, 68, 0.12);
+  color: #dc2626;
+}
+
+.customer-process-side-card span.paid {
+  border: 1px solid #10b981;
+  background: rgba(16, 185, 129, 0.12);
+  color: #047857;
+}
+
+.customer-process-side-card p {
+  margin: 0;
+  grid-column: 1 / -1;
+  color: #374151;
+  font-size: 18px;
+}
+
+.customer-process-side-card strong {
+  margin-top: -2px;
+  grid-column: 1 / -1;
+  color: #0f172a;
+  font-size: 22px;
+}
+
+.customer-payment-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 220;
+  background: rgba(0, 0, 0, 0.52);
+  display: grid;
+  place-items: center;
+  padding: 16px;
+}
+
+.customer-payment-overlay-card {
+  width: clamp(350px, 400px, 100%);
+  border-radius: 18px;
+  border: 1px solid #d6dde3;
+  background: #ffffff;
+  padding: 22px 20px;
+  text-align: center;
+}
+
+.customer-payment-overlay-icon {
+  width: 88px;
+  height: 88px;
+  margin: 0 auto;
+  border-radius: 50%;
+  border: 2px solid #ef4444;
+  color: #ef4444;
+  display: grid;
+  place-items: center;
+}
+
+.customer-payment-overlay-card h3 {
+  margin: 18px 0 0;
+  color: #0f172a;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.customer-payment-overlay-card p {
+  margin: 10px auto 0;
+  width: min(420px, 100%);
+  color: #1f2937;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.customer-payment-overlay-actions {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.customer-payment-overlay-actions button {
+  min-height: 38px;
+  border-radius: 12px;
+  border: none;
+  background: #e5e7eb;
+  color: #4b5563;
+  font-family: var(--font-family);
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.customer-payment-overlay-actions button.confirm {
+  background: #18c0e5;
+  color: #ffffff;
+}
+
+.customer-payment-overlay-actions button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+@media (max-width: 1100px) {
+  .customer-payment-layout,
+  .customer-process-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .customer-payment-summary,
+  .customer-process-side-card {
+    position: static;
+  }
+
+  .customer-process-side-card {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .customer-payment-shell {
+    width: calc(100% - 20px);
+  }
+
+  .customer-payment-topbar,
+  .customer-payment-subheader {
+    min-height: 64px;
+    padding: 0 14px;
+  }
+
+  .customer-payment-topbar h1,
+  .customer-payment-subheader h1 {
+    font-size: 20px;
+  }
+
+  .customer-payment-card,
+  .customer-payment-summary,
+  .customer-process-side-card,
+  .customer-process-wait-card {
+    border-radius: 12px;
+  }
+
+  .customer-payment-room-row {
+    grid-template-columns: 1fr;
+  }
+
+  .customer-payment-room-row img {
+    width: 100%;
+    height: 160px;
+  }
+
+  .customer-payment-room-meta h3 {
+    font-size: 24px;
+  }
+
+  .customer-payment-room-meta p {
+    font-size: 14px;
+  }
+
+  .customer-payment-room-row span {
+    width: fit-content;
+  }
+
+  .customer-payment-info-grid,
+  .customer-payment-info-list {
+    grid-template-columns: 1fr;
+  }
+
+  .customer-payment-info-list div {
+    align-items: center;
+  }
+
+  .customer-payment-summary-total strong {
+    font-size: 24px;
+  }
+
+  .customer-payment-summary-actions,
+  .customer-process-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .customer-process-wait-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .customer-process-wait-icon {
+    width: 58px;
+    height: 58px;
+    font-size: 24px;
+  }
+
+  .customer-process-wait-card h2 {
+    font-size: 26px;
+  }
+
+  .customer-process-wait-card p {
+    font-size: 16px;
+  }
+
+  .customer-process-deadline span {
+    font-size: 14px;
+  }
+
+  .customer-process-deadline strong {
+    font-size: 16px;
+  }
+
+  .customer-process-instruction-card header h2 {
+    font-size: 24px;
+  }
+
+  .customer-process-instruction-card header p {
+    font-size: 14px;
+  }
+
+  .customer-process-va-box strong {
+    font-size: 22px;
+    letter-spacing: 0.06em;
+  }
+
+  .customer-process-step-item {
+    grid-template-columns: 34px minmax(0, 1fr);
+  }
+
+  .customer-process-step-item span {
+    width: 30px;
+    height: 30px;
+    font-size: 15px;
+  }
+
+  .customer-process-step-item h4 {
+    font-size: 18px;
+  }
+
+  .customer-process-step-item p {
+    font-size: 14px;
+  }
+
+  .customer-process-side-card img {
+    width: 160px;
+  }
+
+  .customer-process-side-card p {
+    font-size: 16px;
+  }
+
+  .customer-process-side-card strong {
+    font-size: 20px;
+  }
+
+  .customer-payment-overlay-card {
+    width: 350px;
+    border-radius: 16px;
+    padding: 20px 14px;
+  }
+
+  .customer-payment-overlay-icon {
+    width: 65px;
+    height: 65px;
+  }
+
+  .customer-payment-overlay-icon svg {
+    width: 65%;
+  }
+
+  .customer-payment-overlay-card h3 {
+    font-size: 20px;
+  }
+
+  .customer-payment-overlay-card p {
+    font-size: 14px;
+  }
+
+  .customer-payment-overlay-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .customer-payment-overlay-actions button {
+    min-height: 40px;
+    font-size: 18px;
+  }
+}
