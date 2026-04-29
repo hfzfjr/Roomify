@@ -45,10 +45,10 @@ type PaymentDetailResponse = {
 }
 
 const PAYMENT_METHODS: Array<{ value: PaymentMethod; label: string; caption: string; logo?: string }> = [
-  { value: 'qris', label: 'QRIS', logo: '/images/payment/logo-qris.svg' },
-  { value: 'bca_va', label: 'Transfer Virtual Account Bank BCA', logo: '/images/payment/logo-bca.png' },
-  { value: 'bni_va', label: 'Transfer Virtual Account Bank BNI', logo: '/images/payment/logo-bni.png' },
-  { value: 'gopay', label: 'GoPay', logo: '/images/payment/logo-gopay.png' }
+  { value: 'qris', label: 'QRIS', caption: '', logo: '/images/payment/logo-qris.svg' },
+  { value: 'bca_va', label: 'Transfer Virtual Account Bank BCA', caption: '', logo: '/images/payment/logo-bca.png' },
+  { value: 'bni_va', label: 'Transfer Virtual Account Bank BNI', caption: '', logo: '/images/payment/logo-bni.png' },
+  { value: 'gopay', label: 'GoPay', caption: '', logo: '/images/payment/logo-gopay.png' }
 ]
 
 function getRoomTypeLabel(type?: string | null) {
