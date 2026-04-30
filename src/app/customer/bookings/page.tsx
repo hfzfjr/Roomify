@@ -7,6 +7,7 @@ import { formatPaymentCountdown, getRemainingPaymentMs } from '@/utils/booking'
 import { formatDate, formatTime } from '@/utils/formatDate'
 import { formatRupiah } from '@/utils/formatRupiah'
 import { ROOM_IMAGE_PLACEHOLDER } from '@/utils/room'
+import '@/styles/dashboard.css'
 
 function getBookingStatusLabel(status: Booking['status']) {
   if (status === 'confirmed') return 'Lunas'

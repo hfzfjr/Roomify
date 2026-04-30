@@ -5,6 +5,7 @@ import { getRoomDetail } from '@/lib/rooms'
 import { formatDate, formatTime } from '@/utils/formatDate'
 import { formatRupiah } from '@/utils/formatRupiah'
 import { getRoomTypeLabel } from '@/utils/room'
+import '@/styles/rooms.css'
 
 export default async function CustomerRoomDetailPage({
   params

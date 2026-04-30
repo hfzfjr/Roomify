@@ -1,7 +1,7 @@
 {
-    "builder.serverUrl": "",
+    "builder.serverUrl": "http://localhost:3000",
     "builder.command": "npm run dev",
-    "builder.runDevServer": false,
-    "builder.autoDetectDevServer": true,
+    "builder.runDevServer": true,
+    "builder.autoDetectDevServer": false,
     "builder.launchType": "editor"
 }

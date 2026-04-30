@@ -1,4 +1,5 @@
 import Navbar from '@/components/layout/Navbar'
+import '@/styles/layout.css'
 
 export default function CustomerLayout({ children }: { children: React.ReactNode }) {
   return (

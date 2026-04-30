@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { Room } from '@/types'
 import { formatRupiah } from '@/utils/formatRupiah'
 import { getLocationOptionLabel, getLocationOptionSubtitle, getLocationQueryValue, getLocationSearchText, type Location } from '@/utils/locations'
+import '@/styles/dashboard.css'
 
 const ROOM_TYPES = [
   { label: 'Semua tipe', value: '' },

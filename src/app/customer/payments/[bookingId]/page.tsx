@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { formatDate, formatTime } from '@/utils/formatDate'
 import { formatRupiah } from '@/utils/formatRupiah'
+import '@/styles/rooms.css'
 
 type PaymentMethod = 'qris' | 'bca_va' | 'bni_va' | 'gopay'
 

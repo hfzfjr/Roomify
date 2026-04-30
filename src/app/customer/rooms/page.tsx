@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import RoomCard from '@/components/rooms/RoomCard'
 import { Room } from '@/types'
+import '@/styles/rooms.css'
 
 export default function CustomerRooms() {
   const [rooms, setRooms] = useState<Room[]>([])

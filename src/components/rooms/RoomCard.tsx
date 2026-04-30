@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { Room } from '@/types'
 import { formatRupiah } from '@/utils/formatRupiah'
+import '@/styles/rooms.css'
 
 interface Props {
   room: Room

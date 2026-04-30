@@ -21,6 +21,7 @@ import {
 import { id as localeId } from 'date-fns/locale'
 import { useRouter } from 'next/navigation'
 import { RoomDetail, User } from '@/types'
+import '@/styles/dashboard.css'
 
 interface Props {
   room: RoomDetail
