@@ -1,4 +1,4 @@
-import RoomBookingPanel from '@/components/rooms/RoomBookingPanel'
+﻿import RoomBookingPanel from '@/components/rooms/RoomBookingPanel'
 import RoomImageCarousel from '@/components/rooms/RoomImageCarousel'
 import { notFound } from 'next/navigation'
 import { getRoomDetail } from '@/lib/rooms'
@@ -34,7 +34,8 @@ export default async function CustomerRoomDetailPage({
                   <span className="customer-room-price">{formatRupiah(room.price_per_hour)}<small>/jam</small></span>
                 </div>
 
-                <div className="customer-room-card-title-wrap">
+                <div className="customer-room-card-title-meta">
+                  <div className="customer-room-card-title-wrap">
                   <h1>{room.name}</h1>
                   <p>{roomAddress || 'Bandung, Jawa Barat'}</p>
                 </div>
@@ -54,6 +55,7 @@ export default async function CustomerRoomDetailPage({
                     </svg>
                     {room.capacity} orang
                   </span>
+                </div>
                 </div>
               </div>
             </section>

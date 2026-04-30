@@ -445,17 +445,14 @@ export default function RoomBookingPanel({ room }: Props) {
 
         <div className={`customer-room-availability-banner ${slotAvailability.state}`}>
           <span className="customer-room-availability-icon" aria-hidden="true">
-            {slotAvailability.state === 'available' ? (
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3">
-                <path strokeLinecap="round" strokeLinejoin="round" d="m5 12 5 5L20 7" />
-              </svg>
-            ) : (
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3">
-                <circle cx="12" cy="12" r="9" />
-                <line x1="12" y1="7" x2="12" y2="13" />
-                <circle cx="12" cy="17" r="1" fill="currentColor" stroke="none" />
-              </svg>
-            )}
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              {/* Lingkaran outline tebal */}
+              <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none" />
+              {/* Batang tanda seru */}
+              <rect x="11" y="5.5" width="2" height="9" rx="1" fill="currentColor" />
+              {/* Titik tanda seru */}
+              <circle cx="12" cy="17" r="1.2" fill="currentColor" />
+            </svg>
           </span>
           <p>{slotAvailability.message}</p>
         </div>
