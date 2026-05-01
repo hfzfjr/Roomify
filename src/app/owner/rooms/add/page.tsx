@@ -301,22 +301,8 @@ export default function AddRoomPage() {
     setIsSubmitting(true);
 
     try {
-      // Upload photos first if any
-      let imageUrls: string[] = [];
-      if (photos.length > 0) {
-        const formDataUpload = new FormData();
-        photos.forEach((photo) => formDataUpload.append('photos', photo));
-        const uploadRes = await fetch('/api/upload', {
-          method: 'POST',
-          body: formDataUpload,
-        });
-        const uploadResult = await uploadRes.json();
-        if (uploadResult.success && uploadResult.urls?.length > 0) {
-          imageUrls = uploadResult.urls;
-        }
-      }
-
-      const response = await fetch('/api/rooms', {
+      // Step 1: Create room first (without images)
+      const roomResponse = await fetch('/api/rooms', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -330,17 +316,52 @@ export default function AddRoomPage() {
           type: formData.type,
           location: buildLocationString(),
           region_id: formData.region_id,
-          images: imageUrls.length > 0 ? imageUrls : undefined,
         }),
       });
 
-      const result = await response.json();
+      const roomResult = await roomResponse.json();
 
-      if (result.success) {
-        router.push('/owner/dashboard');
-      } else {
-        setSubmitError(result.message || 'Gagal menambahkan ruangan. Silakan coba lagi.');
+      if (!roomResponse.ok || !roomResult.success) {
+        setSubmitError(roomResult.message || 'Gagal menambahkan ruangan. Silakan coba lagi.');
+        setIsSubmitting(false);
+        return;
       }
+
+      const roomId = roomResult.data?.room_id;
+      if (!roomId) {
+        setSubmitError('Gagal mendapatkan ID ruangan. Silakan coba lagi.');
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Step 2: Upload photos with room_id, user_id, and room_name
+      if (photos.length > 0) {
+        const formDataUpload = new FormData();
+        photos.forEach((photo) => formDataUpload.append('photos', photo));
+        formDataUpload.append('room_id', roomId);
+        formDataUpload.append('user_id', user.user_id);
+        formDataUpload.append('room_name', formData.name);
+
+        const uploadRes = await fetch('/api/upload', {
+          method: 'POST',
+          body: formDataUpload,
+        });
+        const uploadResult = await uploadRes.json();
+
+        if (!uploadRes.ok || !uploadResult.success) {
+          setSubmitError(uploadResult.message || 'Gagal mengupload foto. Ruangan telah dibuat tanpa gambar.');
+          // Still redirect to dashboard as room is created
+          router.push('/owner/dashboard');
+          return;
+        }
+
+        if (uploadResult.errors && uploadResult.errors.length > 0) {
+          console.warn('Upload warnings:', uploadResult.errors);
+        }
+      }
+
+      // Step 3: Redirect to dashboard
+      router.push('/owner/dashboard');
     } catch {
       setSubmitError('Terjadi kesalahan saat menyimpan data. Silakan coba lagi.');
     } finally {
@@ -360,16 +381,6 @@ export default function AddRoomPage() {
     }).format(amount);
   };
 
-  if (!user) {
-    return (
-      <div className={styles.container}>
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-          <div>Loading...</div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className={styles.container}>
       {/* Header */}
@@ -386,6 +397,12 @@ export default function AddRoomPage() {
       <div className={styles.mainContent}>
         {/* Form Sections */}
         <div className={styles.formSections}>
+          {!user ? (
+            <div className={styles.sectionCard} style={{ minHeight: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div>Memuat...</div>
+            </div>
+          ) : (
+            <>
           {/* Informasi Dasar */}
           <div className={styles.sectionCard}>
             <div className={styles.sectionHeader}>
@@ -738,6 +755,8 @@ export default function AddRoomPage() {
               </div>
             )}
           </div>
+            </>
+          )}
         </div>
 
         {/* Sidebar */}

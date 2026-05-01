@@ -150,16 +150,6 @@ export default function OwnerDashboard() {
       : Array.from({ length: chartCeiling + 1 }, (_, index) => String(chartCeiling - index)))
     : ['1', '0'];
 
-  if (!user) {
-    return (
-      <div className={styles.container}>
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-          <div>Loading dashboard...</div>
-        </div>
-      </div>
-    );
-  }
-
   if (dashboardError) {
     return (
       <div className={styles.container}>

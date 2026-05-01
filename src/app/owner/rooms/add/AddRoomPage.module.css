@@ -41,11 +41,13 @@
 /* Main Content */
 .mainContent {
   display: grid;
-  grid-template-columns: 1fr 320px;
+  grid-template-columns: minmax(0, 1fr) 320px;
   gap: 24px;
   max-width: 1450px;
   margin: 0 auto;
   padding: 32px 40px;
+  align-items: start;
+  contain: layout;
 }
 
 /* Form Sections */
@@ -919,7 +921,7 @@
 
   .sidebar {
     position: static;
-    order: -1;
+    order: 1; /* Sidebar below form on smaller screens */
   }
 
   .formGrid {

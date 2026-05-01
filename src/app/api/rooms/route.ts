@@ -266,10 +266,9 @@ export async function POST(request: Request) {
       location?: string
       type?: string
       region_id?: string
-      images?: string[]
     }
 
-    const { user_id, name, description, capacity, price_per_hour, location, type, region_id, images } = body
+    const { user_id, name, description, capacity, price_per_hour, location, type, region_id } = body
 
     // Validation
     if (!user_id || !name || !capacity || !price_per_hour || !location || !type || !region_id) {
@@ -320,25 +319,6 @@ export async function POST(request: Request) {
 
     if (insertError) {
       return NextResponse.json({ success: false, message: insertError.message }, { status: 500 })
-    }
-
-    // Insert images to room_image table if provided
-    if (images && images.length > 0) {
-      const { error: imageError } = await supabase.from('room_image').insert(
-        images.map((url, index) => ({
-          image_id: `ri-${Date.now()}-${index}`,
-          room_id: roomId,
-          image_url: url.trim(),
-          sort_order: index,
-          is_primary: index === 0, // First image is primary
-          uploaded_at: now,
-        }))
-      )
-
-      if (imageError) {
-        console.error('Error inserting room images:', imageError)
-        // Don't fail the whole request if images fail, just log it
-      }
     }
 
     return NextResponse.json({
