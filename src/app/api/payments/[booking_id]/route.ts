@@ -116,7 +116,7 @@ export async function GET(
 
     const { data: room, error: roomError } = await supabase
       .from('room')
-      .select('room_id, name, location, capacity, type, price_per_hour, description, image_url')
+      .select('room_id, name, location, capacity, type, price_per_hour, description')
       .eq('room_id', booking.room_id)
       .maybeSingle<RoomRecord>()
 
@@ -136,6 +136,17 @@ export async function GET(
 
     if (amenitiesError) {
       return NextResponse.json({ success: false, message: amenitiesError.message }, { status: 500 })
+    }
+
+    // Get room images from room_image table
+    const { data: roomImages, error: imagesError } = await supabase
+      .from('room_image')
+      .select('image_url, is_primary, sort_order')
+      .eq('room_id', booking.room_id)
+      .order('sort_order', { ascending: true })
+
+    if (imagesError) {
+      console.warn('Error fetching room images:', imagesError.message)
     }
 
     const { data: customerUser, error: userError } = await supabase
@@ -165,8 +176,8 @@ export async function GET(
         },
         room: {
           ...room,
-          image_url: room.image_url ?? null,
-          images: room.image_url ? [room.image_url] : [],
+          image_url: roomImages?.[0]?.image_url ?? null,
+          images: roomImages?.map(img => img.image_url) || [],
           facilities: (amenities ?? []).map(item => item.amenity)
         },
         customer: {

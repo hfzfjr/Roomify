@@ -8,7 +8,15 @@ type BookingRoomRecord = {
   room_id: string
   name: string
   location: string
+  capacity: number
   image_url?: string | null
+  images?: string[]
+  region?: Array<{
+    name: string
+    province?: Array<{
+      name: string
+    }> | null
+  }> | null
 }
 
 function getNextBookingId(existingIds: Array<{ booking_id: string }>) {
@@ -32,7 +40,7 @@ function isHalfHourSlot(date: Date) {
   return minutes === 0 || minutes === 30
 }
 
-function normalizeBookingRoom(room: BookingRoomRecord | BookingRoomRecord[] | null) {
+function normalizeBookingRoom(room: BookingRoomRecord | BookingRoomRecord[] | null, roomImages?: string[]) {
   if (!room) {
     return null
   }
@@ -43,10 +51,20 @@ function normalizeBookingRoom(room: BookingRoomRecord | BookingRoomRecord[] | nu
     return null
   }
 
+  const regionData = normalizedRoom.region?.[0]
+  const provinceData = regionData?.province?.[0]
+
+  const images = roomImages ?? normalizedRoom.images ?? []
+
   return {
-    ...normalizedRoom,
-    image_url: normalizedRoom.image_url ?? null,
-    images: normalizedRoom.image_url ? [normalizedRoom.image_url] : []
+    room_id: normalizedRoom.room_id,
+    name: normalizedRoom.name,
+    location: normalizedRoom.location,
+    capacity: normalizedRoom.capacity,
+    image_url: images[0] ?? null,
+    images: images,
+    region_name: regionData?.name ?? null,
+    province_name: provinceData?.name ?? null
   }
 }
 
@@ -114,7 +132,13 @@ export async function GET(request: Request) {
           room_id,
           name,
           location,
-          image_url
+          capacity,
+          region (
+            name,
+            province (
+              name
+            )
+          )
         )
       `)
       .eq('customer_id', customerRecord.customer_id)
@@ -124,11 +148,45 @@ export async function GET(request: Request) {
       return NextResponse.json({ success: false, message: error.message }, { status: 500 })
     }
 
-    const normalizedData = (data ?? []).map(booking => ({
-      ...booking,
-      payment_due_at: booking.booking_date ? getPaymentDeadline(booking.booking_date).toISOString() : null,
-      room: normalizeBookingRoom(booking.room as BookingRoomRecord | BookingRoomRecord[] | null)
-    }))
+    // Get all room IDs to fetch images
+    const roomIds = (data ?? []).map(b => {
+      const roomData = b.room as unknown as BookingRoomRecord | BookingRoomRecord[] | null
+      const room = Array.isArray(roomData) ? roomData[0] : roomData
+      return room?.room_id
+    }).filter((id): id is string => Boolean(id))
+
+    // Fetch images from room_image table
+    let imagesByRoom: { [key: string]: string[] } = {}
+    if (roomIds.length > 0) {
+      const { data: roomImages, error: imagesError } = await supabase
+        .from('room_image')
+        .select('room_id, image_url, sort_order')
+        .in('room_id', roomIds)
+        .order('sort_order', { ascending: true })
+
+      if (imagesError) {
+        console.warn('Error fetching room images:', imagesError.message)
+      } else if (roomImages) {
+        roomImages.forEach(img => {
+          if (!imagesByRoom[img.room_id]) {
+            imagesByRoom[img.room_id] = []
+          }
+          imagesByRoom[img.room_id].push(img.image_url)
+        })
+      }
+    }
+
+    const normalizedData = (data ?? []).map(booking => {
+      const room = booking.room as unknown as BookingRoomRecord | BookingRoomRecord[] | null
+      const roomId = (Array.isArray(room) ? room[0]?.room_id : room?.room_id) ?? ''
+      const roomImages = roomId ? imagesByRoom[roomId] || [] : []
+
+      return {
+        ...booking,
+        payment_due_at: booking.booking_date ? getPaymentDeadline(booking.booking_date).toISOString() : null,
+        room: normalizeBookingRoom(room, roomImages)
+      }
+    })
 
     return NextResponse.json({ success: true, data: normalizedData })
   } catch (error) {

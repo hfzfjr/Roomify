@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { isPendingPaymentExpired } from '@/utils/booking'
+import { formatDateForDatabase } from '@/utils/formatDate'
 
 type RegionLocation = {
   region_id: string
@@ -31,7 +32,7 @@ export async function GET(request: Request) {
     // First get rooms
     let roomQuery = supabase
       .from('room')
-      .select('room_id, name, capacity, price_per_hour, location, region_id, is_available, description, type, image_url')
+      .select('room_id, name, capacity, price_per_hour, location, region_id, is_available, description, type')
       .eq('is_available', true)
 
     if (type) roomQuery = roomQuery.eq('type', type)
@@ -170,8 +171,9 @@ export async function GET(request: Request) {
       return NextResponse.json({ success: true, data: [] })
     }
 
-    // Get amenities for each room
+    // Get amenities and images for each room
     const roomIds = rooms.map(room => room.room_id)
+
     const { data: amenities, error: amenityError } = await supabase
       .from('room_amenity')
       .select('room_id, amenity')
@@ -179,6 +181,16 @@ export async function GET(request: Request) {
 
     if (amenityError) {
       console.warn('Error fetching amenities:', amenityError.message)
+    }
+
+    const { data: roomImages, error: imagesError } = await supabase
+      .from('room_image')
+      .select('room_id, image_url, is_primary, sort_order')
+      .in('room_id', roomIds)
+      .order('sort_order', { ascending: true })
+
+    if (imagesError) {
+      console.warn('Error fetching room images:', imagesError.message)
     }
 
     // Group amenities by room_id
@@ -192,11 +204,22 @@ export async function GET(request: Request) {
       })
     }
 
-    // Combine rooms with their amenities
+    // Group images by room_id
+    const imagesByRoom: { [key: string]: string[] } = {}
+    if (roomImages) {
+      roomImages.forEach(img => {
+        if (!imagesByRoom[img.room_id]) {
+          imagesByRoom[img.room_id] = []
+        }
+        imagesByRoom[img.room_id].push(img.image_url)
+      })
+    }
+
+    // Combine rooms with their amenities and images
     const roomsWithAmenities = rooms.map(room => ({
       ...room,
-      image_url: room.image_url ?? null,
-      images: room.image_url ? [room.image_url] : [],
+      image_url: imagesByRoom[room.room_id]?.[0] ?? null,
+      images: imagesByRoom[room.room_id] || [],
       facilities: amenitiesByRoom[room.room_id] || []
     }))
 
@@ -204,5 +227,130 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error('API Error:', error)
     return NextResponse.json({ success: false, message: 'Terjadi kesalahan.' }, { status: 500 })
+  }
+}
+
+async function generateRoomId(supabase: Awaited<ReturnType<typeof createClient>>) {
+  // Get the highest existing room_id with format r-[number]
+  const { data: rooms, error } = await supabase
+    .from('room')
+    .select('room_id')
+    .like('room_id', 'r-%')
+    .order('room_id', { ascending: false })
+    .limit(1)
+
+  if (error) {
+    throw new Error('Failed to generate room ID: ' + error.message)
+  }
+
+  let nextNumber = 1
+  if (rooms && rooms.length > 0) {
+    const lastId = rooms[0].room_id
+    const match = lastId.match(/r-(\d+)/)
+    if (match) {
+      nextNumber = parseInt(match[1], 10) + 1
+    }
+  }
+
+  return `r-${nextNumber}`
+}
+
+export async function POST(request: Request) {
+  try {
+    const body = await request.json() as {
+      user_id?: string
+      name?: string
+      description?: string
+      capacity?: number
+      price_per_hour?: number
+      location?: string
+      type?: string
+      region_id?: string
+      images?: string[]
+    }
+
+    const { user_id, name, description, capacity, price_per_hour, location, type, region_id, images } = body
+
+    // Validation
+    if (!user_id || !name || !capacity || !price_per_hour || !location || !type || !region_id) {
+      return NextResponse.json(
+        { success: false, message: 'Field wajib belum lengkap. Mohon isi semua field yang diperlukan.' },
+        { status: 400 }
+      )
+    }
+
+    const supabase = await createClient()
+
+    // Get owner_id from user_id
+    const { data: ownerRecord, error: ownerError } = await supabase
+      .from('owner')
+      .select('owner_id')
+      .eq('user_id', user_id)
+      .maybeSingle()
+
+    if (ownerError) {
+      return NextResponse.json({ success: false, message: ownerError.message }, { status: 500 })
+    }
+
+    if (!ownerRecord?.owner_id) {
+      return NextResponse.json(
+        { success: false, message: 'Owner tidak ditemukan. Pastikan akun Anda sudah terdaftar sebagai owner.' },
+        { status: 404 }
+      )
+    }
+
+    const roomId = await generateRoomId(supabase)
+    const now = formatDateForDatabase()
+
+    // Insert room
+    const { error: insertError } = await supabase.from('room').insert({
+      room_id: roomId,
+      owner_id: ownerRecord.owner_id,
+      name: name.trim(),
+      description: description?.trim() || null,
+      capacity: Number(capacity),
+      price_per_hour: Number(price_per_hour),
+      location: location.trim(),
+      type: type.trim(),
+      region_id: region_id.trim(),
+      is_available: true,
+      status: 'active',
+      created_at: now,
+    })
+
+    if (insertError) {
+      return NextResponse.json({ success: false, message: insertError.message }, { status: 500 })
+    }
+
+    // Insert images to room_image table if provided
+    if (images && images.length > 0) {
+      const { error: imageError } = await supabase.from('room_image').insert(
+        images.map((url, index) => ({
+          image_id: `ri-${Date.now()}-${index}`,
+          room_id: roomId,
+          image_url: url.trim(),
+          sort_order: index,
+          is_primary: index === 0, // First image is primary
+          uploaded_at: now,
+        }))
+      )
+
+      if (imageError) {
+        console.error('Error inserting room images:', imageError)
+        // Don't fail the whole request if images fail, just log it
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: 'Ruangan berhasil ditambahkan.',
+      data: { room_id: roomId },
+    })
+  } catch (error) {
+    console.error('Create room API error:', error)
+    return NextResponse.json(
+      { success: false, message: 'Terjadi kesalahan saat menambahkan ruangan.' },
+      { status: 500 }
+    )
   }
 }

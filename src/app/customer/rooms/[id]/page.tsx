@@ -36,27 +36,27 @@ export default async function CustomerRoomDetailPage({
                 </div>
 
                 <div className="customer-room-card-title-meta">
-                  <div className="customer-room-card-title-wrap">
-                  <h1>{room.name}</h1>
-                  <p>{roomAddress || 'Bandung, Jawa Barat'}</p>
-                </div>
+                  <div className="customer-room-card-title-wrap"> 
+                    <h1>{room.name}</h1>
+                    <p>{roomAddress || 'Bandung, Jawa Barat'}</p>
+                  </div>
 
-                <div className="customer-room-card-meta">
-                  <span>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12 17.3 5.8 21l1.6-7-5.4-4.7 7.1-.6L12 2l2.9 6.7 7.1.6-5.4 4.7 1.6 7z" />
-                    </svg>
-                    {room.upcoming_booking_count && room.upcoming_booking_count > 0
-                      ? `${room.upcoming_booking_count} jadwal aktif`
-                      : 'Belum ada jadwal aktif'}
-                  </span>
-                  <span>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M16 11c1.7 0 3-1.3 3-3s-1.3-3-3-3-3 1.3-3 3 1.3 3 3 3Zm-8 0c1.7 0 3-1.3 3-3S9.7 5 8 5 5 6.3 5 8s1.3 3 3 3Zm0 2c-2.7 0-5 1.3-5 3v2h10v-2c0-1.7-2.3-3-5-3Zm8 0c-.3 0-.6 0-.9.1 1.2.8 1.9 1.8 1.9 2.9v2h6v-2c0-1.7-2.3-3-5-3Z" />
-                    </svg>
-                    {room.capacity} orang
-                  </span>
-                </div>
+                  <div className="customer-room-card-meta">
+                    <span className="customer-room-rating">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 17.3 5.8 21l1.6-7-5.4-4.7 7.1-.6L12 2l2.9 6.7 7.1.6-5.4 4.7 1.6 7z" />
+                      </svg>
+                      {room.rating && room.rating > 0
+                        ? `${room.rating} (${room.review_count} ulasan)`
+                        : 'Belum ada rating'}
+                    </span>
+                    <span>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M16 11c1.7 0 3-1.3 3-3s-1.3-3-3-3-3 1.3-3 3 1.3 3 3 3Zm-8 0c1.7 0 3-1.3 3-3S9.7 5 8 5 5 6.3 5 8s1.3 3 3 3Zm0 2c-2.7 0-5 1.3-5 3v2h10v-2c0-1.7-2.3-3-5-3Zm8 0c-.3 0-.6 0-.9.1 1.2.8 1.9 1.8 1.9 2.9v2h6v-2c0-1.7-2.3-3-5-3Z" />
+                      </svg>
+                      {room.capacity} orang
+                    </span>
+                  </div>
                 </div>
               </div>
             </section>

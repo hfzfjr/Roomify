@@ -238,7 +238,7 @@
   min-height: 52px;
   border: none;
   border-radius: 999px;
-  background: linear-gradient(135deg, #06b6d4 0%, #22d3ee 100%);
+  background: #56d7ff;
   color: #ffffff;
   font-family: var(--font-family);
   font-size: 15px;
@@ -568,7 +568,7 @@
   padding: 0 14px;
   border: 1px solid rgba(203, 213, 225, 0.9);
   border-radius: 14px;
-  background: #f8fafc;
+  background: #f6f6f6;
   cursor: pointer;
 }
 
@@ -1233,8 +1233,9 @@
   min-height: 48px;
   padding: 0 18px;
   border-radius: 14px;
-  border: 2px solid #11c2e8;
-  color: #11c2e8;
+  border: 2px solid #56d7ff;
+  background-color: #ddf7ff;
+  color: #56d7ff;
   font-size: 34px;
   line-height: 1;
   display: inline-flex;
@@ -1246,7 +1247,7 @@
   min-height: 58px;
   padding: 0 18px;
   border-radius: 14px;
-  background: #14c3e6;
+  background: #56d7ff;
   color: #ffffff;
   display: inline-flex;
   align-items: center;
@@ -1298,9 +1299,10 @@
 .customer-room-card-meta span {
   min-height: 52px;
   padding: 0 18px;
-  border: 2px solid #12c5e5;
+  border: 2px solid #56d7ff;
   border-radius: 14px;
-  color: #11c2e8;
+  color: #56d7ff;
+  background-color: #ddf7ff;
   font-size: 38px;
   font-weight: 600;
   display: inline-flex;
@@ -1480,7 +1482,7 @@
   min-height: 56px;
   border-radius: 16px;
   border: 1px solid #d3d5da;
-  background: #e9e9ea;
+  background: #f6f6f6;
   padding: 0 16px;
   color: #6b6f75;
   font-size: 18px;
@@ -2095,6 +2097,337 @@
 .customer-room-confirm-modal p { margin-top: 8px; width: min(440px, 100%); font-size: 15px; line-height: 1.35; }
 .customer-room-confirm-actions { margin-top: 16px; gap: 10px; }
 .customer-room-confirm-actions button { min-height: 48px; border-radius: 10px; font-size: 17px; }
+
+/* =============================================
+   CUSTOMER ROOM DETAIL RESPONSIVE - Tablet & Mobile
+   ============================================= */
+
+@media (max-width: 1200px) {
+  .customer-room-detail-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 420px);
+    gap: 24px;
+  }
+
+  .customer-room-gallery img {
+    height: 360px;
+  }
+
+  .customer-room-card-title-wrap h1 {
+    font-size: 28px;
+  }
+
+  .customer-room-card-meta span {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .customer-room-detail-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .customer-room-booking-panel {
+    position: static;
+    max-width: 100%;
+  }
+
+  .customer-room-gallery img {
+    height: 400px;
+  }
+
+  .customer-room-card-title-meta {
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .customer-room-card-meta {
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .customer-room-detail-shell {
+    width: calc(100% - 24px);
+  }
+
+  .customer-room-detail-main {
+    margin-top: 20px;
+    gap: 16px;
+  }
+
+  .customer-room-card,
+  .customer-room-about,
+  .customer-room-booking-panel {
+    padding: 20px;
+    border-radius: 16px;
+  }
+
+  .customer-room-gallery img {
+    height: 280px;
+  }
+
+  .customer-room-gallery-nav {
+    width: 36px;
+    height: 36px;
+  }
+
+  .customer-room-gallery-nav.prev {
+    left: 12px;
+  }
+
+  .customer-room-gallery-nav.next {
+    right: 12px;
+  }
+
+  .customer-room-card-top {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .customer-room-chip {
+    min-height: 32px;
+    padding: 0 10px;
+    font-size: 13px;
+  }
+
+  .customer-room-price {
+    min-height: 36px;
+    padding: 0 10px;
+    font-size: 18px;
+  }
+
+  .customer-room-price small {
+    font-size: 14px;
+  }
+
+  .customer-room-card-title-wrap h1 {
+    font-size: 24px;
+  }
+
+  .customer-room-card-title-wrap p {
+    font-size: 15px;
+  }
+
+  .customer-room-card-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .customer-room-card-meta span {
+    min-height: 34px;
+    padding: 0 10px;
+    font-size: 13px;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .customer-room-about h2 {
+    font-size: 22px;
+  }
+
+  .customer-room-about p {
+    font-size: 15px;
+  }
+
+  .customer-room-about-inline {
+    padding: 12px 14px;
+  }
+
+  .customer-room-about-inline strong {
+    font-size: 15px;
+  }
+
+  .customer-room-facilities {
+    gap: 8px;
+  }
+
+  .customer-room-facilities span {
+    min-height: 30px;
+    padding: 0 10px;
+    font-size: 13px;
+  }
+
+  .customer-room-booking-head h2 {
+    font-size: 20px;
+  }
+
+  .customer-room-booking-head p {
+    font-size: 14px;
+  }
+
+  .customer-room-booking-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .customer-room-booking-summary {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .customer-room-detail-shell {
+    width: calc(100% - 16px);
+  }
+
+  .customer-room-card,
+  .customer-room-about,
+  .customer-room-booking-panel {
+    padding: 16px;
+    border-radius: 14px;
+  }
+
+  .customer-room-gallery {
+    border-radius: 12px;
+  }
+
+  .customer-room-gallery img {
+    height: 220px;
+  }
+
+  .customer-room-gallery-nav {
+    width: 32px;
+    height: 32px;
+  }
+
+  .customer-room-gallery-dots {
+    bottom: 10px;
+    gap: 6px;
+  }
+
+  .customer-room-gallery-dots button {
+    width: 8px;
+    height: 8px;
+  }
+
+  .customer-room-gallery-dots button.active {
+    width: 18px;
+  }
+
+  .customer-room-card-body {
+    padding: 8px 0 0;
+    margin-top: 8px;
+  }
+
+  .customer-room-card-top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .customer-room-chip {
+    font-size: 12px;
+  }
+
+  .customer-room-price {
+    font-size: 16px;
+  }
+
+  .customer-room-price small {
+    font-size: 13px;
+  }
+
+  .customer-room-card-title-wrap {
+    gap: 10px;
+    margin-top: 10px;
+  }
+
+  .customer-room-card-title-wrap h1 {
+    font-size: 20px;
+  }
+
+  .customer-room-card-title-wrap p {
+    font-size: 14px;
+  }
+
+  .customer-room-card-meta span {
+    min-height: 32px;
+    font-size: 12px;
+    gap: 6px;
+  }
+
+  .customer-room-card-meta span svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .customer-room-about h2 {
+    font-size: 18px;
+  }
+
+  .customer-room-about p {
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .customer-room-about-inline {
+    margin-top: 14px;
+    padding: 10px 12px;
+  }
+
+  .customer-room-about-inline span {
+    font-size: 12px;
+  }
+
+  .customer-room-about-inline strong {
+    font-size: 14px;
+  }
+
+  .customer-room-facilities span {
+    min-height: 28px;
+    padding: 0 10px;
+    font-size: 12px;
+  }
+
+  .customer-room-booking-panel {
+    padding: 16px;
+  }
+
+  .customer-room-booking-head h2 {
+    font-size: 18px;
+  }
+
+  .customer-room-availability-banner {
+    min-height: 48px;
+    padding: 10px 12px;
+    gap: 8px;
+  }
+
+  .customer-room-availability-banner p {
+    font-size: 12px;
+  }
+
+  .customer-room-availability-icon {
+    width: 28px;
+    height: 28px;
+  }
+
+  .customer-room-select-wrap select,
+  .room-booking-field textarea,
+  .room-booking-date-trigger {
+    min-height: 40px;
+    padding: 0 10px;
+    font-size: 14px;
+  }
+
+  .room-booking-field textarea {
+    min-height: 80px;
+  }
+
+  .customer-room-view-schedule {
+    min-height: 40px;
+    font-size: 14px;
+  }
+
+  .customer-room-booking-button {
+    min-height: 48px;
+    font-size: 16px;
+  }
+}
 
 /* Payment pages */
 body.hide-global-navbar .header {

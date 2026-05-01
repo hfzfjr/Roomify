@@ -16,7 +16,6 @@ type RoomRecord = {
   status?: string | null
   created_at?: string | null
   type?: string | null
-  image_url?: string | null
 }
 
 type RegionRecord = {
@@ -43,7 +42,7 @@ export async function getRoomDetail(roomId: string): Promise<RoomDetail | null> 
 
   const { data: room, error: roomError } = await supabase
     .from('room')
-    .select('room_id, name, description, capacity, price_per_hour, location, region_id, is_available, status, created_at, type, image_url')
+    .select('room_id, name, description, capacity, price_per_hour, location, region_id, is_available, status, created_at, type')
     .eq('room_id', roomId)
     .maybeSingle<RoomRecord>()
 
@@ -63,6 +62,17 @@ export async function getRoomDetail(roomId: string): Promise<RoomDetail | null> 
 
   if (amenitiesError) {
     throw new Error(amenitiesError.message)
+  }
+
+  // Get room images from room_image table
+  const { data: roomImages, error: imagesError } = await supabase
+    .from('room_image')
+    .select('image_url, is_primary, sort_order')
+    .eq('room_id', roomId)
+    .order('sort_order', { ascending: true })
+
+  if (imagesError) {
+    console.warn('Error fetching room images:', imagesError.message)
   }
 
   let regionName: string | null = null
@@ -110,16 +120,34 @@ export async function getRoomDetail(roomId: string): Promise<RoomDetail | null> 
     throw new Error(bookingError.message)
   }
 
+  const roomImagesList = roomImages?.map(img => img.image_url) || []
   const normalizedRoom = normalizeRoom({
     ...room,
     description: room.description ?? undefined,
     type: room.type ?? undefined,
-    facilities: (amenities ?? []).map(item => item.amenity)
+    facilities: (amenities ?? []).map(item => item.amenity),
+    image_url: roomImagesList[0] ?? null,
+    images: roomImagesList
   })
 
   const activeUpcomingBookings = (upcomingBookings ?? []).filter(
     booking => !isPendingPaymentExpired(booking.status, booking.booking_date)
   )
+
+  const { data: reviewStats, error: reviewError } = await supabase
+    .from('review')
+    .select('rating')
+    .eq('room_id', roomId)
+
+  if (reviewError) {
+    throw new Error(reviewError.message)
+  }
+
+  const reviews = reviewStats ?? []
+  const review_count = reviews.length
+  const rating = review_count > 0
+    ? Number((reviews.reduce((sum, r) => sum + r.rating, 0) / review_count).toFixed(1))
+    : 0
 
   return {
     ...normalizedRoom,
@@ -129,6 +157,8 @@ export async function getRoomDetail(roomId: string): Promise<RoomDetail | null> 
     province_name: provinceName,
     upcoming_booking_count: activeUpcomingBookings.length,
     upcoming_bookings: activeUpcomingBookings,
-    next_booking: activeUpcomingBookings[0] ?? null
+    next_booking: activeUpcomingBookings[0] ?? null,
+    rating,
+    review_count
   }
 }

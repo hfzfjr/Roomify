@@ -25,3 +25,12 @@ export function formatTime(dateStr: string): string {
     minute: '2-digit',
   })
 }
+
+export function formatDateLong(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString('id-ID', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  })
+}

@@ -17,7 +17,6 @@ const ROOM_TYPES = [
   { label: 'Coworking Space', value: 'coworking_space' },
   { label: 'Event Hall', value: 'event_hall' }
 ]
-const PLACEHOLDER = '/images/gambarRuangan.png'
 const WEEK_DAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
 const MONTH_OPTIONS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
@@ -212,13 +211,13 @@ export default function CustomerDashboard() {
   }
 
   function renderRoomCard(room: Room) {
-    const image = room.images?.[0] ?? PLACEHOLDER
+    const image = room.images?.[0]
     const facilities = room.facilities?.join(', ') ?? '-'
 
     return (
       <div key={room.room_id} className="dashboard-room-card">
         <div className="dashboard-room-thumb">
-          <img src={image} alt={room.name} onError={e => { (e.target as HTMLImageElement).src = PLACEHOLDER }} />
+          <img src={image || ''} alt={room.name} />
         </div>
         <div className="dashboard-room-info">
           <div className="dashboard-room-name dashboard-room-ellipsis" title={room.name}>{room.name}</div>

@@ -43,6 +43,8 @@ export interface RoomDetail extends Room {
   upcoming_booking_count?: number
   upcoming_bookings?: UpcomingBooking[]
   next_booking?: UpcomingBooking | null
+  rating?: number
+  review_count?: number
 }
 
 export interface Booking {
@@ -58,6 +60,9 @@ export interface Booking {
     room_id: string
     name: string
     location: string
+    capacity: number
+    region_name?: string | null
+    province_name?: string | null
     images: string[]
     image_url?: string | null
   }
@@ -73,4 +78,20 @@ export interface FacilityRequest {
   created_at: string
   room_name?: string | null
   customer_name?: string | null
+}
+
+export interface Review {
+  review_id: string
+  booking_id: string
+  room_id: string
+  customer_id: string
+  rating: number
+  comment?: string | null
+  created_at: string
+  customer_name?: string | null
+}
+
+export interface RoomRating {
+  average_rating: number
+  review_count: number
 }

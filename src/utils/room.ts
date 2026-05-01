@@ -29,11 +29,12 @@ export function getRoomImages(imageUrl?: string | null) {
 export function normalizeRoom(room: Omit<Room, 'facilities' | 'images'> & {
   facilities?: string[]
   image_url?: string | null
+  images?: string[]
 }) {
   return {
     ...room,
     facilities: room.facilities ?? [],
-    image_url: room.image_url ?? null,
-    images: getRoomImages(room.image_url)
+    image_url: room.image_url ?? room.images?.[0] ?? null,
+    images: room.images ?? getRoomImages(room.image_url)
   }
 }
