@@ -281,8 +281,9 @@ export default function AddRoomPage() {
   };
 
   const buildLocationString = () => {
-    const parts = [formData.address, formData.region_name, formData.province_name].filter(Boolean);
-    return parts.join(', ');
+    // Hanya alamat lengkap yang disimpan di kolom location
+    // region_name dan province_name disimpan terpisah di region_id
+    return formData.address || '';
   };
 
   const handleSubmit = async () => {
@@ -907,7 +908,7 @@ export default function AddRoomPage() {
                     <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
                     <circle cx="12" cy="10" r="3" />
                   </svg>
-                  <span>{buildLocationString() || 'Lokasi belum diisi'}</span>
+                  <span>{formData.address || 'Lokasi belum diisi'}</span>
                 </div>
 
                 <div className={styles.previewDescription}>

@@ -591,33 +591,35 @@ export default function RoomBookingPanel({ room }: Props) {
             )}
           </div>
 
-          <div className="room-booking-field">
-            <span>Waktu mulai</span>
-            <div className="customer-room-select-wrap">
-              <select value={effectiveStartTime} onChange={event => handleStartTimeChange(event.target.value)}>
-                <option value="">--:--</option>
-                {startTimeOptions.map(option => (
-                  <option key={option} value={option}>{option}</option>
-                ))}
-              </select>
+          <div className="room-booking-time-row">
+            <div className="room-booking-field">
+              <span>Waktu mulai</span>
+              <div className="customer-room-select-wrap">
+                <select value={effectiveStartTime} onChange={event => handleStartTimeChange(event.target.value)}>
+                  <option value="">--:--</option>
+                  {startTimeOptions.map(option => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </select>
+              </div>
             </div>
-          </div>
 
-          <div className="room-booking-field">
-            <span>Waktu selesai</span>
-            <div className="customer-room-select-wrap">
-              <select value={effectiveEndTime} onChange={event => handleEndTimeChange(event.target.value)}>
-                <option value="">--:--</option>
-                {endTimeOptions.map(option => (
-                  <option key={option} value={option}>{option}</option>
-                ))}
-              </select>
+            <div className="room-booking-field">
+              <span>Waktu selesai</span>
+              <div className="customer-room-select-wrap">
+                <select value={effectiveEndTime} onChange={event => handleEndTimeChange(event.target.value)}>
+                  <option value="">--:--</option>
+                  {endTimeOptions.map(option => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </select>
+              </div>
             </div>
-          </div>
 
-          <button type="button" className="customer-room-view-schedule" onClick={openScheduleModal}>
-            Lihat jadwal
-          </button>
+            <button type="button" className="customer-room-view-schedule" onClick={openScheduleModal}>
+              Lihat jadwal
+            </button>
+          </div>
 
           <label className="room-booking-field full">
             <span>Tambahkan pesan</span>

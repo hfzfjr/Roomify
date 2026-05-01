@@ -38,7 +38,7 @@ export default async function CustomerRoomDetailPage({
                 <div className="customer-room-card-title-meta">
                   <div className="customer-room-card-title-wrap"> 
                     <h1>{room.name}</h1>
-                    <p>{roomAddress || 'Bandung, Jawa Barat'}</p>
+                    <p className="customer-room-address" title={roomAddress}>{roomAddress}</p>
                   </div>
 
                   <div className="customer-room-card-meta">
@@ -63,8 +63,10 @@ export default async function CustomerRoomDetailPage({
 
             <section className="customer-room-about">
               <h2>Tentang Ruangan</h2>
-              <p>
-                {room.description || 'Ruangan ini siap digunakan untuk meeting, presentasi, dan kebutuhan kolaborasi tim Anda.'}
+              <p className="customer-room-about-subtitle">Informasi singkat mengenai ruangan</p>
+              <hr className="customer-room-about-divider" />
+              <p className="customer-room-about-description">
+                {room.description || 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et, quis nostrud exercitation..'}
               </p>
 
               <div className="customer-room-about-inline">
@@ -75,11 +77,21 @@ export default async function CustomerRoomDetailPage({
                     : 'Belum ada jadwal booking dalam waktu dekat'}
                 </strong>
               </div>
+            </section>
 
-              <div className="customer-room-facilities">
+            <section className="customer-room-facilities-section">
+              <h3>Fasilitas</h3>
+              <p className="customer-room-facilities-section-subtitle">Fasilitas yang bisa Anda nikmati di ruangan ini</p>
+              <hr className="customer-room-facilities-section-divider" />
+              <div className="customer-room-facilities-grid">
                 {room.facilities.length > 0 ? (
                   room.facilities.map(facility => (
-                    <span key={facility}>{facility}</span>
+                    <div key={facility} className="customer-room-facility-item">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      {facility}
+                    </div>
                   ))
                 ) : (
                   <p className="customer-room-muted">Belum ada data fasilitas tambahan untuk ruangan ini.</p>
