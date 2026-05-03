@@ -442,20 +442,16 @@ export default function RoomBookingPanel({ room }: Props) {
         <div className="customer-room-booking-head">
           <h2>Booking Ruangan</h2>
           <p>Atas nama <strong>{userName || 'Customer'}</strong></p>
-        </div>
-
-        <div className={`customer-room-availability-banner ${slotAvailability.state}`}>
-          <span className="customer-room-availability-icon" aria-hidden="true">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              {/* Lingkaran outline tebal */}
-              <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none" />
-              {/* Batang tanda seru */}
-              <rect x="11" y="5.5" width="2" height="9" rx="1" fill="currentColor" />
-              {/* Titik tanda seru */}
-              <circle cx="12" cy="17" r="1.2" fill="currentColor" />
-            </svg>
-          </span>
-          <p>{slotAvailability.message}</p>
+          <div className="customer-room-info-message">
+            <span className="customer-room-info-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none" />
+                <rect x="11" y="5.5" width="2" height="9" rx="1" fill="currentColor" />
+                <circle cx="12" cy="17" r="1.2" fill="currentColor" />
+              </svg>
+            </span>
+            <p>Pilih tanggal dan jam untuk melihat ketersediaan ruangan</p>
+          </div>
         </div>
 
         <div className="customer-room-booking-grid">
@@ -621,6 +617,23 @@ export default function RoomBookingPanel({ room }: Props) {
             </button>
           </div>
 
+          {/* Availability banner - only show when date and times are selected */}
+          {slotAvailability.state !== 'idle' && (
+            <div className={`customer-room-availability-banner ${slotAvailability.state}`}>
+              <span className="customer-room-availability-icon" aria-hidden="true">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  {/* Lingkaran outline tebal */}
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" fill="none" />
+                  {/* Batang tanda seru */}
+                  <rect x="11" y="5.5" width="2" height="9" rx="1" fill="currentColor" />
+                  {/* Titik tanda seru */}
+                  <circle cx="12" cy="17" r="1.2" fill="currentColor" />
+                </svg>
+              </span>
+              <p>{slotAvailability.message}</p>
+            </div>
+          )}
+
           <label className="room-booking-field full">
             <span>Tambahkan pesan</span>
             <textarea
@@ -642,9 +655,6 @@ export default function RoomBookingPanel({ room }: Props) {
             <strong>{durationHours > 0 ? `Rp ${new Intl.NumberFormat('id-ID').format(totalCost)}` : '-'}</strong>
           </div>
         </div>
-
-        {error && <p className="room-booking-feedback error">{error}</p>}
-        {success && <p className="room-booking-feedback success">{success}</p>}
 
         <button
           type="button"

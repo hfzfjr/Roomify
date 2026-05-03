@@ -6,10 +6,9 @@
 
 .dashboard-hero {
   position: relative;
-  margin-top: -200px;
   overflow: hidden;
   background: transparent;
-  height: 600px;
+  height: 60vh;
 }
 
 .dashboard-hero-img {
@@ -686,7 +685,7 @@
 }
 
 .dashboard-room-name {
-  font-weight: 500;
+  font-weight: 600;
   font-size: 18px;
   color: #111827;
   min-width: 0;
@@ -697,13 +696,14 @@
   align-items: center;
   gap: 10px;
   min-width: 0;
-  color: #111827;
+  color: #000000;
   font-size: 14px;
   line-height: 1.4;
 }
 
 .dashboard-meta-row svg {
   flex-shrink: 0;
+  color: #000000;
 }
 
 .dashboard-meta-row span {
@@ -1048,7 +1048,7 @@
 
 .customer-bookings-filter-item.active {
   background: #e0f7ff;
-  color: #00b8d4;
+  color: var(--border-text-cyan);
 }
 
 .customer-bookings-filter-count {
@@ -1066,7 +1066,7 @@
 }
 
 .customer-bookings-filter-item.active .customer-bookings-filter-count {
-  background: #00b8d4;
+  background: var(--border-text-cyan);
   color: #ffffff;
 }
 
@@ -1212,11 +1212,11 @@
   align-items: center;
   gap: 10px;
   font-size: 14px;
-  color: #374151;
+  color: #000000;
 }
 
 .customer-booking-card-v2-meta-row svg {
-  color: #6b7280;
+  color: #000000;
   flex-shrink: 0;
 }
 
@@ -1232,11 +1232,11 @@
   align-items: center;
   gap: 6px;
   font-size: 13px;
-  color: #6b7280;
+  color: #000000;
 }
 
 .customer-booking-card-v2-meta svg {
-  color: #9ca3af;
+  color: #000000;
   flex-shrink: 0;
 }
 
@@ -1301,7 +1301,7 @@
 
 .customer-booking-card-v2-transaction strong {
   color: #111827;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .customer-booking-card-v2-actions {

@@ -360,7 +360,7 @@ function CustomerRooms() {
     }
 
     setFilteredRooms(result)
-  }, [rooms, appliedType, appliedCapacity, appliedLocation, selectedFacilities, selectedRatings, sortBy, roomRatings, pendingLocationQuery, isLocationSelected])
+  }, [rooms, appliedType, appliedCapacity, appliedLocation, selectedFacilities, selectedRatings, sortBy, roomRatings])
 
   function handleLocationSearch(query: string) {
     setPendingLocationQuery(query)
@@ -707,6 +707,37 @@ function CustomerRooms() {
   )
 
   const renderSidebar = () => {
+    // Skeleton loading state - show 5 placeholder items
+    if (loading) {
+      return (
+        <aside className="rooms-sidebar">
+          <div className="rooms-filter-section">
+            <h4>Fasilitas</h4>
+            <div className="rooms-filter-list">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="rooms-filter-item rooms-filter-skeleton">
+                  <span className="rooms-filter-checkbox skeleton-checkbox" />
+                  <span className="rooms-filter-label skeleton-text" />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="rooms-filter-section">
+            <h4>Rating</h4>
+            <div className="rooms-filter-list">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="rooms-filter-item rooms-filter-skeleton">
+                  <span className="rooms-filter-checkbox skeleton-checkbox" />
+                  <span className="rooms-filter-label skeleton-text" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </aside>
+      )
+    }
+
     const facilityOptions = dynamicFacilityOptions.length > 1 ? dynamicFacilityOptions : [
       { label: 'Semua', value: '' },
       { label: 'Wi-Fi', value: 'Wi-Fi' },
