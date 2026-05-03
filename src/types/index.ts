@@ -26,6 +26,8 @@ export interface Room {
   facilities: string[]
   images?: string[]
   image_url?: string | null
+  region?: string | null
+  province?: string | null
 }
 
 export interface UpcomingBooking {

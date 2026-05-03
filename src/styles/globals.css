@@ -25,6 +25,9 @@
   --text-dark: #111827;
   --error: #EF4444;
   --success: #10B981;
+  --border-text-cyan: #54d2f9;
+  --background-cyan: #ddf7ff;
+  --background-light-blue: #effbff;
   
   /* Font */
   --font-family: 'Plus Jakarta Sans', sans-serif;

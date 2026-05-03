@@ -171,7 +171,35 @@ export default function CustomerDashboard() {
       return
     }
 
-    void fetchAvailable(filterType, filterCapacity, isLocationSelected ? filterLocation ?? undefined : undefined)
+    // Build query params for redirect to customer/rooms
+    const params = new URLSearchParams()
+    
+    // Add location param - use location_id if selected, otherwise use text query
+    if (filterLocation) {
+      if (filterLocation.type === 'province') {
+        params.set('province_id', String(filterLocation.id))
+      } else {
+        params.set('region_id', String(filterLocation.id))
+      }
+    } else if (locationSearchQuery.trim()) {
+      params.set('location', locationSearchQuery.trim())
+    }
+    
+    // Add other filters
+    if (filterType) {
+      params.set('type', filterType)
+    }
+    if (filterDate) {
+      params.set('date', filterDate)
+    }
+    if (filterCapacity) {
+      params.set('capacity', filterCapacity)
+    }
+    
+    // Redirect to customer/rooms with search params
+    const queryString = params.toString()
+    const redirectUrl = queryString ? `/customer/rooms?${queryString}` : '/customer/rooms'
+    router.push(redirectUrl)
   }
 
   function handleLocationSearch(query: string) {
@@ -541,57 +569,26 @@ export default function CustomerDashboard() {
       </div>
 
       <main className="dashboard-main">
-        {!hasActiveFilters && (
-          <section className="dashboard-section">
-            <div className="dashboard-section-row">
-              <span className="dashboard-section-title">Rekomendasi</span>
-              <button className="dashboard-see-all" onClick={() => router.push('/customer/rooms')}>
-                Lihat selengkapnya
-              </button>
-            </div>
-
-            <div className="dashboard-cards-container">
-              {loadingRec ? (
-                <div className="dashboard-cards-grid">
-                  {Array.from({ length: 4 }).map((_, index) => (
-                    <div key={index} className="dashboard-room-card-skeleton" />
-                  ))}
-                </div>
-              ) : recommended.length === 0 ? (
-                <p className="dashboard-empty">Belum ada ruangan tersedia.</p>
-              ) : (
-                <div className="dashboard-cards-grid">
-                  {recommended.map(renderRoomCard)}
-                </div>
-              )}
-            </div>
-          </section>
-        )}
-
         <section className="dashboard-section">
           <div className="dashboard-section-row">
-            <span className="dashboard-section-title">Ruangan tersedia hari ini</span>
+            <span className="dashboard-section-title">Rekomendasi</span>
             <button className="dashboard-see-all" onClick={() => router.push('/customer/rooms')}>
               Lihat selengkapnya
             </button>
           </div>
 
           <div className="dashboard-cards-container">
-            {loadingAvail ? (
+            {loadingRec ? (
               <div className="dashboard-cards-grid">
-                {Array.from({ length: 8 }).map((_, index) => (
+                {Array.from({ length: 4 }).map((_, index) => (
                   <div key={index} className="dashboard-room-card-skeleton" />
                 ))}
               </div>
-            ) : visibleAvailable.length === 0 ? (
-              <p className="dashboard-empty">
-                {isLocationSelectionPending
-                  ? 'Pilih provinsi atau kota dari dropdown untuk menampilkan hasil.'
-                  : 'Tidak ada ruangan yang sesuai filter.'}
-              </p>
+            ) : recommended.length === 0 ? (
+              <p className="dashboard-empty">Belum ada ruangan tersedia.</p>
             ) : (
               <div className="dashboard-cards-grid">
-                {visibleAvailable.map(renderRoomCard)}
+                {recommended.map(renderRoomCard)}
               </div>
             )}
           </div>

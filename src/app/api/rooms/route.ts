@@ -193,6 +193,78 @@ export async function GET(request: Request) {
       console.warn('Error fetching room images:', imagesError.message)
     }
 
+    // Get unique region_ids from rooms for name lookup
+    const roomRegionIds = [...new Set(rooms.map(room => room.region_id).filter(Boolean))]
+    
+    // Fetch region and province data
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let regionData: any[] = []
+    if (roomRegionIds.length > 0) {
+      const { data: regions, error: regionError } = await supabase
+        .from('region')
+        .select('region_id, name, province_id, province(name)')
+        .in('region_id', roomRegionIds)
+      
+      if (regionError) {
+        console.warn('Error fetching regions:', regionError.message)
+      } else {
+        regionData = regions || []
+      }
+    }
+    
+    // Create region lookup map
+    const regionById = new Map<string, { name: string; province_name: string | null }>()
+    regionData.forEach(r => {
+      // Try multiple ways to get province name from Supabase foreign key data
+      let provinceName: string | null = null
+      
+      // Method 1: province as array (standard Supabase foreign key)
+      if (Array.isArray(r.province) && r.province.length > 0 && r.province[0].name) {
+        provinceName = r.province[0].name
+      }
+      // Method 2: province as object directly
+      else if (r.province && typeof r.province === 'object' && !Array.isArray(r.province) && r.province.name) {
+        provinceName = r.province.name
+      }
+      // Method 3: fallback to province_id if no name available
+      else if (r.province_id) {
+        // Will try to fetch separately if needed
+        provinceName = null
+      }
+      
+      regionById.set(r.region_id, {
+        name: r.name,
+        province_name: provinceName
+      })
+    })
+    
+    // If we have region_ids with missing province names, fetch them directly
+    const missingProvinceIds = regionData
+      .filter(r => !regionById.get(r.region_id)?.province_name && r.province_id)
+      .map(r => r.province_id)
+      .filter((id, index, arr) => arr.indexOf(id) === index) // unique
+    
+    if (missingProvinceIds.length > 0) {
+      const { data: provinces } = await supabase
+        .from('province')
+        .select('province_id, name')
+        .in('province_id', missingProvinceIds)
+      
+      if (provinces) {
+        const provinceMap = new Map(provinces.map(p => [p.province_id, p.name]))
+        regionData.forEach(r => {
+          const current = regionById.get(r.region_id)
+          if (current && !current.province_name && r.province_id) {
+            const provinceName = provinceMap.get(r.province_id) || null
+            regionById.set(r.region_id, {
+              name: current.name,
+              province_name: provinceName
+            })
+          }
+        })
+      }
+    }
+
     // Group amenities by room_id
     const amenitiesByRoom: { [key: string]: string[] } = {}
     if (amenities) {
@@ -215,13 +287,18 @@ export async function GET(request: Request) {
       })
     }
 
-    // Combine rooms with their amenities and images
-    const roomsWithAmenities = rooms.map(room => ({
-      ...room,
-      image_url: imagesByRoom[room.room_id]?.[0] ?? null,
-      images: imagesByRoom[room.room_id] || [],
-      facilities: amenitiesByRoom[room.room_id] || []
-    }))
+    // Combine rooms with their amenities, images, and region/province data
+    const roomsWithAmenities = rooms.map(room => {
+      const regionInfo = room.region_id ? regionById.get(room.region_id) : null
+      return {
+        ...room,
+        image_url: imagesByRoom[room.room_id]?.[0] ?? null,
+        images: imagesByRoom[room.room_id] || [],
+        facilities: amenitiesByRoom[room.room_id] || [],
+        region: regionInfo?.name || null,
+        province: regionInfo?.province_name || null
+      }
+    })
 
     return NextResponse.json({ success: true, data: roomsWithAmenities })
   } catch (error) {
