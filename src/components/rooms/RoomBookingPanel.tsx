@@ -475,9 +475,7 @@ export default function RoomBookingPanel({ room }: Props) {
           <div className={`room-booking-field full room-booking-date-field${fieldErrors.date ? ' has-error' : ''}`} ref={datePickerRef}>
             <span className="required-field-label">
               Pilih tanggal
-              <svg className="required-star" width="12" height="12" viewBox="0 0 24 24" fill="#ff1c1c">
-                <path d="M12 2L14.09 8.26L20.18 9.27L15.54 13.14L16.82 19.02L12 15.77L7.18 19.02L8.46 13.14L3.82 9.27L9.91 8.26L12 2Z"/>
-              </svg>
+              {fieldErrors.date && <span className="required-star">*</span>}
             </span>
             <button
               ref={dateTriggerRef}
@@ -613,9 +611,7 @@ export default function RoomBookingPanel({ room }: Props) {
             <div className={`room-booking-field${fieldErrors.startTime ? ' has-error' : ''}`}>
               <span className="required-field-label">
                 Waktu mulai
-                <svg className="required-star" width="12" height="12" viewBox="0 0 24 24" fill="#ff1c1c">
-                  <path d="M12 2L14.09 8.26L20.18 9.27L15.54 13.14L16.82 19.02L12 15.77L7.18 19.02L8.46 13.14L3.82 9.27L9.91 8.26L12 2Z"/>
-                </svg>
+                {fieldErrors.startTime && <span className="required-star">*</span>}
               </span>
               <div className="customer-room-select-wrap">
                 <select value={effectiveStartTime} onChange={event => handleStartTimeChange(event.target.value)}>
@@ -630,9 +626,7 @@ export default function RoomBookingPanel({ room }: Props) {
             <div className={`room-booking-field${fieldErrors.endTime ? ' has-error' : ''}`}>
               <span className="required-field-label">
                 Waktu selesai
-                <svg className="required-star" width="12" height="12" viewBox="0 0 24 24" fill="#ff1c1c">
-                  <path d="M12 2L14.09 8.26L20.18 9.27L15.54 13.14L16.82 19.02L12 15.77L7.18 19.02L8.46 13.14L3.82 9.27L9.91 8.26L12 2Z"/>
-                </svg>
+                {fieldErrors.endTime && <span className="required-star">*</span>}
               </span>
               <div className="customer-room-select-wrap">
                 <select value={effectiveEndTime} onChange={event => handleEndTimeChange(event.target.value)}>
@@ -666,6 +660,18 @@ export default function RoomBookingPanel({ room }: Props) {
             </div>
           )}
 
+          {/* Error message display */}
+          {error && (
+            <div className="customer-room-booking-error">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff1c1c" strokeWidth="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              <span>{error}</span>
+            </div>
+          )}
+
           <label className="room-booking-field full">
             <span>Tambahkan pesan</span>
             <textarea
@@ -676,18 +682,6 @@ export default function RoomBookingPanel({ room }: Props) {
             />
           </label>
         </div>
-
-        {/* Error message display */}
-        {error && (
-          <div className="customer-room-booking-error">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff1c1c" strokeWidth="2">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="12" y1="8" x2="12" y2="12"/>
-              <line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
-            <span>{error}</span>
-          </div>
-        )}
 
         <div className="customer-room-booking-summary">
           <div>
