@@ -28,19 +28,31 @@ export default function LoginForm({ onSwitchTab }: Props) {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({ email: false, password: false });
+  const [errorMessages, setErrorMessages] = useState({ email: '', password: '' });
   const [serverError, setServerError] = useState('');
 
   const handleLogin = async () => {
     setErrors({ email: false, password: false });
+    setErrorMessages({ email: '', password: '' });
     setServerError('');
 
     let valid = true;
-    if (!email || !isValidEmail(email)) {
+    if (!email.trim()) {
       setErrors(prev => ({ ...prev, email: true }));
+      setErrorMessages(prev => ({ ...prev, email: 'Email tidak boleh kosong' }));
+      valid = false;
+    } else if (!isValidEmail(email)) {
+      setErrors(prev => ({ ...prev, email: true }));
+      setErrorMessages(prev => ({ ...prev, email: 'Email harus menggunakan @gmail.com' }));
       valid = false;
     }
     if (!password) {
       setErrors(prev => ({ ...prev, password: true }));
+      setErrorMessages(prev => ({ ...prev, password: 'Password tidak boleh kosong' }));
+      valid = false;
+    } else if (password.length < 8) {
+      setErrors(prev => ({ ...prev, password: true }));
+      setErrorMessages(prev => ({ ...prev, password: 'Password minimal 8 karakter' }));
       valid = false;
     }
     if (!valid) return;
@@ -76,7 +88,7 @@ export default function LoginForm({ onSwitchTab }: Props) {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
-          <p className="error-msg">Masukkan email yang valid.</p>
+          <p className="error-msg">{errorMessages.email || 'Email harus menggunakan @gmail.com'}</p>
         </div>
 
         <div className={`field ${errors.password ? 'error' : ''}`}>
@@ -99,7 +111,7 @@ export default function LoginForm({ onSwitchTab }: Props) {
               {showPassword ? EyeClosedIcon : EyeOpenIcon}
             </button>
           </div>
-          <p className="error-msg">Password tidak boleh kosong.</p>
+          <p className="error-msg">{errorMessages.password || 'Password tidak boleh kosong'}</p>
         </div>
 
         {serverError && (

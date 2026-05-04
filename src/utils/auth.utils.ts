@@ -46,10 +46,10 @@ export function initPasswordToggle(inputId: string, toggleId: string): void {
 }
 
 /**
- * Validasi format email
+ * Validasi format email (hanya menerima Gmail)
  * @param email - email string
  * @returns boolean
  */
 export function isValidEmail(email: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  return /^[^\s@]+@gmail\.com$/i.test(email);
 }

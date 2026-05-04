@@ -35,6 +35,22 @@ function getNextFacilityRequestId(existingIds: Array<{ request_id: string }>) {
   return `fr-${String(nextIteration).padStart(2, '0')}`
 }
 
+function getNextPaymentId(existingIds: Array<{ payment_id: string }>) {
+  const nextIteration = existingIds
+    .map(item => Number(item.payment_id?.split('-')[1] ?? 0))
+    .reduce((highest, value) => Math.max(highest, value), 0) + 1
+
+  return `p-${String(nextIteration).padStart(2, '0')}`
+}
+
+function getNextInvoiceId(existingIds: Array<{ invoice_id: string }>) {
+  const nextIteration = existingIds
+    .map(item => Number(item.invoice_id?.split('-')[1] ?? 0))
+    .reduce((highest, value) => Math.max(highest, value), 0) + 1
+
+  return `inv-${String(nextIteration).padStart(2, '0')}`
+}
+
 function isHalfHourSlot(date: Date) {
   const minutes = date.getMinutes()
   return minutes === 0 || minutes === 30
@@ -385,11 +401,13 @@ export async function PATCH(request: Request) {
     const {
       booking_id,
       user_id,
-      action
+      action,
+      payment_method
     } = body as {
       booking_id?: string
       user_id?: string
       action?: 'confirm_payment' | 'cancel'
+      payment_method?: string
     }
 
     if (!booking_id || !user_id || !action) {
@@ -430,6 +448,17 @@ export async function PATCH(request: Request) {
         return NextResponse.json({ success: false, message: 'Waktu pembayaran sudah habis.' }, { status: 409 })
       }
 
+      // Get booking details with room info for payment/invoice
+      const { data: bookingDetails, error: bookingDetailsError } = await supabase
+        .from('booking')
+        .select('booking_id, room_id, total_cost, customer_id')
+        .eq('booking_id', booking_id)
+        .maybeSingle()
+
+      if (bookingDetailsError) {
+        return NextResponse.json({ success: false, message: bookingDetailsError.message }, { status: 500 })
+      }
+
       const { data: updatedBooking, error: updateError } = await supabase
         .from('booking')
         .update({ status: 'confirmed' })
@@ -440,6 +469,89 @@ export async function PATCH(request: Request) {
 
       if (updateError) {
         return NextResponse.json({ success: false, message: updateError.message }, { status: 500 })
+      }
+
+      // Get existing payment IDs for sequential generation
+      const { data: paymentIds } = await supabase
+        .from('payment')
+        .select('payment_id')
+
+      // Create or update payment record
+      const paymentId = getNextPaymentId(paymentIds ?? [])
+      const now = formatDateForDatabase()
+      const actualPaymentMethod = (payment_method || 'manual_confirmation').toUpperCase()
+      
+      // Check if payment already exists for this booking
+      const { data: existingPayment } = await supabase
+        .from('payment')
+        .select('payment_id')
+        .eq('booking_id', booking_id)
+        .maybeSingle()
+
+      if (existingPayment) {
+        // Update existing payment
+        await supabase
+          .from('payment')
+          .update({
+            payment_method: actualPaymentMethod,
+            amount: bookingDetails?.total_cost || 0,
+            status: 'success',
+            paid_at: now
+          })
+          .eq('booking_id', booking_id)
+      } else {
+        // Insert new payment record
+        await supabase
+          .from('payment')
+          .insert({
+            payment_id: paymentId,
+            booking_id: booking_id,
+            payment_method: actualPaymentMethod,
+            amount: bookingDetails?.total_cost || 0,
+            status: 'success',
+            paid_at: now
+          })
+      }
+
+      // Get the payment record (either newly created or updated)
+      const { data: paymentRecord } = await supabase
+        .from('payment')
+        .select('payment_id')
+        .eq('booking_id', booking_id)
+        .maybeSingle()
+
+      // Create invoice if payment record exists
+      if (paymentRecord && bookingDetails) {
+        const serviceFee = 2500
+        const subtotal = bookingDetails.total_cost || 0
+        const taxAmount = Math.round((subtotal + serviceFee) * 0.11)
+        const totalAmount = subtotal + serviceFee + taxAmount
+
+        // Check if invoice already exists
+        const { data: existingInvoice } = await supabase
+          .from('invoice')
+          .select('invoice_id')
+          .eq('booking_id', booking_id)
+          .maybeSingle()
+
+        if (!existingInvoice) {
+          // Get existing invoice IDs for sequential generation
+          const { data: invoiceIds } = await supabase
+            .from('invoice')
+            .select('invoice_id')
+
+          await supabase
+            .from('invoice')
+            .insert({
+              invoice_id: getNextInvoiceId(invoiceIds ?? []),
+              payment_id: paymentRecord.payment_id,
+              booking_id: booking_id,
+              customer_id: bookingDetails.customer_id,
+              room_id: bookingDetails.room_id,
+              total_amount: totalAmount,
+              printed_at: now
+            })
+        }
       }
 
       return NextResponse.json({

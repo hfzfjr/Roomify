@@ -29,23 +29,36 @@ export default function RegisterForm({ onSwitchTab }: Props) {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({ nama: false, email: false, password: false });
+  const [errorMessages, setErrorMessages] = useState({ nama: '', email: '', password: '' });
   const [serverError, setServerError] = useState('');
 
   const handleSignup = async () => {
     setErrors({ nama: false, email: false, password: false });
+    setErrorMessages({ nama: '', email: '', password: '' });
     setServerError('');
 
     let valid = true;
-    if (!nama) {
+    if (!nama.trim()) {
       setErrors(prev => ({ ...prev, nama: true }));
+      setErrorMessages(prev => ({ ...prev, nama: 'Nama lengkap tidak boleh kosong' }));
       valid = false;
     }
-    if (!email || !isValidEmail(email)) {
+    if (!email.trim()) {
       setErrors(prev => ({ ...prev, email: true }));
+      setErrorMessages(prev => ({ ...prev, email: 'Email tidak boleh kosong' }));
+      valid = false;
+    } else if (!isValidEmail(email)) {
+      setErrors(prev => ({ ...prev, email: true }));
+      setErrorMessages(prev => ({ ...prev, email: 'Email harus menggunakan @gmail.com' }));
       valid = false;
     }
-    if (password.length < 8) {
+    if (!password) {
       setErrors(prev => ({ ...prev, password: true }));
+      setErrorMessages(prev => ({ ...prev, password: 'Password tidak boleh kosong' }));
+      valid = false;
+    } else if (password.length < 8) {
+      setErrors(prev => ({ ...prev, password: true }));
+      setErrorMessages(prev => ({ ...prev, password: 'Password minimal 8 karakter' }));
       valid = false;
     }
     if (!valid) return;
@@ -81,7 +94,7 @@ export default function RegisterForm({ onSwitchTab }: Props) {
             value={nama}
             onChange={(e) => setNama(e.target.value)}
           />
-          <p className="error-msg">Nama lengkap tidak boleh kosong.</p>
+          <p className="error-msg">{errorMessages.nama || 'Nama lengkap tidak boleh kosong'}</p>
         </div>
 
         <div className={`field ${errors.email ? 'error' : ''}`}>
@@ -94,7 +107,7 @@ export default function RegisterForm({ onSwitchTab }: Props) {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
-          <p className="error-msg">Masukkan email yang valid.</p>
+          <p className="error-msg">{errorMessages.email || 'Email harus menggunakan @gmail.com'}</p>
         </div>
 
         <div className={`field ${errors.password ? 'error' : ''}`}>
@@ -117,7 +130,7 @@ export default function RegisterForm({ onSwitchTab }: Props) {
               {showPassword ? EyeClosedIcon : EyeOpenIcon}
             </button>
           </div>
-          <p className="error-msg">Password minimal 8 karakter.</p>
+          <p className="error-msg">{errorMessages.password || 'Password minimal 8 karakter'}</p>
         </div>
 
         {serverError && (

@@ -1,6 +1,6 @@
 import { BookingStatus } from '@/types'
 
-export const BOOKING_PAYMENT_WINDOW_MINUTES = 30
+export const BOOKING_PAYMENT_WINDOW_MINUTES = 15
 
 function toDate(value: string | Date) {
   if (value instanceof Date) {

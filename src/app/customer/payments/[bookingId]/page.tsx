@@ -229,26 +229,103 @@ export default function CustomerPaymentDetailPage() {
     }
 
     return [
-      { label: 'Tanggal', value: formatDate(detail.booking.check_in) },
-      { label: 'Jam mulai', value: formatTime(detail.booking.check_in) },
-      { label: 'Jam selesai', value: formatTime(detail.booking.check_out) },
-      { label: 'Durasi', value: `${detail.summary.duration_hours} jam` },
-      { label: 'Nama Pemesan', value: detail.customer.name },
-      { label: 'Kontak Pemesan', value: detail.customer.email }
+      { label: 'Tanggal', value: formatDate(detail?.booking?.check_in) },
+      { label: 'Jam mulai', value: formatTime(detail?.booking?.check_in) },
+      { label: 'Jam selesai', value: formatTime(detail?.booking?.check_out) },
+      { label: 'Durasi', value: `${detail?.summary?.duration_hours} jam` },
+      { label: 'Nama Pemesan', value: detail?.customer?.name },
+      { label: 'Kontak Pemesan', value: detail?.customer?.email }
     ]
   }, [detail])
 
   if (loading) {
     return (
       <div className="customer-payment-page">
+        <div className="customer-payment-subheader">
+          <button type="button" disabled aria-label="Kembali">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
+              <path strokeLinecap="round" strokeLinejoin="round" d="m15 18-6-6 6-6" />
+            </svg>
+          </button>
+          <h1>Detail Pembayaran</h1>
+        </div>
+
         <div className="customer-payment-shell">
-          <p className="rooms-empty">Memuat detail pembayaran...</p>
+          <div className="customer-payment-layout">
+            <div className="customer-payment-main">
+              <section className="customer-payment-card">
+                <div className="customer-payment-section-header">
+                  <h2>Detail Booking</h2>
+                  <p>Ringkasan jadwal dan fasilitas ruangan yang dipilih</p>
+                </div>
+                <div className="customer-payment-room-row">
+                  <div className="customer-payment-skeleton-avatar" />
+                  <div className="customer-payment-room-meta">
+                    <div className="customer-payment-skeleton-text long" />
+                    <div className="customer-payment-skeleton-text medium" />
+                  </div>
+                  <div className="customer-payment-skeleton-text short" />
+                </div>
+
+                <div className="customer-payment-info-list">
+                  <div><span>Tanggal</span><strong className="customer-payment-skeleton-text medium" /></div>
+                  <div><span>Jam mulai</span><strong className="customer-payment-skeleton-text medium" /></div>
+                  <div><span>Jam selesai</span><strong className="customer-payment-skeleton-text medium" /></div>
+                  <div><span>Durasi</span><strong className="customer-payment-skeleton-text short" /></div>
+                  <div><span>Nama Pemesan</span><strong className="customer-payment-skeleton-text long" /></div>
+                  <div><span>Kontak Pemesan</span><strong className="customer-payment-skeleton-text long" /></div>
+                </div>
+
+                <div className="customer-payment-facilities">
+                  <h4>Fasilitas yang didapatkan</h4>
+                  <div>
+                    <div className="customer-payment-skeleton-text medium" />
+                    <div className="customer-payment-skeleton-text short" />
+                  </div>
+                </div>
+              </section>
+
+              <section className="customer-payment-card customer-payment-method-section">
+                <div className="customer-payment-method-list">
+                  <h2>Metode Pembayaran</h2>
+                  <div className="customer-payment-skeleton-text full" />
+                  <div className="customer-payment-skeleton-text full" />
+                  <div className="customer-payment-skeleton-text full" />
+                </div>
+              </section>
+            </div>
+
+            <aside className="customer-payment-summary">
+              <div className="customer-payment-summary-lines">
+                <h2>Ringkasan Pembayaran</h2>
+                <div><span>Harga sewa</span><strong className="customer-payment-skeleton-text medium" /></div>
+                <div><span>Durasi</span><strong className="customer-payment-skeleton-text short" /></div>
+                <div><span>Subtotal</span><strong className="customer-payment-skeleton-text medium" /></div>
+                <div><span>Biaya layanan</span><strong className="customer-payment-skeleton-text medium" /></div>
+                <div><span>PPN (11%)</span><strong className="customer-payment-skeleton-text medium" /></div>
+              </div>
+
+              <div className="customer-payment-summary-total">
+                <span>Total bayar</span>
+                <strong className="customer-payment-skeleton-text long" />
+              </div>
+
+              <div className="customer-payment-summary-actions">
+                <button type="button" className="secondary" disabled>
+                  <div className="customer-payment-skeleton-text short" />
+                </button>
+                <button type="button" className="primary" disabled>
+                  <div className="customer-payment-skeleton-text medium" />
+                </button>
+              </div>
+            </aside>
+          </div>
         </div>
       </div>
     )
   }
 
-  if (error || !detail) {
+  if (error) {
     return (
       <div className="customer-payment-page">
         <div className="customer-payment-shell">
@@ -258,7 +335,7 @@ export default function CustomerPaymentDetailPage() {
     )
   }
 
-  const isPending = detail.booking.status === 'pending'
+  const isPending = detail?.booking?.status === 'pending'
 
   async function handleCancelPayment() {
     if (!detail) {
@@ -273,7 +350,7 @@ export default function CustomerPaymentDetailPage() {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          booking_id: detail.booking.booking_id,
+          booking_id: detail?.booking?.booking_id,
           user_id: userId,
           action: 'cancel'
         })
@@ -285,7 +362,7 @@ export default function CustomerPaymentDetailPage() {
         throw new Error(result.message || 'Gagal membatalkan pembayaran.')
       }
 
-      router.push(`/customer/rooms/${detail.room.room_id}`)
+      router.push(`/customer/rooms/${detail?.room?.room_id}`)
     } catch (cancelError) {
       setError(cancelError instanceof Error ? cancelError.message : 'Gagal membatalkan pembayaran.')
       setShowCancelOverlay(false)
@@ -309,15 +386,17 @@ export default function CustomerPaymentDetailPage() {
         <div className="customer-payment-layout">
           <div className="customer-payment-main">
             <section className="customer-payment-card">
-              <h2>Detail Booking</h2>
-              <p>Ringkasan jadwal dan fasilitas ruangan yang dipilih</p>
+              <div className="customer-payment-section-header">
+                <h2>Detail Booking</h2>
+                <p>Ringkasan jadwal dan fasilitas ruangan yang dipilih</p>
+              </div>
               <div className="customer-payment-room-row">
-                <img src={detail.room.images[0] || '/images/gambarRuangan.png'} alt={detail.room.name} />
+                <img src={detail?.room?.images?.[0] || '/images/gambarRuangan.png'} alt={detail?.room?.name} />
                 <div className="customer-payment-room-meta">
-                  <h3>{detail.room.name}</h3>
-                  <p>{detail.room.location}</p>
+                  <h3>{detail?.room?.name}</h3>
+                  <p>{detail?.room?.location}</p>
                 </div>
-                <span>{getRoomTypeLabel(detail.room.type)}</span>
+                <span>{getRoomTypeLabel(detail?.room?.type)}</span>
               </div>
 
               <div className="customer-payment-info-list">
@@ -332,8 +411,8 @@ export default function CustomerPaymentDetailPage() {
               <div className="customer-payment-facilities">
                 <h4>Fasilitas yang didapatkan</h4>
                 <div>
-                  {detail.room.facilities.length > 0 ? (
-                    detail.room.facilities.map(facility => (
+                  {detail?.room?.facilities && detail.room.facilities.length > 0 ? (
+                    detail?.room?.facilities?.map(facility => (
                       <span key={facility}>
                         <FacilityIcon facility={facility} />
                         {facility}
@@ -349,7 +428,6 @@ export default function CustomerPaymentDetailPage() {
             <section className="customer-payment-card customer-payment-method-section">
               <div className="customer-payment-method-list">
                 <h2>Metode Pembayaran</h2>
-                <p>Pilih salah satu metode pembayaran di bawah ini</p>
                 {PAYMENT_METHODS.map(method => (
                   <label key={method.value} className={`customer-payment-method-item${selectedMethod === method.value ? ' active' : ''}`}>
                     <div className="customer-payment-method-meta">
@@ -380,16 +458,16 @@ export default function CustomerPaymentDetailPage() {
           <aside className="customer-payment-summary">
             <div className="customer-payment-summary-lines">
               <h2>Ringkasan Pembayaran</h2>
-              <div><span>Harga sewa</span><strong>{formatRupiah(detail.summary.price_per_hour)}/jam</strong></div>
-              <div><span>Durasi</span><strong>{detail.summary.duration_hours} jam</strong></div>
-              <div><span>Subtotal</span><strong>{formatRupiah(detail.summary.subtotal)}</strong></div>
-              <div><span>Biaya layanan</span><strong>{formatRupiah(detail.summary.service_fee)}</strong></div>
-              <div><span>PPN (11%)</span><strong>{formatRupiah(detail.summary.tax_amount)}</strong></div>
+              <div><span>Harga sewa</span><strong>{formatRupiah(detail?.summary?.price_per_hour || 0)}/jam</strong></div>
+              <div><span>Durasi</span><strong>{detail?.summary?.duration_hours || 0} jam</strong></div>
+              <div><span>Subtotal</span><strong>{formatRupiah(detail?.summary?.subtotal || 0)}</strong></div>
+              <div><span>Biaya layanan</span><strong>{formatRupiah(detail?.summary?.service_fee || 0)}</strong></div>
+              <div><span>PPN (11%)</span><strong>{formatRupiah(detail?.summary?.tax_amount || 0)}</strong></div>
             </div>
 
             <div className="customer-payment-summary-total">
               <span>Total bayar</span>
-              <strong>{formatRupiah(detail.summary.total_payment)}</strong>
+              <strong>{formatRupiah(detail?.summary?.total_payment || 0)}</strong>
             </div>
 
             <div className="customer-payment-summary-actions">
@@ -400,7 +478,9 @@ export default function CustomerPaymentDetailPage() {
                 type="button"
                 className="primary"
                 disabled={!isPending}
-                onClick={() => router.push(`/customer/payments/${detail.booking.booking_id}/process?method=${selectedMethod}`)}
+                onClick={() => {
+                  router.push(`/customer/payments/${detail?.booking?.booking_id}/process?method=${selectedMethod}`)
+                }}
               >
                 {isPending ? 'Bayar sekarang' : 'Status sudah lunas'}
               </button>
@@ -413,10 +493,16 @@ export default function CustomerPaymentDetailPage() {
         <div className="customer-payment-overlay" role="presentation" onClick={() => setShowCancelOverlay(false)}>
           <div className="customer-payment-overlay-card" role="dialog" aria-modal="true" onClick={event => event.stopPropagation()}>
             <div className="customer-payment-overlay-icon">
-              <svg width="62" height="62" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                <path d="M17 3h4v18h-4" />
-                <path d="M11 7 5 12l6 5" />
-                <path d="M5 12h12" />
+              <svg width="48" height="48" viewBox="5 0 80 80" fill="none">
+                <g stroke="#dc2626" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" fill="none">
+                  <line x1="40" y1="20" x2="65" y2="20"/>
+                  <line x1="65" y1="20" x2="65" y2="60"/>
+                  <line x1="40" y1="60" x2="65" y2="60"/>
+                  <line x1="40" y1="30" x2="40" y2="20"/>
+                  <line x1="40" y1="60" x2="40" y2="50"/>
+                  <line x1="18" y1="40" x2="50" y2="40"/>
+                  <polyline points="28,30 18,40 28,50"/>
+                </g>
               </svg>
             </div>
             <h3>Batalkan pembayaran?</h3>

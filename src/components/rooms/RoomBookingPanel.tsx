@@ -167,6 +167,7 @@ export default function RoomBookingPanel({ room }: Props) {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [fieldErrors, setFieldErrors] = useState({ date: false, startTime: false, endTime: false })
   const datePickerRef = useRef<HTMLDivElement | null>(null)
   const dateTriggerRef = useRef<HTMLButtonElement | null>(null)
 
@@ -308,6 +309,7 @@ export default function RoomBookingPanel({ room }: Props) {
     setShowDatePicker(false)
     setActiveDateMenu(null)
     setError('')
+    setFieldErrors(prev => ({ ...prev, date: false }))
   }
 
   function handleStartTimeChange(value: string) {
@@ -325,6 +327,7 @@ export default function RoomBookingPanel({ room }: Props) {
     }
 
     setError('')
+    setFieldErrors(prev => ({ ...prev, startTime: false }))
   }
 
   function handleEndTimeChange(value: string) {
@@ -332,6 +335,7 @@ export default function RoomBookingPanel({ room }: Props) {
     const clampedValue = normalizedValue > MAX_END_TIME ? MAX_END_TIME : normalizedValue
     setEndTime(clampedValue < minimumEndTime ? minimumEndTime : clampedValue)
     setError('')
+    setFieldErrors(prev => ({ ...prev, endTime: false }))
   }
 
   function openScheduleModal() {
@@ -347,14 +351,27 @@ export default function RoomBookingPanel({ room }: Props) {
   function handleOpenConfirmBooking() {
     setError('')
     setSuccess('')
+    setFieldErrors({ date: false, startTime: false, endTime: false })
 
     if (!room.is_available) {
       setError('Ruangan ini sedang tidak tersedia untuk booking.')
       return
     }
 
-    if (!bookingDate || !effectiveStartTime || !effectiveEndTime) {
-      setError('Tanggal dan waktu booking wajib diisi.')
+    // Validate required fields
+    const errors = {
+      date: !bookingDate,
+      startTime: !effectiveStartTime,
+      endTime: !effectiveEndTime
+    }
+
+    if (errors.date || errors.startTime || errors.endTime) {
+      setFieldErrors(errors)
+      const missingFields = []
+      if (errors.date) missingFields.push('Tanggal')
+      if (errors.startTime) missingFields.push('Waktu mulai')
+      if (errors.endTime) missingFields.push('Waktu selesai')
+      setError(`Field wajib harus diisi: ${missingFields.join(', ')}`)
       return
     }
 
@@ -455,8 +472,13 @@ export default function RoomBookingPanel({ room }: Props) {
         </div>
 
         <div className="customer-room-booking-grid">
-          <div className="room-booking-field full room-booking-date-field" ref={datePickerRef}>
-            <span>Pilih tanggal</span>
+          <div className={`room-booking-field full room-booking-date-field${fieldErrors.date ? ' has-error' : ''}`} ref={datePickerRef}>
+            <span className="required-field-label">
+              Pilih tanggal
+              <svg className="required-star" width="12" height="12" viewBox="0 0 24 24" fill="#ff1c1c">
+                <path d="M12 2L14.09 8.26L20.18 9.27L15.54 13.14L16.82 19.02L12 15.77L7.18 19.02L8.46 13.14L3.82 9.27L9.91 8.26L12 2Z"/>
+              </svg>
+            </span>
             <button
               ref={dateTriggerRef}
               type="button"
@@ -588,8 +610,13 @@ export default function RoomBookingPanel({ room }: Props) {
           </div>
 
           <div className="room-booking-time-row">
-            <div className="room-booking-field">
-              <span>Waktu mulai</span>
+            <div className={`room-booking-field${fieldErrors.startTime ? ' has-error' : ''}`}>
+              <span className="required-field-label">
+                Waktu mulai
+                <svg className="required-star" width="12" height="12" viewBox="0 0 24 24" fill="#ff1c1c">
+                  <path d="M12 2L14.09 8.26L20.18 9.27L15.54 13.14L16.82 19.02L12 15.77L7.18 19.02L8.46 13.14L3.82 9.27L9.91 8.26L12 2Z"/>
+                </svg>
+              </span>
               <div className="customer-room-select-wrap">
                 <select value={effectiveStartTime} onChange={event => handleStartTimeChange(event.target.value)}>
                   <option value="">--:--</option>
@@ -600,8 +627,13 @@ export default function RoomBookingPanel({ room }: Props) {
               </div>
             </div>
 
-            <div className="room-booking-field">
-              <span>Waktu selesai</span>
+            <div className={`room-booking-field${fieldErrors.endTime ? ' has-error' : ''}`}>
+              <span className="required-field-label">
+                Waktu selesai
+                <svg className="required-star" width="12" height="12" viewBox="0 0 24 24" fill="#ff1c1c">
+                  <path d="M12 2L14.09 8.26L20.18 9.27L15.54 13.14L16.82 19.02L12 15.77L7.18 19.02L8.46 13.14L3.82 9.27L9.91 8.26L12 2Z"/>
+                </svg>
+              </span>
               <div className="customer-room-select-wrap">
                 <select value={effectiveEndTime} onChange={event => handleEndTimeChange(event.target.value)}>
                   <option value="">--:--</option>
