@@ -1,0 +1,45 @@
+﻿ /* =============================================
+   ROOMIFY – Global Styles
+   ============================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  /* Brand Colors */
+  --cyan: #00D4FF;
+  --cyan-light: #effbff;
+  --cyan-dark: #00bde8;
+  --purple: #7B2FBE;
+  --purple-dark: #5B16D0;
+  --white: #FFFFFF;
+  --light-bg: #F9FAFB;
+  --border-color: #E5E7EB;
+  --text-gray: #6B7280;
+  --text-dark: #111827;
+  --error: #EF4444;
+  --success: #10B981;
+  --border-text-cyan: #54d2f9;
+  --background-cyan: #ddf7ff;
+  --background-light-blue: #effbff;
+  
+  /* Font */
+  --font-family: 'Plus Jakarta Sans', sans-serif;
+  
+  /* Shadows */
+  --shadow-cyan: 0 8px 24px rgba(0, 212, 255, 0.4);
+  --shadow-cyan-hover: 0 12px 30px rgba(0, 212, 255, 0.5);
+  --shadow-focus: 0 0 0 4px rgba(0, 212, 255, 0.12);
+}
+
+body {
+  font-family: var(--font-family);
+  background: var(--white);
+  color: var(--text-dark);
+}
