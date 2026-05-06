@@ -1,22 +1,134 @@
-﻿import RoomBookingPanel from '@/components/rooms/RoomBookingPanel'
+﻿'use client'
+
+import { use, useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import RoomBookingPanel from '@/components/rooms/RoomBookingPanel'
 import RoomImageCarousel from '@/components/rooms/RoomImageCarousel'
-import { notFound } from 'next/navigation'
-import { getRoomDetail } from '@/lib/rooms'
 import { formatDate, formatTime } from '@/utils/formatDate'
 import { formatRupiah } from '@/utils/formatRupiah'
 import { getRoomTypeLabel } from '@/utils/room'
+import { RoomDetail } from '@/types'
 import '@/styles/rooms.css'
 
-export default async function CustomerRoomDetailPage({
+export default function CustomerRoomDetailPage({
   params
 }: {
   params: Promise<{ id: string }>
 }) {
-  const { id } = await params
-  const room = await getRoomDetail(id)
+  const { id } = use(params)
+  const router = useRouter()
+  const [room, setRoom] = useState<RoomDetail | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
 
-  if (!room) {
-    notFound()
+  // Hide global navbar for this page
+  useEffect(() => {
+    document.body.classList.add('hide-global-navbar')
+    return () => {
+      document.body.classList.remove('hide-global-navbar')
+    }
+  }, [])
+
+  // Fetch room detail
+  useEffect(() => {
+    async function fetchRoom() {
+      try {
+        const response = await fetch(`/api/rooms/${id}`)
+        const result = await response.json()
+        if (result.success) {
+          setRoom(result.data)
+        } else {
+          setError(true)
+        }
+      } catch {
+        setError(true)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchRoom()
+  }, [id])
+
+  if (loading) {
+    return (
+      <div className="customer-room-detail-page">
+        <div className="customer-room-detail-shell">
+          <div className="rooms-header">
+            <button className="rooms-back-btn" onClick={() => router.back()}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 12H5M12 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <h1>Detail Ruangan</h1>
+          </div>
+          <div className="customer-room-detail-skeleton">
+            <div className="customer-room-detail-grid">
+              <div className="customer-room-detail-main">
+                <section className="customer-room-card skeleton-card">
+                  <div className="skeleton-gallery" />
+                  <div className="skeleton-card-body">
+                    <div className="skeleton-row">
+                      <div className="skeleton-chip" />
+                      <div className="skeleton-price" />
+                    </div>
+                    <div className="skeleton-title" />
+                    <div className="skeleton-address" />
+                    <div className="skeleton-meta-row">
+                      <div className="skeleton-meta" />
+                      <div className="skeleton-meta" />
+                    </div>
+                  </div>
+                </section>
+                <section className="customer-room-about skeleton-section">
+                  <div className="skeleton-section-title" />
+                  <div className="skeleton-section-subtitle" />
+                  <div className="skeleton-divider" />
+                  <div className="skeleton-text-line" />
+                  <div className="skeleton-text-line" />
+                  <div className="skeleton-text-line short" />
+                </section>
+                <section className="customer-room-facilities-section skeleton-section">
+                  <div className="skeleton-section-title" />
+                  <div className="skeleton-section-subtitle" />
+                  <div className="skeleton-divider" />
+                  <div className="skeleton-facilities-row">
+                    <div className="skeleton-facility" />
+                    <div className="skeleton-facility" />
+                    <div className="skeleton-facility" />
+                  </div>
+                </section>
+              </div>
+              <div className="customer-room-booking-panel skeleton-panel">
+                <div className="skeleton-panel-header" />
+                <div className="skeleton-panel-body">
+                  <div className="skeleton-field" />
+                  <div className="skeleton-field" />
+                  <div className="skeleton-button" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !room) {
+    return (
+      <div className="customer-room-detail-page">
+        <div className="customer-room-detail-shell">
+          <div className="rooms-header">
+            <button className="rooms-back-btn" onClick={() => router.back()}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 12H5M12 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <h1>Detail Ruangan</h1>
+          </div>
+          <div className="customer-room-detail-error">Ruangan tidak ditemukan</div>
+        </div>
+      </div>
+    )
   }
 
   const roomAddress = [room.location, room.region_name, room.province_name].filter(Boolean).join(', ')
@@ -24,6 +136,16 @@ export default async function CustomerRoomDetailPage({
   return (
     <div className="customer-room-detail-page">
       <div className="customer-room-detail-shell">
+        {/* Header with back button */}
+        <div className="rooms-header">
+          <button className="rooms-back-btn" onClick={() => router.back()}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <h1>Detail Ruangan</h1>
+        </div>
+
         <div className="customer-room-detail-grid">
           <div className="customer-room-detail-main">
             <section className="customer-room-card">
@@ -85,7 +207,7 @@ export default async function CustomerRoomDetailPage({
               <hr className="customer-room-facilities-section-divider" />
               <div className="customer-room-facilities-grid">
                 {room.facilities.length > 0 ? (
-                  room.facilities.map(facility => (
+                  room.facilities.map((facility: string) => (
                     <div key={facility} className="customer-room-facility-item">
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round"/>
