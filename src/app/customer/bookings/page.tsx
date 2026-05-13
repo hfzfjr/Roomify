@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Navbar from '@/components/layout/Navbar'
 import { Booking, User } from '@/types'
 import { formatPaymentCountdown, getRemainingPaymentMs } from '@/utils/booking'
 import { formatDate, formatTime, formatDateLong } from '@/utils/formatDate'
@@ -146,7 +147,9 @@ export default function CustomerBookings() {
   }
 
   return (
-    <div className="customer-bookings-container">
+    <>
+      <Navbar />
+      <div className="customer-bookings-container" style={{ paddingTop: '80px' }}>
       <div className="customer-bookings-layout">
         {/* Sidebar */}
         <aside className="customer-bookings-sidebar">
@@ -341,5 +344,6 @@ export default function CustomerBookings() {
         </main>
       </div>
     </div>
+    </>
   )
 }

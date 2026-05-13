@@ -1,3 +1,9 @@
+'use client'
+
 export default function CustomerReviews() {
-  return <div>Customer Reviews</div>
+  return (
+    <div>
+      Customer Reviews
+    </div>
+  )
 }

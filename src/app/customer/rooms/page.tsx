@@ -6,6 +6,7 @@ import { addMonths, eachDayOfInterval, endOfMonth, endOfWeek, format, getMonth, 
 import { Room } from '@/types'
 import { formatRupiah } from '@/utils/formatRupiah'
 import { getLocationOptionLabel, getLocationOptionSubtitle, getLocationQueryValue, getLocationSearchText, type Location } from '@/utils/locations'
+import BackButton from '@/components/layout/BackButton'
 import '@/styles/rooms.css'
 
 const ROOM_TYPES = [
@@ -33,9 +34,9 @@ function CustomerRooms() {
   
   // Hide global navbar for this page (same approach as payments page)
   useEffect(() => {
-    document.body.classList.add('hide-global-navbar')
+    // document.body.classList.add('hide-global-navbar')
     return () => {
-      document.body.classList.remove('hide-global-navbar')
+      // document.body.classList.remove('hide-global-navbar')
     }
   }, [])
   
@@ -887,11 +888,7 @@ function CustomerRooms() {
     <div className="rooms-page-v2">
       {/* Header with back button - acts as main navigation */}
       <div className="rooms-header">
-        <button className="rooms-back-btn" onClick={() => router.push('/customer/dashboard')}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M19 12H5M12 19l-7-7 7-7" />
-          </svg>
-        </button>
+        <BackButton href="/customer/dashboard" />
         <h1>Hasil Pencarian</h1>
       </div>
 

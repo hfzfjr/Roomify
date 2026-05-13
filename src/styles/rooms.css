@@ -699,16 +699,6 @@
   flex-shrink: 0;
 }
 
-.room-booking-date-value {
-  font-weight: 600;
-  font-size: 13px;
-  color: #0f172a;
-}
-
-.room-booking-date-value.has-value {
-  color: #0f172a;
-}
-
 .room-booking-date-dropdown {
   width: min(280px, calc(100vw - 32px));
   max-width: 100%;
@@ -2088,12 +2078,8 @@
 }
 
 .room-booking-date-value {
-  font-size: 18px;
+  font-size: 13px;
   color: #959597;
-}
-
-.room-booking-date-value.has-value {
-  color: #000000;
 }
 
 .room-booking-field textarea {
@@ -3279,23 +3265,6 @@
     min-height: 48px;
     font-size: 16px;
   }
-}
-
-/* Payment pages */
-body.hide-global-navbar .header {
-  display: none !important;
-}
-
-body.hide-global-navbar .customer-main {
-  margin-top: 0 !important;
-}
-
-body.hide-global-navbar .customer-payment-page {
-  padding-top: 0 !important;
-}
-
-body.hide-global-navbar .rooms-page-v2 {
-  padding-top: 0 !important;
 }
 
 .customer-payment-page {
@@ -4634,18 +4603,6 @@ body.hide-global-navbar .rooms-page-v2 {
   padding-top: 0;
 }
 
-/* Header - NON STICKY (ikut scroll) */
-.rooms-header {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 20px 40px;
-  background: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
-  position: relative;
-  z-index: 10;
-}
-
 /* Sticky positioning for search and sort ONLY */
 .sticky-search {
   position: sticky;
@@ -4670,37 +4627,6 @@ body.hide-global-navbar .rooms-page-v2 {
   position: relative;
   height: auto;
   align-self: start;
-}
-
-.rooms-header h1 {
-  font-size: 20px;
-  font-weight: 700;
-  color: #0f172a;
-  margin: 0;
-}
-
-.rooms-back-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  border: none;
-  background: #e0f7ff;
-  color: #0891b2;
-  cursor: pointer;
-  border-radius: 12px;
-  transition: background 0.2s ease;
-}
-
-.rooms-back-btn:hover {
-  background: #b3eafe;
-}
-
-.rooms-back-btn svg {
-  width: 24px;
-  height: 24px;
-  stroke-width: 2.5;
 }
 
 /* Filter toggle button */
@@ -4971,21 +4897,18 @@ body.hide-global-navbar .rooms-page-v2 {
   gap: 10px;
   padding: 18px 20px;
   cursor: pointer;
-  background: transparent;
-  border: none;
-  border-radius: inherit;
 }
 
 .sf-date-value {
   font-family: var(--font-family);
   font-weight: 400;
   font-size: 18px;
-  color: rgba(255, 255, 255, 0.85);
+  color: #959597;
   text-align: center;
 }
 
 .sf-date-value.has-value {
-  color: #ffffff;
+  color: #000000;
 }
 
 .sf-date-dropdown {

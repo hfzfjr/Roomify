@@ -1,7 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import BackButton from '@/components/layout/BackButton'
 import '@/styles/profile.css'
 
 interface UserProfile {
@@ -255,7 +257,8 @@ export default function CustomerProfile() {
   }
 
   return (
-    <div className="profile-container">
+      <div className="profile-container">
+      <BackButton />
       <div className="max-w-4xl mx-auto">
         <div className="profile-header">
           <h1>Profile Settings</h1>

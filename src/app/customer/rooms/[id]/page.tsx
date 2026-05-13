@@ -1,7 +1,7 @@
 ﻿'use client'
 
 import { use, useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import BackButton from '@/components/layout/BackButton'
 import RoomBookingPanel from '@/components/rooms/RoomBookingPanel'
 import RoomImageCarousel from '@/components/rooms/RoomImageCarousel'
 import { formatDate, formatTime } from '@/utils/formatDate'
@@ -16,16 +16,15 @@ export default function CustomerRoomDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = use(params)
-  const router = useRouter()
   const [room, setRoom] = useState<RoomDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
 
   // Hide global navbar for this page
   useEffect(() => {
-    document.body.classList.add('hide-global-navbar')
+    // document.body.classList.add('hide-global-navbar')
     return () => {
-      document.body.classList.remove('hide-global-navbar')
+      // document.body.classList.remove('hide-global-navbar')
     }
   }, [])
 
@@ -54,11 +53,7 @@ export default function CustomerRoomDetailPage({
       <div className="customer-room-detail-page">
         <div className="customer-room-detail-shell">
           <div className="rooms-header">
-            <button className="rooms-back-btn" onClick={() => router.back()}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 12H5M12 19l-7-7 7-7" />
-              </svg>
-            </button>
+            <BackButton />
             <h1>Detail Ruangan</h1>
           </div>
           <div className="customer-room-detail-skeleton">
@@ -118,11 +113,7 @@ export default function CustomerRoomDetailPage({
       <div className="customer-room-detail-page">
         <div className="customer-room-detail-shell">
           <div className="rooms-header">
-            <button className="rooms-back-btn" onClick={() => router.back()}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 12H5M12 19l-7-7 7-7" />
-              </svg>
-            </button>
+            <BackButton />
             <h1>Detail Ruangan</h1>
           </div>
           <div className="customer-room-detail-error">Ruangan tidak ditemukan</div>
@@ -138,11 +129,7 @@ export default function CustomerRoomDetailPage({
       <div className="customer-room-detail-shell">
         {/* Header with back button */}
         <div className="rooms-header">
-          <button className="rooms-back-btn" onClick={() => router.back()}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19 12H5M12 19l-7-7 7-7" />
-            </svg>
-          </button>
+          <BackButton />
           <h1>Detail Ruangan</h1>
         </div>
 

@@ -5,6 +5,7 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { formatPaymentCountdown, getRemainingPaymentMs } from '@/utils/booking'
 import { formatDate, formatTime } from '@/utils/formatDate'
 import ReceiptModal from '@/components/ReceiptModal'
+import BackButton from '@/components/layout/BackButton'
 import '@/styles/rooms.css'
 
 type PaymentMethod = 'qris' | 'bca_va' | 'bni_va' | 'gopay'
@@ -140,9 +141,9 @@ export default function CustomerPaymentProcessPage() {
   }, [router, userId])
 
   useEffect(() => {
-    document.body.classList.add('hide-global-navbar')
+    // document.body.classList.add('hide-global-navbar')
     return () => {
-      document.body.classList.remove('hide-global-navbar')
+      // document.body.classList.remove('hide-global-navbar')
     }
   }, [])
 
@@ -423,11 +424,7 @@ export default function CustomerPaymentProcessPage() {
   return (
     <div className="customer-payment-page">
       <div className="customer-payment-subheader">
-        <button type="button" onClick={() => router.back()} aria-label="Kembali">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
-            <path strokeLinecap="round" strokeLinejoin="round" d="m15 18-6-6 6-6" />
-          </svg>
-        </button>
+        <BackButton />
         <h1>Pembayaran</h1>
       </div>
 
