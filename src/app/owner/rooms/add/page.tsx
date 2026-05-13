@@ -261,6 +261,11 @@ export default function AddRoomPage() {
     return !isFieldEmpty(value as string);
   };
 
+  const isPhotoValid = () => {
+    if (!showValidation) return true;
+    return photos.length > 0;
+  };
+
   const completedSections = [
     !isFieldEmpty(formData.name) &&
       !isFieldEmpty(formData.description) &&
@@ -277,7 +282,10 @@ export default function AddRoomPage() {
 
   const validateForm = () => {
     const requiredFields = ['name', 'description', 'price_per_hour', 'capacity', 'type', 'region_id', 'address'];
-    return requiredFields.every((field) => !isFieldEmpty(formData[field as keyof typeof formData]));
+    return (
+      requiredFields.every((field) => !isFieldEmpty(formData[field as keyof typeof formData])) &&
+      photos.length > 0
+    );
   };
 
   const buildLocationString = () => {
@@ -682,7 +690,12 @@ export default function AddRoomPage() {
           <div className={styles.sectionCard}>
             <div className={styles.sectionHeader}>
               <h2 className={styles.sectionTitle}>Foto Ruangan</h2>
-              <p className={styles.sectionSubtitle}>Unggah minimal 1 foto, maks 8 foto</p>
+              <div className={styles.sectionSubtitleRow}>
+                <span className={styles.sectionSubtitle}>Unggah minimal 1 foto, maks 8 foto</span>
+                <span className={`${styles.requiredBadge} ${!isPhotoValid() ? styles.visible : ''}`}>
+                  wajib diisi
+                </span>
+              </div>
             </div>
 
             {/* Upload Area */}
@@ -713,6 +726,12 @@ export default function AddRoomPage() {
                 Pilih dari perangkat
               </button>
             </div>
+
+            {showValidation && !isPhotoValid() && (
+              <div className={styles.validationMessage} style={{ marginBottom: '16px' }}>
+                Silakan unggah minimal 1 foto ruangan.
+              </div>
+            )}
 
             {/* Preview Photos */}
             {photoUrls.length > 0 && (
