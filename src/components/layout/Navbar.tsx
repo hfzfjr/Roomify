@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { User } from '@/types'
 import DashboardIcon from '@/components/icons/DashboardIcon';
 import ReviewsIcon from '@/components/icons/ReviewsIcon';
@@ -103,6 +103,8 @@ export default function Navbar() {
     router.push('/customer/profile')
   }
 
+  const pathname = usePathname()
+
   const initials = user?.name
     ? user.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
     : '?'
@@ -119,6 +121,8 @@ export default function Navbar() {
       ? 'Menunggu persetujuan admin'
       : 'Daftarkan ruangan bisnis Anda'
   const displayedRole = isOwner ? 'Owner' : 'Customer'
+
+  const isPathActive = (path: string) => pathname === path
 
   return (
     <>
@@ -148,15 +152,27 @@ export default function Navbar() {
 
         {/* Menu */}
         <nav className="sb-menu">
-          <a href="#" className="sb-item active" onClick={(e) => { e.preventDefault(); router.push('/customer/dashboard'); }}>
+          <a
+            href="#"
+            className={`sb-item${isPathActive('/customer/dashboard') ? ' active' : ''}`}
+            onClick={(e) => { e.preventDefault(); router.push('/customer/dashboard'); }}
+          >
             <DashboardIcon className="sb-icon" />
             Dashboard
           </a>
-          <a href="#" className="sb-item" onClick={(e) => { e.preventDefault(); router.push('/customer/bookings'); }}>
+          <a
+            href="#"
+            className={`sb-item${isPathActive('/customer/bookings') ? ' active' : ''}`}
+            onClick={(e) => { e.preventDefault(); router.push('/customer/bookings'); }}
+          >
             <ReviewsIcon className="sb-icon" />
             Riwayat
           </a>
-          <a href="#" className="sb-item" onClick={(e) => { e.preventDefault(); }}>
+          <a
+            href="#"
+            className={`sb-item${isPathActive('/customer/faq') ? ' active' : ''}`}
+            onClick={(e) => { e.preventDefault(); router.push('/customer/faq'); }}
+          >
             <HelpIcon className="sb-icon" />
             Bantuan
           </a>

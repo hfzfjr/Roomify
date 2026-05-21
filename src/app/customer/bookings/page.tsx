@@ -205,7 +205,7 @@ export default function CustomerBookings() {
           <div className="customer-bookings-header">
             <div>
               <h1 className="customer-bookings-title">Riwayat booking</h1>
-              <p className="customer-bookings-subtitle">Ruangan-ruangan yang pernah dibooking</p>
+              <p className="customer-bookings-subtitle">Ruangan-ruangan yang pernah anda booking</p>
             </div>
             <div className="customer-bookings-search">
               <input

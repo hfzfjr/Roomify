@@ -253,3 +253,55 @@ header {
 }
 .sb-item:hover { background: rgba(255,255,255,0.25); }
 .sb-item.active { background: rgba(255,255,255,0.5); border-bottom: none; }
+
+@media (max-width: 900px) {
+  header {
+    padding: 14px 16px;
+    gap: 16px;
+    height: 72px;
+  }
+
+  .logo-wrap img { height: 42px; }
+  .header-right { gap: 10px; }
+  .hai-text { display: none; }
+  .avatar { width: 44px; height: 44px; font-size: 20px; }
+  .account-dropdown { min-width: 200px; }
+  .sidebar { width: 100vw; max-width: 320px; }
+  .sb-logo, .sb-profile, .sb-owner-cta, .sb-menu, .sb-item { width: 100%; }
+  .sb-profile { padding: 16px 14px; gap: 14px; height: auto; }
+  .sb-name { font-size: 18px; }
+  .sb-role { font-size: 16px; }
+  .sb-item { padding: 14px 20px; font-size: 16px; }
+  .sb-owner-cta { padding: 20px 14px 24px; }
+  .sb-owner-btn { padding: 12px 14px; gap: 12px; }
+  .sb-owner-icon { width: 46px; height: 46px; font-size: 20px; }
+  .sb-owner-copy strong { font-size: 15px; }
+  .sb-owner-copy span { font-size: 12px; }
+}
+
+@media (max-width: 640px) {
+  header {
+    padding: 10px 12px;
+    gap: 12px;
+    height: 66px;
+  }
+
+  .logo-wrap { gap: 8px; }
+  .logo-wrap img { height: 36px; }
+  .header-right { flex: 1; justify-content: flex-end; gap: 8px; }
+  .avatar { width: 40px; height: 40px; font-size: 18px; }
+  .sidebar { width: 100vw; left: -100vw; }
+  .sidebar.open { left: 0; }
+  .sb-logo { height: 80px; }
+  .sb-profile { padding: 14px 12px; gap: 12px; }
+  .sb-avatar { width: 44px; height: 44px; font-size: 20px; }
+  .sb-name { font-size: 17px; }
+  .sb-role { font-size: 15px; }
+  .sb-item { padding: 12px 18px; font-size: 15px; gap: 12px; }
+  .sb-owner-cta { padding: 18px 12px 20px; }
+  .sb-owner-btn { padding: 10px 12px; border-radius: 18px; }
+  .sb-owner-icon { width: 40px; height: 40px; font-size: 18px; }
+  .sb-owner-copy strong { font-size: 14px; }
+  .sb-owner-copy span { font-size: 11px; }
+  .account-dropdown { right: 0; left: auto; min-width: 180px; }
+}
