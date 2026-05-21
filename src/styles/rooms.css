@@ -4171,6 +4171,16 @@
   font-weight: 600;
 }
 
+.customer-process-side-header .cancelled {
+  padding: 4px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--cancel-button-text);
+  background: var(--cancel-button-bg);
+  color: var(--cancel-button-text);
+  font-size: 12px;
+  font-weight: 600;
+}
+
 .customer-process-side-card img {
   width: 120px;
   max-width: 100%;
@@ -4502,45 +4512,6 @@
 
 .receipt-retry-btn:hover {
   background: #0891b2;
-}
-
-.receipt-pdf-preview {
-  margin-bottom: 18px;
-  padding: 12px;
-  border: 1px solid #dbeafe;
-  border-radius: 10px;
-  background: #f8fbff;
-}
-
-.receipt-pdf-preview h4 {
-  margin: 0 0 10px;
-  font-size: 13px;
-  color: #0b4a6f;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.receipt-pdf-iframe {
-  width: 100%;
-  min-height: 340px;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  background: #ffffff;
-}
-
-.receipt-pdf-missing {
-  margin-bottom: 14px;
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid #fde68a;
-  background: #fffbeb;
-}
-
-.receipt-pdf-missing p {
-  margin: 0;
-  color: #92400e;
-  font-size: 12px;
-  line-height: 1.45;
 }
 
 /* Receipt Paper */
@@ -5206,19 +5177,31 @@
   justify-content: space-between;
   gap: 10px;
   padding: 18px 20px;
+  background: transparent;
+  border: none;
+  border-radius: inherit;
+  appearance: none;
+  font-family: var(--font-family);
+  color: inherit;
+  outline: none;
   cursor: pointer;
+}
+
+.sf-date-trigger:focus,
+.sf-date-trigger:focus-visible {
+  outline: none;
 }
 
 .sf-date-value {
   font-family: var(--font-family);
   font-weight: 400;
   font-size: 18px;
-  color: #959597;
+  color: rgba(255, 255, 255, 0.85);
   text-align: center;
 }
 
 .sf-date-value.has-value {
-  color: #000000;
+  color: #ffffff;
 }
 
 .sf-date-dropdown {
@@ -5385,10 +5368,6 @@
 
 .sf-date-cell.muted {
   color: #b8bec7;
-}
-
-.sf svg {
-  pointer-events: none;
 }
 
 .sf input[type="number"]::-webkit-inner-spin-button,

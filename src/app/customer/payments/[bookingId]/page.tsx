@@ -335,7 +335,9 @@ export default function CustomerPaymentDetailPage() {
     )
   }
 
-  const isPending = detail?.booking?.status === 'pending'
+  const bookingStatus = detail?.booking?.status
+  const isPending = bookingStatus === 'pending'
+  const isPaid = bookingStatus === 'confirmed' || bookingStatus === 'completed'
 
   async function handleCancelPayment() {
     if (!detail) {
@@ -482,7 +484,7 @@ export default function CustomerPaymentDetailPage() {
                   router.push(`/customer/payments/${detail?.booking?.booking_id}/process?method=${selectedMethod}`)
                 }}
               >
-                {isPending ? 'Bayar sekarang' : 'Status sudah lunas'}
+                {isPending ? 'Bayar sekarang' : isPaid ? 'Status sudah lunas' : 'Pembayaran tidak tersedia'}
               </button>
             </div>
           </aside>

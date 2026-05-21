@@ -29,6 +29,7 @@ type BookingRecord = {
   status: string
   room_id: string
   total_cost: number
+  customer_id: string
 }
 
 type RoomRecord = {
@@ -73,7 +74,7 @@ export async function GET(
     // Check if booking exists and belongs to customer
     const { data: booking, error: bookingError } = await supabase
       .from('booking')
-      .select('booking_id, booking_date, check_in, check_out, status, room_id')
+      .select('booking_id, booking_date, check_in, check_out, status, room_id, total_cost, customer_id')
       .eq('booking_id', booking_id)
       .maybeSingle<BookingRecord>()
 
@@ -85,9 +86,19 @@ export async function GET(
       return NextResponse.json({ success: false, message: 'Booking tidak ditemukan.' }, { status: 404 })
     }
 
+    if (booking.customer_id !== customerRecord.customer_id) {
+      return NextResponse.json(
+        { success: false, message: 'Booking ini bukan milik Anda.' },
+        { status: 403 }
+      )
+    }
+
     if (booking.status !== 'confirmed' && booking.status !== 'completed') {
       return NextResponse.json(
-        { success: false, message: 'Invoice hanya tersedia untuk booking yang sudah dibayar.' },
+        {
+          success: false,
+          message: `Invoice hanya tersedia untuk booking yang sudah dibayar. Status saat ini: ${booking.status}.`
+        },
         { status: 400 }
       )
     }

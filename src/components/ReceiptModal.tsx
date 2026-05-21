@@ -100,8 +100,9 @@ export default function ReceiptModal({ isOpen, onClose, bookingId, userId }: Rec
   function openPdfInNewTab(url: string) {
     const openedWindow = window.open(url, '_blank', 'noopener,noreferrer')
     if (!openedWindow) {
-      setError('Popup diblokir browser. Izinkan popup untuk membuka PDF.')
-      return false
+      // Fallback for strict popup blockers: open in current tab.
+      window.location.assign(url)
+      return true
     }
     return true
   }
@@ -166,23 +167,6 @@ export default function ReceiptModal({ isOpen, onClose, bookingId, userId }: Rec
             </div>
           ) : invoiceData ? (
             <div className="receipt-paper">
-              {pdfUrl && (
-                <div className="receipt-pdf-preview">
-                  <h4>Preview PDF Struk</h4>
-                  <iframe
-                    src={pdfUrl}
-                    title="Preview PDF Struk"
-                    className="receipt-pdf-iframe"
-                  />
-                </div>
-              )}
-
-              {!pdfUrl && (
-                <div className="receipt-pdf-missing">
-                  <p>File PDF struk belum tersedia di `invoice.pdf_url`. Menampilkan struk HTML sebagai fallback.</p>
-                </div>
-              )}
-
               {/* Receipt Header */}
               <div className="receipt-header">
                 <img src="/images/roomify-biru.png" alt="Roomify" className="receipt-logo" />

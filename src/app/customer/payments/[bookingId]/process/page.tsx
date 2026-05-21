@@ -146,7 +146,11 @@ export default function CustomerPaymentProcessPage() {
 
   const method = (searchParams.get('method') as PaymentMethod) || 'qris'
   const instruction = useMemo(() => getPaymentInstructions(method), [method])
-  const isPending = detail?.booking?.status === 'pending'
+  const bookingStatus = detail?.booking?.status
+  const isPending = bookingStatus === 'pending'
+  const isPaid = bookingStatus === 'confirmed' || bookingStatus === 'completed'
+  const paymentStatusLabel = isPaid ? 'Lunas' : bookingStatus === 'cancelled' ? 'Dibatalkan' : 'Belum lunas'
+  const paymentStatusClass = isPaid ? 'paid' : bookingStatus === 'cancelled' ? 'cancelled' : 'pending'
 
   useEffect(() => {
     if (!userId) {
@@ -574,7 +578,7 @@ export default function CustomerPaymentProcessPage() {
           <aside className="customer-process-side-card">
             <div className="customer-process-side-header">
               <img src="/images/roomify-biru.png" alt="Roomify" />
-              <span className={isPending ? 'pending' : 'paid'}>{isPending ? 'Belum lunas' : 'Lunas'}</span>
+              <span className={paymentStatusClass}>{paymentStatusLabel}</span>
             </div>
 
             <div className="customer-process-side-content">
@@ -630,8 +634,8 @@ export default function CustomerPaymentProcessPage() {
 
               <button
                 type="button"
-                className={`customer-process-download-receipt ${isPending ? 'secondary' : 'primary'}`}
-                disabled={isPending}
+                className={`customer-process-download-receipt ${isPaid ? 'primary' : 'secondary'}`}
+                disabled={!isPaid}
                 onClick={() => setIsReceiptModalOpen(true)}
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

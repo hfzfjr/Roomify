@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Navbar from '@/components/layout/Navbar'
+import ReceiptModal from '@/components/ReceiptModal'
 import { Booking, User } from '@/types'
 import { formatPaymentCountdown, getRemainingPaymentMs } from '@/utils/booking'
 import { formatDate, formatTime, formatDateLong } from '@/utils/formatDate'
@@ -24,6 +25,11 @@ function getStatusBadgeClass(status: Booking['status']) {
   return 'belum-lunas'
 }
 
+function getBookingCreatedAtTimestamp(bookingDate: string) {
+  const timestamp = Date.parse(bookingDate)
+  return Number.isNaN(timestamp) ? 0 : timestamp
+}
+
 export default function CustomerBookings() {
   const router = useRouter()
   const [bookings, setBookings] = useState<Booking[]>([])
@@ -36,6 +42,8 @@ export default function CustomerBookings() {
   const [nowTimestamp, setNowTimestamp] = useState(() => Date.now())
   const [filter, setFilter] = useState<FilterStatus>('all')
   const [searchQuery, setSearchQuery] = useState('')
+  const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false)
+  const [selectedReceiptBookingId, setSelectedReceiptBookingId] = useState('')
 
   const refreshBookings = useCallback(async () => {
     if (!currentUserId) return
@@ -122,7 +130,10 @@ export default function CustomerBookings() {
         b.booking_id?.toLowerCase().includes(query)
       )
     }
-    return filtered
+
+    return [...filtered].sort(
+      (a, b) => getBookingCreatedAtTimestamp(b.booking_date) - getBookingCreatedAtTimestamp(a.booking_date)
+    )
   }, [bookings, filter, searchQuery])
 
   async function handleBookingAction(bookingId: string, action: 'cancel') {
@@ -151,6 +162,11 @@ export default function CustomerBookings() {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
   }
   const hasBookingProfileImage = Boolean(user?.profile_image) && !bookingAvatarImageError
+
+  function openReceiptModal(bookingId: string) {
+    setSelectedReceiptBookingId(bookingId)
+    setIsReceiptModalOpen(true)
+  }
 
   return (
     <>
@@ -325,7 +341,7 @@ export default function CustomerBookings() {
                           <button
                             type="button"
                             className="customer-booking-v2-btn secondary"
-                            onClick={() => alert('Fitur unduh struk belum tersedia')}
+                            onClick={() => openReceiptModal(booking.booking_id)}
                           >
                             Unduh struk
                           </button>
@@ -357,6 +373,13 @@ export default function CustomerBookings() {
         </main>
       </div>
     </div>
+
+    <ReceiptModal
+      isOpen={isReceiptModalOpen}
+      onClose={() => setIsReceiptModalOpen(false)}
+      bookingId={selectedReceiptBookingId}
+      userId={currentUserId}
+    />
     </>
   )
 }
