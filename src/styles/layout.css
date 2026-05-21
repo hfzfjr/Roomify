@@ -57,6 +57,16 @@ header {
   display: flex; align-items: center; justify-content: center;
   font-weight: 600; font-size: 24px; letter-spacing: -0.01em; color: #000;
   cursor: pointer; flex-shrink: 0;
+  overflow: hidden;
+}
+.avatar.has-image {
+  background: #e5e7eb;
+}
+.avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 .avatar-button {
   border: none;
@@ -154,14 +164,74 @@ header {
 
 .sb-profile {
   box-sizing: border-box; display: flex; flex-direction: row; align-items: center;
-  padding: 18px 0 18px 16px; gap: 21px;
+  padding: 18px 16px 18px 16px; gap: 21px;
   width: 320px; height: 88px;
-  border-top: 1px solid #E8E8E8; border-bottom: 1px solid #E8E8E8;
+}
+.sb-profile-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sb-profile-button {
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  justify-content: space-between;
+  color: #ffffff;
+  transition: transform 0.18s ease, opacity 0.2s ease;
+  border-top: 1px solid #e8e8e8;
+  border-bottom: 1px solid #e8e8e8;
+  margin-bottom: 10px;
+}
+.sb-profile-button:hover,
+.sb-profile-button.active {
+  transform: translateY(-1px);
+  opacity: 0.98;
+}
+.sb-profile-caret {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.92);
+  flex-shrink: 0;
+  margin-left: auto;
+  margin-right: 8px;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+.sb-profile-button.active .sb-profile-caret {
+  background: rgba(255, 255, 255, 0.22);
+  transform: rotate(180deg);
+}
+.sb-account-menu {
+  position: relative;
+  width: 320px;
+}
+.sb-account-menu .account-dropdown {
+  top: calc(100% - 6px);
+  left: 16px;
+  right: 16px;
+  min-width: 0;
+  z-index: 260;
 }
 .sb-avatar {
   width: 52px; height: 52px; border-radius: 65px; background: #FF2D2D;
   display: flex; align-items: center; justify-content: center;
   font-weight: 600; font-size: 24px; letter-spacing: -0.01em; color: #fff; flex-shrink: 0;
+  overflow: hidden;
+}
+.sb-avatar.has-image {
+  background: rgba(255,255,255,0.24);
+}
+.sb-avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 .sb-profile-text { display: flex; flex-direction: column; gap: 6px; }
 .sb-name { font-weight: 500; font-size: 20px; line-height: 90.04%; letter-spacing: -0.01em; color: #fff; }
@@ -240,7 +310,7 @@ header {
   box-sizing: border-box; display: flex; align-items: center;
   padding: 18px 0 18px 32px; gap: 10px;
   width: 320px; height: 52px;
-  border-bottom: 1px solid #E8E8E8;
+  border-bottom: 1px solid #e8e8e8;
   font-weight: 500; font-size: 18px; line-height: 90.04%; letter-spacing: -0.01em;
   color: #fff; cursor: pointer; text-decoration: none;
   transition: background .2s;
@@ -268,7 +338,9 @@ header {
   .account-dropdown { min-width: 200px; }
   .sidebar { width: 100vw; max-width: 320px; }
   .sb-logo, .sb-profile, .sb-owner-cta, .sb-menu, .sb-item { width: 100%; }
+  .sb-account-menu { width: 100%; }
   .sb-profile { padding: 16px 14px; gap: 14px; height: auto; }
+  .sb-profile-main { gap: 10px; }
   .sb-name { font-size: 18px; }
   .sb-role { font-size: 16px; }
   .sb-item { padding: 14px 20px; font-size: 16px; }
@@ -277,6 +349,8 @@ header {
   .sb-owner-icon { width: 46px; height: 46px; font-size: 20px; }
   .sb-owner-copy strong { font-size: 15px; }
   .sb-owner-copy span { font-size: 12px; }
+  .sb-profile-caret { width: 28px; height: 28px; }
+  .sb-account-menu .account-dropdown { left: 14px; right: 14px; }
 }
 
 @media (max-width: 640px) {
@@ -294,6 +368,7 @@ header {
   .sidebar.open { left: 0; }
   .sb-logo { height: 80px; }
   .sb-profile { padding: 14px 12px; gap: 12px; }
+  .sb-profile-main { gap: 10px; }
   .sb-avatar { width: 44px; height: 44px; font-size: 20px; }
   .sb-name { font-size: 17px; }
   .sb-role { font-size: 15px; }
@@ -303,5 +378,7 @@ header {
   .sb-owner-icon { width: 40px; height: 40px; font-size: 18px; }
   .sb-owner-copy strong { font-size: 14px; }
   .sb-owner-copy span { font-size: 11px; }
+  .sb-profile-caret { width: 26px; height: 26px; }
   .account-dropdown { right: 0; left: auto; min-width: 180px; }
+  .sb-account-menu .account-dropdown { left: 12px; right: 12px; min-width: 0; }
 }

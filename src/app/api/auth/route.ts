@@ -13,7 +13,7 @@ export async function GET(request: Request) {
     const supabase = await createClient()
     const { data: user, error } = await supabase
       .from('users')
-      .select('user_id, name, email, role, phone_number')
+      .select('user_id, name, email, role, phone_number, profile_image')
       .eq('user_id', userId)
       .maybeSingle()
 

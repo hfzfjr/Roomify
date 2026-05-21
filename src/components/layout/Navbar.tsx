@@ -6,6 +6,7 @@ import { User } from '@/types'
 import DashboardIcon from '@/components/icons/DashboardIcon';
 import ReviewsIcon from '@/components/icons/ReviewsIcon';
 import HelpIcon from '@/components/icons/HelpIcon';
+import AccountDropdown from '@/components/layout/AccountDropdown';
 
 type OwnerApplicationStatus = 'pending' | 'active' | 'rejected' | null
 
@@ -14,6 +15,7 @@ export default function Navbar() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [ownerApplicationStatus, setOwnerApplicationStatus] = useState<OwnerApplicationStatus>(null)
   const [accountMenuOpen, setAccountMenuOpen] = useState(false)
+  const [avatarImageError, setAvatarImageError] = useState(false)
   const router = useRouter()
   const accountMenuRef = useRef<HTMLDivElement | null>(null)
 
@@ -33,8 +35,8 @@ export default function Navbar() {
         }
 
         const [userResponse, ownerApplicationResponse] = await Promise.all([
-          fetch(`/api/auth?user_id=${encodeURIComponent(parsedUser.user_id)}`),
-          fetch(`/api/owner-applications?user_id=${encodeURIComponent(parsedUser.user_id)}`),
+          fetch(`/api/auth?user_id=${encodeURIComponent(parsedUser.user_id)}`, { cache: 'no-store' }),
+          fetch(`/api/owner-applications?user_id=${encodeURIComponent(parsedUser.user_id)}`, { cache: 'no-store' }),
         ])
 
         const userResult = await userResponse.json()
@@ -45,8 +47,12 @@ export default function Navbar() {
         }
 
         if (userResponse.ok && userResult.success && userResult.user) {
-          setUser(userResult.user)
-          localStorage.setItem('user', JSON.stringify(userResult.user))
+          const latestUser = {
+            ...userResult.user,
+            profile_image: userResult.user.profile_image ?? parsedUser.profile_image ?? null,
+          } as User
+          setUser(latestUser)
+          localStorage.setItem('user', JSON.stringify(latestUser))
         }
 
         if (ownerApplicationResponse.ok && ownerApplicationResult.success) {
@@ -59,10 +65,29 @@ export default function Navbar() {
 
     void loadCurrentUser()
 
+    function handleStorageSync() {
+      const storedUser = localStorage.getItem('user')
+      if (!storedUser || !isMounted) return
+
+      try {
+        const parsedUser = JSON.parse(storedUser) as User
+        setUser(parsedUser)
+      } catch (error) {
+        console.error('Failed to sync navbar user from storage:', error)
+      }
+    }
+
+    window.addEventListener('storage', handleStorageSync)
+
     return () => {
       isMounted = false
+      window.removeEventListener('storage', handleStorageSync)
     }
   }, [])
+
+  useEffect(() => {
+    setAvatarImageError(false)
+  }, [user?.profile_image])
 
   useEffect(() => {
     function handlePointerDown(event: MouseEvent) {
@@ -82,6 +107,7 @@ export default function Navbar() {
 
   function handleLogout() {
     setAccountMenuOpen(false)
+    setSidebarOpen(false)
     localStorage.removeItem('token')
     localStorage.removeItem('user')
     router.push('/auth/login')
@@ -89,6 +115,7 @@ export default function Navbar() {
 
   function handleOwnerAction() {
     setSidebarOpen(false)
+    setAccountMenuOpen(false)
 
     if (isOwner) {
       router.push('/owner/dashboard')
@@ -98,8 +125,15 @@ export default function Navbar() {
     router.push('/customer/owner-application')
   }
 
+  function handleSidebarNavigate(path: string) {
+    setSidebarOpen(false)
+    setAccountMenuOpen(false)
+    router.push(path)
+  }
+
   function handleProfileClick() {
     setAccountMenuOpen(false)
+    setSidebarOpen(false)
     router.push('/customer/profile')
   }
 
@@ -108,6 +142,7 @@ export default function Navbar() {
   const initials = user?.name
     ? user.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
     : '?'
+  const hasProfileImage = Boolean(user?.profile_image) && !avatarImageError
   const isOwner = user?.role === 'owner' || ownerApplicationStatus === 'active'
   const isOwnerPending = ownerApplicationStatus === 'pending'
   const ownerActionLabel = isOwner
@@ -129,7 +164,10 @@ export default function Navbar() {
       {/* Sidebar Overlay */}
       <div 
         className={`sidebar-overlay ${sidebarOpen ? 'open' : ''}`}
-        onClick={() => setSidebarOpen(false)}
+        onClick={() => {
+          setSidebarOpen(false)
+          setAccountMenuOpen(false)
+        }}
       ></div>
 
       {/* Sidebar */}
@@ -142,12 +180,45 @@ export default function Navbar() {
         </div>
 
         {/* Profil */}
-        <div className="sb-profile">
-          <div className="sb-avatar">{initials}</div>
-          <div className="sb-profile-text">
-            <span className="sb-name">{user?.name ?? 'Pengguna'}</span>
-            <span className="sb-role">{displayedRole}</span>
-          </div>
+        <div className="account-menu sb-account-menu" ref={accountMenuRef}>
+          <button
+            type="button"
+            className={`sb-profile sb-profile-button${accountMenuOpen ? ' active' : ''}`}
+            onClick={() => setAccountMenuOpen((current) => !current)}
+            aria-haspopup="menu"
+            aria-expanded={accountMenuOpen}
+          >
+            <div className="sb-profile-main">
+              <div className={`sb-avatar${hasProfileImage ? ' has-image' : ''}`}>
+                {hasProfileImage ? (
+                  <img
+                    src={user?.profile_image || ''}
+                    alt={user?.name || 'User avatar'}
+                    className="sb-avatar-image"
+                    onError={() => setAvatarImageError(true)}
+                  />
+                ) : initials}
+              </div>
+              <div className="sb-profile-text">
+                <span className="sb-name">{user?.name ?? 'Pengguna'}</span>
+                <span className="sb-role">{displayedRole}</span>
+              </div>
+            </div>
+            <span className="sb-profile-caret" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                <path d="m6 9 6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </span>
+          </button>
+
+          {accountMenuOpen && (
+            <AccountDropdown
+              name={user?.name ?? 'Pengguna'}
+              role={displayedRole}
+              onProfileClick={handleProfileClick}
+              onLogout={handleLogout}
+            />
+          )}
         </div>
 
         {/* Menu */}
@@ -155,7 +226,7 @@ export default function Navbar() {
           <a
             href="#"
             className={`sb-item${isPathActive('/customer/dashboard') ? ' active' : ''}`}
-            onClick={(e) => { e.preventDefault(); router.push('/customer/dashboard'); }}
+            onClick={(e) => { e.preventDefault(); handleSidebarNavigate('/customer/dashboard'); }}
           >
             <DashboardIcon className="sb-icon" />
             Dashboard
@@ -163,7 +234,7 @@ export default function Navbar() {
           <a
             href="#"
             className={`sb-item${isPathActive('/customer/bookings') ? ' active' : ''}`}
-            onClick={(e) => { e.preventDefault(); router.push('/customer/bookings'); }}
+            onClick={(e) => { e.preventDefault(); handleSidebarNavigate('/customer/bookings'); }}
           >
             <ReviewsIcon className="sb-icon" />
             Riwayat
@@ -171,7 +242,7 @@ export default function Navbar() {
           <a
             href="#"
             className={`sb-item${isPathActive('/customer/faq') ? ' active' : ''}`}
-            onClick={(e) => { e.preventDefault(); router.push('/customer/faq'); }}
+            onClick={(e) => { e.preventDefault(); handleSidebarNavigate('/customer/faq'); }}
           >
             <HelpIcon className="sb-icon" />
             Bantuan
@@ -207,31 +278,22 @@ export default function Navbar() {
         </a>
         <div className="header-right">
           <span className="hai-text">Hai, {user?.name?.split(' ')[0] ?? 'Pengguna'}!</span>
-          <div className="account-menu" ref={accountMenuRef}>
+          <div className="account-menu">
             <button
               type="button"
-              className={`avatar avatar-button${accountMenuOpen ? ' active' : ''}`}
-              onClick={() => setAccountMenuOpen((current) => !current)}
-              aria-haspopup="menu"
-              aria-expanded={accountMenuOpen}
+              className={`avatar avatar-button${hasProfileImage ? ' has-image' : ''}`}
+              onClick={handleProfileClick}
+              aria-label="Buka profil"
             >
-              {initials}
+              {hasProfileImage ? (
+                <img
+                  src={user?.profile_image || ''}
+                  alt={user?.name || 'User avatar'}
+                  className="avatar-image"
+                  onError={() => setAvatarImageError(true)}
+                />
+              ) : initials}
             </button>
-
-            {accountMenuOpen && (
-              <div className="account-dropdown" role="menu">
-                <div className="account-dropdown-header">
-                  <span className="account-dropdown-name">{user?.name ?? 'Pengguna'}</span>
-                  <span className="account-dropdown-role">{displayedRole}</span>
-                </div>
-                <button type="button" className="account-dropdown-item" onClick={handleProfileClick}>
-                  Profil
-                </button>
-                <button type="button" className="account-dropdown-item danger" onClick={handleLogout}>
-                  Logout
-                </button>
-              </div>
-            )}
           </div>
         </div>
       </header>

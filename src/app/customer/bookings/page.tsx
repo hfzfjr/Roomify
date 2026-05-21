@@ -32,6 +32,7 @@ export default function CustomerBookings() {
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null)
   const [currentUserId, setCurrentUserId] = useState('')
   const [user, setUser] = useState<User | null>(null)
+  const [bookingAvatarImageError, setBookingAvatarImageError] = useState(false)
   const [nowTimestamp, setNowTimestamp] = useState(() => Date.now())
   const [filter, setFilter] = useState<FilterStatus>('all')
   const [searchQuery, setSearchQuery] = useState('')
@@ -83,6 +84,10 @@ export default function CustomerBookings() {
     const timer = window.setInterval(() => setNowTimestamp(Date.now()), 1000)
     return () => window.clearInterval(timer)
   }, [bookings])
+
+  useEffect(() => {
+    setBookingAvatarImageError(false)
+  }, [user?.profile_image])
 
   useEffect(() => {
     const hasExpiredPendingBooking = bookings.some(
@@ -145,6 +150,7 @@ export default function CustomerBookings() {
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
   }
+  const hasBookingProfileImage = Boolean(user?.profile_image) && !bookingAvatarImageError
 
   return (
     <>
@@ -154,8 +160,15 @@ export default function CustomerBookings() {
         {/* Sidebar */}
         <aside className="customer-bookings-sidebar">
           <div className="customer-bookings-profile">
-            <div className="customer-bookings-avatar">
-              {user?.name ? getInitials(user.name) : 'U'}
+            <div className={`customer-bookings-avatar${hasBookingProfileImage ? ' has-image' : ''}`}>
+              {hasBookingProfileImage ? (
+                <img
+                  src={user?.profile_image || ''}
+                  alt={user?.name || 'User avatar'}
+                  className="customer-bookings-avatar-image"
+                  onError={() => setBookingAvatarImageError(true)}
+                />
+              ) : (user?.name ? getInitials(user.name) : 'U')}
             </div>
             <h3 className="customer-bookings-name">{user?.name || 'User'}</h3>
             <p className="customer-bookings-email">{user?.email || ''}</p>

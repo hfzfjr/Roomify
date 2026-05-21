@@ -166,7 +166,7 @@ export default function CustomerPaymentDetailPage() {
   const [detail, setDetail] = useState<PaymentDetailResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod>('bca_va')
+  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod>('qris')
   const [showCancelOverlay, setShowCancelOverlay] = useState(false)
   const [isCancelling, setIsCancelling] = useState(false)
 
@@ -242,7 +242,7 @@ export default function CustomerPaymentDetailPage() {
     return (
       <div className="customer-payment-page">
         <div className="customer-payment-subheader">
-          <button type="button" disabled aria-label="Kembali">
+          <button type="button" disabled aria-label="Batalkan">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
               <path strokeLinecap="round" strokeLinejoin="round" d="m15 18-6-6 6-6" />
             </svg>
@@ -311,7 +311,7 @@ export default function CustomerPaymentDetailPage() {
               </div>
 
               <div className="customer-payment-summary-actions">
-                <button type="button" className="secondary" disabled>
+                <button type="button" className="secondary cancel" disabled>
                   <div className="customer-payment-skeleton-text short" />
                 </button>
                 <button type="button" className="primary" disabled>
@@ -374,7 +374,7 @@ export default function CustomerPaymentDetailPage() {
   return (
     <div className="customer-payment-page">
       <div className="customer-payment-subheader">
-        <button type="button" onClick={() => setShowCancelOverlay(true)} aria-label="Kembali">
+        <button type="button" onClick={() => setShowCancelOverlay(true)} aria-label="Batalkan">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
             <path strokeLinecap="round" strokeLinejoin="round" d="m15 18-6-6 6-6" />
           </svg>
@@ -471,8 +471,8 @@ export default function CustomerPaymentDetailPage() {
             </div>
 
             <div className="customer-payment-summary-actions">
-              <button type="button" className="secondary" onClick={() => setShowCancelOverlay(true)}>
-                Kembali
+              <button type="button" className="secondary cancel" onClick={() => setShowCancelOverlay(true)}>
+                Batalkan
               </button>
               <button
                 type="button"

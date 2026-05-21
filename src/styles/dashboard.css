@@ -999,6 +999,18 @@
   font-size: 24px;
   font-weight: 600;
   margin: 0 auto 12px;
+  overflow: hidden;
+}
+
+.customer-bookings-avatar.has-image {
+  background: #e5e7eb;
+}
+
+.customer-bookings-avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .customer-bookings-name {

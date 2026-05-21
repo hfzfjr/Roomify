@@ -51,6 +51,172 @@ function getNextInvoiceId(existingIds: Array<{ invoice_id: string }>) {
   return `inv-${String(nextIteration).padStart(2, '0')}`
 }
 
+function formatInvoiceCurrency(amount: number) {
+  return new Intl.NumberFormat('id-ID').format(amount)
+}
+
+function formatInvoiceDateTime(dateValue: string) {
+  const parsedDate = new Date(dateValue)
+  if (Number.isNaN(parsedDate.getTime())) {
+    return dateValue
+  }
+
+  const datePart = parsedDate.toLocaleDateString('id-ID', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric'
+  })
+
+  const timePart = parsedDate.toLocaleTimeString('id-ID', {
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+
+  return `${datePart} ${timePart}`
+}
+
+function toPdfSafeText(value: string) {
+  return value
+    .normalize('NFKD')
+    .replace(/[^\x20-\x7E]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+function escapePdfText(value: string) {
+  return value
+    .replace(/\\/g, '\\\\')
+    .replace(/\(/g, '\\(')
+    .replace(/\)/g, '\\)')
+}
+
+function buildSimplePdfBuffer(lines: string[]) {
+  const safeLines = lines
+    .map(line => toPdfSafeText(line))
+    .filter(Boolean)
+    .slice(0, 45)
+
+  const contentRows = ['BT', '/F1 11 Tf', '50 800 Td', '15 TL']
+  safeLines.forEach((line, index) => {
+    if (index === 0) {
+      contentRows.push(`(${escapePdfText(line)}) Tj`)
+      return
+    }
+    contentRows.push('T*')
+    contentRows.push(`(${escapePdfText(line)}) Tj`)
+  })
+  contentRows.push('ET')
+
+  const content = `${contentRows.join('\n')}\n`
+  const contentLength = Buffer.byteLength(content, 'utf8')
+
+  const objects = [
+    '1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj',
+    '2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj',
+    '3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>\nendobj',
+    '4 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj',
+    `5 0 obj\n<< /Length ${contentLength} >>\nstream\n${content}endstream\nendobj`
+  ]
+
+  let pdf = '%PDF-1.4\n'
+  const offsets: number[] = [0]
+
+  objects.forEach(object => {
+    offsets.push(Buffer.byteLength(pdf, 'utf8'))
+    pdf += `${object}\n`
+  })
+
+  const xrefOffset = Buffer.byteLength(pdf, 'utf8')
+  pdf += `xref\n0 ${objects.length + 1}\n`
+  pdf += '0000000000 65535 f \n'
+
+  for (let i = 1; i <= objects.length; i += 1) {
+    const offset = String(offsets[i]).padStart(10, '0')
+    pdf += `${offset} 00000 n \n`
+  }
+
+  pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`
+
+  return Buffer.from(pdf, 'utf8')
+}
+
+async function uploadInvoicePdfToStorage(params: {
+  supabase: Awaited<ReturnType<typeof createClient>>
+  invoiceId: string
+  bookingId: string
+  customerName: string
+  customerEmail: string
+  roomName: string
+  roomLocation: string
+  paymentMethod: string
+  paidAt: string
+  subtotal: number
+  serviceFee: number
+  taxAmount: number
+  totalAmount: number
+}) {
+  const {
+    supabase,
+    invoiceId,
+    bookingId,
+    customerName,
+    customerEmail,
+    roomName,
+    roomLocation,
+    paymentMethod,
+    paidAt,
+    subtotal,
+    serviceFee,
+    taxAmount,
+    totalAmount
+  } = params
+
+  const pdfLines = [
+    'ROOMIFY - INVOICE PEMBAYARAN',
+    '',
+    `Invoice ID   : ${invoiceId}`,
+    `Booking ID   : ${bookingId}`,
+    `Tanggal Lunas: ${formatInvoiceDateTime(paidAt)}`,
+    `Metode Bayar : ${paymentMethod}`,
+    '',
+    'Data Pelanggan',
+    `Nama         : ${customerName || '-'}`,
+    `Email        : ${customerEmail || '-'}`,
+    '',
+    'Data Ruangan',
+    `Ruangan      : ${roomName || '-'}`,
+    `Lokasi       : ${roomLocation || '-'}`,
+    '',
+    'Rincian Biaya',
+    `Subtotal     : Rp ${formatInvoiceCurrency(subtotal)}`,
+    `Biaya Layanan: Rp ${formatInvoiceCurrency(serviceFee)}`,
+    `PPN (11%)    : Rp ${formatInvoiceCurrency(taxAmount)}`,
+    `TOTAL BAYAR  : Rp ${formatInvoiceCurrency(totalAmount)}`,
+    '',
+    'Terima kasih telah menggunakan layanan Roomify.'
+  ]
+
+  const pdfBuffer = buildSimplePdfBuffer(pdfLines)
+  const filePath = `${bookingId}/${invoiceId}.pdf`
+
+  const { error: uploadError } = await supabase.storage
+    .from('invoices')
+    .upload(filePath, pdfBuffer, {
+      contentType: 'application/pdf',
+      upsert: true
+    })
+
+  if (uploadError) {
+    throw new Error(uploadError.message)
+  }
+
+  const { data: publicUrlData } = supabase.storage
+    .from('invoices')
+    .getPublicUrl(filePath)
+
+  return publicUrlData.publicUrl
+}
+
 function isHalfHourSlot(date: Date) {
   const minutes = date.getMinutes()
   return minutes === 0 || minutes === 30
@@ -172,7 +338,7 @@ export async function GET(request: Request) {
     }).filter((id): id is string => Boolean(id))
 
     // Fetch images from room_image table
-    let imagesByRoom: { [key: string]: string[] } = {}
+    const imagesByRoom: { [key: string]: string[] } = {}
     if (roomIds.length > 0) {
       const { data: roomImages, error: imagesError } = await supabase
         .from('room_image')
@@ -526,6 +692,8 @@ export async function PATCH(request: Request) {
         const subtotal = bookingDetails.total_cost || 0
         const taxAmount = Math.round((subtotal + serviceFee) * 0.11)
         const totalAmount = subtotal + serviceFee + taxAmount
+        let invoiceId = ''
+        let invoicePdfWarning = ''
 
         // Check if invoice already exists
         const { data: existingInvoice } = await supabase
@@ -540,7 +708,7 @@ export async function PATCH(request: Request) {
             .from('invoice')
             .select('invoice_id')
 
-          await supabase
+          const { data: insertedInvoice, error: insertInvoiceError } = await supabase
             .from('invoice')
             .insert({
               invoice_id: getNextInvoiceId(invoiceIds ?? []),
@@ -551,14 +719,81 @@ export async function PATCH(request: Request) {
               total_amount: totalAmount,
               printed_at: now
             })
+            .select('invoice_id')
+            .maybeSingle()
+
+          if (insertInvoiceError || !insertedInvoice) {
+            return NextResponse.json(
+              { success: false, message: insertInvoiceError?.message || 'Gagal membuat invoice.' },
+              { status: 500 }
+            )
+          }
+
+          invoiceId = insertedInvoice.invoice_id
+        } else {
+          invoiceId = existingInvoice.invoice_id
+          await supabase
+            .from('invoice')
+            .update({
+              payment_id: paymentRecord.payment_id,
+              total_amount: totalAmount,
+              printed_at: now
+            })
+            .eq('invoice_id', invoiceId)
         }
+
+        const [{ data: roomInfo }, { data: userInfo }] = await Promise.all([
+          supabase
+            .from('room')
+            .select('name, location')
+            .eq('room_id', bookingDetails.room_id)
+            .maybeSingle(),
+          supabase
+            .from('users')
+            .select('name, email')
+            .eq('user_id', user_id)
+            .maybeSingle()
+        ])
+
+        try {
+          const pdfUrl = await uploadInvoicePdfToStorage({
+            supabase,
+            invoiceId,
+            bookingId: booking_id,
+            customerName: userInfo?.name ?? 'Customer',
+            customerEmail: userInfo?.email ?? '-',
+            roomName: roomInfo?.name ?? '-',
+            roomLocation: roomInfo?.location ?? '-',
+            paymentMethod: actualPaymentMethod,
+            paidAt: now,
+            subtotal,
+            serviceFee,
+            taxAmount,
+            totalAmount
+          })
+
+          await supabase
+            .from('invoice')
+            .update({ pdf_url: pdfUrl })
+            .eq('invoice_id', invoiceId)
+        } catch (pdfError) {
+          console.error('Invoice PDF upload error:', pdfError)
+          invoicePdfWarning = pdfError instanceof Error
+            ? ` Struk PDF belum berhasil diupload: ${pdfError.message}`
+            : ' Struk PDF belum berhasil diupload.'
+        }
+
+        return NextResponse.json({
+          success: true,
+          data: updatedBooking,
+          message: `Pembayaran berhasil dikonfirmasi. Booking Anda sudah lunas.${invoicePdfWarning}`
+        })
       }
 
-      return NextResponse.json({
-        success: true,
-        data: updatedBooking,
-        message: 'Pembayaran berhasil dikonfirmasi. Booking Anda sudah lunas.'
-      })
+      return NextResponse.json(
+        { success: false, message: 'Pembayaran berhasil, tetapi data invoice belum tersedia.' },
+        { status: 500 }
+      )
     }
 
     if (booking.status !== 'pending') {

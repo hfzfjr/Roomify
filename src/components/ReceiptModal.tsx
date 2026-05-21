@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { formatDate, formatTime } from '@/utils/formatDate'
 import '@/styles/rooms.css'
 
@@ -60,13 +60,15 @@ export default function ReceiptModal({ isOpen, onClose, bookingId, userId }: Rec
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  useEffect(() => {
-    if (isOpen && bookingId && userId) {
-      fetchInvoiceData()
+  const pdfUrl = useMemo(() => {
+    const rawUrl = invoiceData?.invoice?.pdf_url
+    if (!rawUrl || typeof rawUrl !== 'string') {
+      return ''
     }
-  }, [isOpen, bookingId, userId])
+    return rawUrl.trim()
+  }, [invoiceData?.invoice?.pdf_url])
 
-  async function fetchInvoiceData() {
+  const fetchInvoiceData = useCallback(async () => {
     setLoading(true)
     setError('')
     try {
@@ -83,15 +85,49 @@ export default function ReceiptModal({ isOpen, onClose, bookingId, userId }: Rec
     } finally {
       setLoading(false)
     }
+  }, [bookingId, userId])
+
+  useEffect(() => {
+    if (isOpen && bookingId && userId) {
+      const timer = window.setTimeout(() => {
+        void fetchInvoiceData()
+      }, 0)
+
+      return () => window.clearTimeout(timer)
+    }
+  }, [bookingId, fetchInvoiceData, isOpen, userId])
+
+  function openPdfInNewTab(url: string) {
+    const openedWindow = window.open(url, '_blank', 'noopener,noreferrer')
+    if (!openedWindow) {
+      setError('Popup diblokir browser. Izinkan popup untuk membuka PDF.')
+      return false
+    }
+    return true
   }
 
   function handlePrint() {
+    if (pdfUrl) {
+      openPdfInNewTab(pdfUrl)
+      return
+    }
+
     window.print()
   }
 
   function handleDownloadPDF() {
-    // For now, we'll use print to PDF functionality
-    // In production, you might want to use a library like html2pdf.js
+    if (pdfUrl) {
+      const anchor = document.createElement('a')
+      anchor.href = pdfUrl
+      anchor.target = '_blank'
+      anchor.rel = 'noopener noreferrer'
+      anchor.download = `${invoiceData?.invoice?.invoice_id || bookingId}.pdf`
+      document.body.appendChild(anchor)
+      anchor.click()
+      document.body.removeChild(anchor)
+      return
+    }
+
     handlePrint()
   }
 
@@ -130,6 +166,23 @@ export default function ReceiptModal({ isOpen, onClose, bookingId, userId }: Rec
             </div>
           ) : invoiceData ? (
             <div className="receipt-paper">
+              {pdfUrl && (
+                <div className="receipt-pdf-preview">
+                  <h4>Preview PDF Struk</h4>
+                  <iframe
+                    src={pdfUrl}
+                    title="Preview PDF Struk"
+                    className="receipt-pdf-iframe"
+                  />
+                </div>
+              )}
+
+              {!pdfUrl && (
+                <div className="receipt-pdf-missing">
+                  <p>File PDF struk belum tersedia di `invoice.pdf_url`. Menampilkan struk HTML sebagai fallback.</p>
+                </div>
+              )}
+
               {/* Receipt Header */}
               <div className="receipt-header">
                 <img src="/images/roomify-biru.png" alt="Roomify" className="receipt-logo" />
@@ -263,13 +316,13 @@ export default function ReceiptModal({ isOpen, onClose, bookingId, userId }: Rec
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
               </svg>
-              Cetak
+              {pdfUrl ? 'Cetak PDF' : 'Cetak'}
             </button>
             <button type="button" className="receipt-btn-primary" onClick={handleDownloadPDF}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 15V3m0 12l-4-4m4 4l4-4M3 15v4a2 2 0 002 2h14a2 2 0 002-2v-4" />
               </svg>
-              Unduh PDF
+              {pdfUrl ? 'Unduh PDF' : 'Simpan PDF'}
             </button>
           </div>
         )}

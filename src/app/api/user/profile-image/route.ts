@@ -63,19 +63,37 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient()
     const bucketName = 'profile_image'
     
-    // Generate file name and path using user_id folder and (user_id)_Profile naming
+    // Generate unique file name per upload to avoid stale CDN/browser cache
     const fileExt = file.name.split('.').pop()
-    const fileName = `${user.user_id}_Profile.${fileExt}`
+    const fileName = `${user.user_id}_Profile_${Date.now()}.${fileExt}`
     const filePath = `${user.user_id}/${fileName}`
 
     console.log('Uploading file to:', filePath)
 
-    // Upload new file to Supabase Storage dengan upsert true (akan menimpa file lama)
+    // Best-effort cleanup: remove previous profile image file (if it exists in same bucket path)
+    if (user.profile_image) {
+      try {
+        const marker = `/storage/v1/object/public/${bucketName}/`
+        const markerIndex = user.profile_image.indexOf(marker)
+        if (markerIndex !== -1) {
+          const oldPath = user.profile_image
+            .slice(markerIndex + marker.length)
+            .split('?')[0]
+          if (oldPath) {
+            await supabase.storage.from(bucketName).remove([oldPath])
+          }
+        }
+      } catch (cleanupError) {
+        console.warn('Failed to cleanup old profile image:', cleanupError)
+      }
+    }
+
+    // Upload new file to Supabase Storage with unique filename
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from(bucketName)
       .upload(filePath, file, {
         cacheControl: '3600',
-        upsert: true
+        upsert: false
       })
 
     if (uploadError) {

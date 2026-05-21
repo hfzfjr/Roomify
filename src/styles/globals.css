@@ -28,6 +28,8 @@
   --border-text-cyan: #54d2f9;
   --background-cyan: #ddf7ff;
   --background-light-blue: #effbff;
+  --cancel-button-bg: #f8cccc;
+  --cancel-button-text: #db0000;
   
   /* Font */
   --font-family: 'Plus Jakarta Sans', sans-serif;

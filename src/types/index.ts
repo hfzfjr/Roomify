@@ -12,6 +12,7 @@ export interface User {
   email: string
   role: UserRole
   phone_number?: string | null
+  profile_image?: string | null
 }
 
 export interface Room {

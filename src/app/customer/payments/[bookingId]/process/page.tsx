@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { formatPaymentCountdown, getRemainingPaymentMs } from '@/utils/booking'
 import { formatDate, formatTime } from '@/utils/formatDate'
@@ -25,8 +25,17 @@ type PaymentDetailResponse = {
     name: string
   }
   summary: {
+    subtotal: number
+    service_fee: number
+    tax_amount: number
     total_payment: number
   }
+}
+
+type QrisResponse = {
+  amount: number
+  qr_payload: string
+  qr_image_data_url: string
 }
 
 function getPaymentMethodLabel(method: PaymentMethod) {
@@ -43,12 +52,12 @@ function getPaymentInstructions(method: PaymentMethod) {
   if (method === 'qris') {
     return {
       title: 'Instruksi Pembayaran QRIS',
-      virtualAccountLabel: 'Kode pembayaran QRIS',
-      virtualAccountValue: 'QRIS-ROOMIFY-782901',
+      virtualAccountLabel: 'Payload QRIS',
+      virtualAccountValue: '',
       steps: [
         ['Buka aplikasi e-wallet atau m-banking', 'Gunakan aplikasi yang mendukung pembayaran QRIS.'],
         ['Pilih menu Bayar QR', 'Scan kode QR pembayaran dari merchant Roomify.'],
-        ['Masukkan nominal pembayaran', 'Pastikan nominal sesuai total tagihan.'],
+        ['Periksa nominal otomatis', 'Nominal akan otomatis terisi sesuai total tagihan.'],
         ['Konfirmasi transaksi', 'Periksa detail pembayaran lalu tekan Bayar.'],
         ['Simpan bukti transaksi', 'Gunakan bukti transaksi jika verifikasi tertunda.']
       ]
@@ -127,12 +136,17 @@ export default function CustomerPaymentProcessPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
-  const [actionLoading, setActionLoading] = useState<'confirm' | 'cancel' | null>(null)
+  const [actionLoading, setActionLoading] = useState<'confirm' | null>(null)
   const [nowTime, setNowTime] = useState(() => Date.now())
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false)
+  const [qrisImageUrl, setQrisImageUrl] = useState('')
+  const [qrisPayload, setQrisPayload] = useState('')
+  const [qrisLoading, setQrisLoading] = useState(false)
+  const [qrisError, setQrisError] = useState('')
 
-  const method = (searchParams.get('method') as PaymentMethod) || 'bca_va'
+  const method = (searchParams.get('method') as PaymentMethod) || 'qris'
   const instruction = useMemo(() => getPaymentInstructions(method), [method])
+  const isPending = detail?.booking?.status === 'pending'
 
   useEffect(() => {
     if (!userId) {
@@ -196,12 +210,60 @@ export default function CustomerPaymentProcessPage() {
     return () => window.clearInterval(timer)
   }, [])
 
+  useEffect(() => {
+    if (method !== 'qris') {
+      return
+    }
+
+    if (!userId || !bookingId || !detail || detail.booking.status !== 'pending') {
+      return
+    }
+
+    let isMounted = true
+
+    async function fetchQris() {
+      try {
+        setQrisLoading(true)
+        setQrisError('')
+        setQrisImageUrl('')
+        setQrisPayload('')
+
+        const response = await fetch(`/api/payments/${bookingId}/qris?user_id=${encodeURIComponent(userId)}`)
+        const result = await response.json()
+
+        if (!response.ok || !result.success) {
+          throw new Error(result.message || 'Gagal memuat QRIS pembayaran.')
+        }
+
+        if (isMounted) {
+          const qrisData = result.data as QrisResponse
+          setQrisImageUrl(qrisData.qr_image_data_url)
+          setQrisPayload(qrisData.qr_payload)
+        }
+      } catch (fetchError) {
+        if (isMounted) {
+          setQrisError(fetchError instanceof Error ? fetchError.message : 'Gagal memuat QRIS pembayaran.')
+        }
+      } finally {
+        if (isMounted) {
+          setQrisLoading(false)
+        }
+      }
+    }
+
+    void fetchQris()
+
+    return () => {
+      isMounted = false
+    }
+  }, [bookingId, detail, method, userId])
+
   // Calculate remaining time based on server's payment_due_at
   const remainingPaymentMs = detail?.booking?.payment_due_at
     ? getRemainingPaymentMs(detail.booking.payment_due_at, nowTime)
     : 0
 
-  async function refreshDetail() {
+  const refreshDetail = useCallback(async () => {
     if (!userId || !bookingId) return
 
     try {
@@ -214,14 +276,14 @@ export default function CustomerPaymentProcessPage() {
     } catch {
       // Silent fail on refresh
     }
-  }
+  }, [bookingId, userId])
 
-  async function handleBookingAction(action: 'confirm_payment' | 'cancel') {
+  const handleConfirmPayment = useCallback(async () => {
     if (!detail || !userId) {
-      return
+      return false
     }
 
-    setActionLoading(action === 'confirm_payment' ? 'confirm' : 'cancel')
+    setActionLoading('confirm')
     setError('')
     setSuccessMessage('')
 
@@ -234,7 +296,7 @@ export default function CustomerPaymentProcessPage() {
         body: JSON.stringify({
           booking_id: detail?.booking?.booking_id,
           user_id: userId,
-          action,
+          action: 'confirm_payment',
           payment_method: method // Pass payment method for invoice
         })
       })
@@ -245,29 +307,42 @@ export default function CustomerPaymentProcessPage() {
         throw new Error(result.message || 'Aksi pembayaran gagal diproses.')
       }
 
-      if (action === 'confirm_payment') {
-        // Refresh data to show updated status, stay on page
-        await refreshDetail()
-        setSuccessMessage('Pembayaran berhasil dikonfirmasi! Booking Anda telah dikonfirmasi.')
-        // Clear payment start time from localStorage
-        localStorage.removeItem(`payment_start_${bookingId}`)
-        return
-      }
-
-      // For cancel action, redirect to rooms page
-      router.push('/customer/rooms')
+      // Refresh data to show updated status, stay on page
+      await refreshDetail()
+      setSuccessMessage(
+        method === 'qris'
+          ? 'Pembayaran QRIS berhasil dikonfirmasi. Booking Anda telah dikonfirmasi.'
+          : 'Pembayaran berhasil dikonfirmasi! Booking Anda telah dikonfirmasi.'
+      )
+      // Clear payment start time from localStorage
+      localStorage.removeItem(`payment_start_${bookingId}`)
+      return true
     } catch (actionError) {
-      setError(actionError instanceof Error ? actionError.message : 'Aksi pembayaran gagal diproses.')
+      const actionErrorMessage = actionError instanceof Error ? actionError.message : 'Aksi pembayaran gagal diproses.'
+      setError(actionErrorMessage)
+      return false
     } finally {
       setActionLoading(null)
     }
-  }
+  }, [bookingId, detail, method, refreshDetail, userId])
 
   async function copyVirtualAccount() {
     try {
       await navigator.clipboard.writeText(instruction.virtualAccountValue.replaceAll(' ', ''))
     } catch {
       setError('Nomor tidak berhasil disalin. Silakan salin manual.')
+    }
+  }
+
+  async function copyQrisPayload() {
+    if (!qrisPayload) {
+      return
+    }
+
+    try {
+      await navigator.clipboard.writeText(qrisPayload)
+    } catch {
+      setError('Payload QRIS tidak berhasil disalin. Silakan salin manual.')
     }
   }
 
@@ -295,81 +370,72 @@ export default function CustomerPaymentProcessPage() {
                   <p>Silakan lakukan pembayaran untuk mengonfirmasi ruangan</p>
                   <div className="customer-process-deadline">
                     <span>Kadaluwarsa dalam</span>
-                    <strong><div className="customer-payment-skeleton-text medium" /></strong>
+                    <strong><span className="customer-payment-skeleton-text medium" aria-hidden="true" /></strong>
                   </div>
                 </div>
               </section>
 
               <section className="customer-payment-card customer-process-instruction-card">
                 <h2>Instruksi Pembayaran</h2>
-                <p>Gunakan nomor pembayaran di bawah ini untuk verifikasi otomatis</p>
-                <div className="customer-process-qr-box">
-                  <span>Scan QR Code untuk pembayaran</span>
-                  <div className="customer-payment-skeleton-avatar" style={{ width: '200px', height: '200px' }} />
+                <p><span className="customer-payment-skeleton-text instruction-subtitle" aria-hidden="true" /></p>
+                <div className="customer-process-qr-box skeleton">
+                  <div className="customer-payment-skeleton-qr" aria-hidden="true" />
                 </div>
 
                 <div className="customer-process-step-list">
                   <div className="customer-process-step-item">
-                    <span>1</span>
+                    <span className="customer-process-step-circle-skeleton">1</span>
                     <div>
-                      <h4><div className="customer-payment-skeleton-text long" /></h4>
-                      <p><div className="customer-payment-skeleton-text full" /></p>
+                      <h4><span className="customer-payment-skeleton-text instruction long" aria-hidden="true" /></h4>
+                      <p><span className="customer-payment-skeleton-text instruction full" aria-hidden="true" /></p>
                     </div>
                   </div>
                   <div className="customer-process-step-item">
-                    <span>2</span>
+                    <span className="customer-process-step-circle-skeleton">2</span>
                     <div>
-                      <h4><div className="customer-payment-skeleton-text long" /></h4>
-                      <p><div className="customer-payment-skeleton-text full" /></p>
+                      <h4><span className="customer-payment-skeleton-text instruction long" aria-hidden="true" /></h4>
+                      <p><span className="customer-payment-skeleton-text instruction full" aria-hidden="true" /></p>
                     </div>
                   </div>
                   <div className="customer-process-step-item">
-                    <span>3</span>
+                    <span className="customer-process-step-circle-skeleton">3</span>
                     <div>
-                      <h4><div className="customer-payment-skeleton-text long" /></h4>
-                      <p><div className="customer-payment-skeleton-text full" /></p>
+                      <h4><span className="customer-payment-skeleton-text instruction long" aria-hidden="true" /></h4>
+                      <p><span className="customer-payment-skeleton-text instruction full" aria-hidden="true" /></p>
                     </div>
                   </div>
                 </div>
 
-                <div className="customer-process-actions">
-                  <button type="button" className="secondary" disabled>
-                    <div className="customer-payment-skeleton-text medium" />
-                  </button>
-                  <button type="button" className="primary" disabled>
-                    <div className="customer-payment-skeleton-text medium" />
-                  </button>
-                </div>
               </section>
             </div>
 
             <aside className="customer-process-side-card">
               <div className="customer-process-side-header">
                 <img src="/images/roomify-biru.png" alt="Roomify" />
-                <span>Belum lunas</span>
+                <span className="customer-process-side-status-skeleton customer-payment-skeleton-text short" aria-hidden="true" />
               </div>
 
               <div className="customer-process-side-content">
                 <div className="customer-process-side-details">
                   <div className="detail-row">
                     <span className="detail-label">No Transaksi</span>
-                    <span className="detail-value"><div className="customer-payment-skeleton-text medium" /></span>
+                    <span className="detail-value"><span className="customer-payment-skeleton-text medium" aria-hidden="true" /></span>
                   </div>
                   <div className="detail-row">
                     <span className="detail-label">Ruangan</span>
-                    <span className="detail-value"><div className="customer-payment-skeleton-text long" /></span>
+                    <span className="detail-value"><span className="customer-payment-skeleton-text long" aria-hidden="true" /></span>
                   </div>
                   <div className="detail-row">
                     <span className="detail-label">Tanggal</span>
-                    <span className="detail-value"><div className="customer-payment-skeleton-text medium" /></span>
+                    <span className="detail-value"><span className="customer-payment-skeleton-text medium" aria-hidden="true" /></span>
                   </div>
                   <div className="detail-row">
                     <span className="detail-label">Waktu</span>
-                    <span className="detail-value"><div className="customer-payment-skeleton-text medium" /></span>
+                    <span className="detail-value"><span className="customer-payment-skeleton-text medium" aria-hidden="true" /></span>
                   </div>
                   <div className="detail-row">
                     <span className="detail-label">Metode pembayaran</span>
-                    <span className="detail-value"><div className="customer-payment-skeleton-text long" /></span>
+                    <span className="detail-value"><span className="customer-payment-skeleton-text long" aria-hidden="true" /></span>
                   </div>
                 </div>
 
@@ -378,21 +444,21 @@ export default function CustomerPaymentProcessPage() {
                 <div className="customer-process-side-pricing">
                   <div className="detail-row">
                     <span className="detail-label">Subtotal</span>
-                    <span className="detail-value"><div className="customer-payment-skeleton-text medium" /></span>
+                    <span className="detail-value"><span className="customer-payment-skeleton-text medium" aria-hidden="true" /></span>
                   </div>
                   <div className="detail-row">
                     <span className="detail-label">Biaya layanan</span>
-                    <span className="detail-value"><div className="customer-payment-skeleton-text short" /></span>
+                    <span className="detail-value"><span className="customer-payment-skeleton-text short" aria-hidden="true" /></span>
                   </div>
                   <div className="detail-row">
                     <span className="detail-label">PPN (11%)</span>
-                    <span className="detail-value"><div className="customer-payment-skeleton-text medium" /></span>
+                    <span className="detail-value"><span className="customer-payment-skeleton-text medium" aria-hidden="true" /></span>
                   </div>
                 </div>
 
                 <div className="customer-process-side-total">
                   <span className="total-label">Total bayar</span>
-                  <span className="total-amount"><div className="customer-payment-skeleton-text medium" /></span>
+                  <span className="total-amount"><span className="customer-payment-skeleton-text medium" aria-hidden="true" /></span>
                 </div>
 
                 <button type="button" className="customer-process-download-receipt secondary" disabled>
@@ -419,12 +485,10 @@ export default function CustomerPaymentProcessPage() {
     )
   }
 
-  const isPending = detail?.booking?.status === 'pending'
-
   return (
     <div className="customer-payment-page">
       <div className="customer-payment-subheader">
-        <BackButton />
+        <BackButton href="/customer/bookings" />
         <h1>Pembayaran</h1>
       </div>
 
@@ -457,11 +521,20 @@ export default function CustomerPaymentProcessPage() {
 
             <section className="customer-payment-card customer-process-instruction-card">
                 <h2>{instruction.title}</h2>
-                <p>Gunakan nomor pembayaran di bawah ini untuk verifikasi otomatis</p>
+                <p>{method === 'qris' ? 'Scan QRIS di bawah untuk bayar sesuai nominal tagihan.' : 'Gunakan nomor pembayaran di bawah ini, lalu tekan tombol "Saya sudah bayar" setelah transfer berhasil.'}</p>
               {method === 'qris' ? (
                 <div className="customer-process-qr-box">
                   <span>Scan QR Code untuk pembayaran</span>
-                  <img src="/images/payment/qris-pembayaran.jpeg" alt="QR Code Pembayaran" />
+                  {qrisLoading ? (
+                    <div className="customer-payment-skeleton-avatar" style={{ width: '200px', height: '200px', margin: '0 auto' }} />
+                  ) : qrisImageUrl ? (
+                    <img src={qrisImageUrl} alt="QR Code Pembayaran QRIS" />
+                  ) : (
+                    <p className="room-detail-muted">{qrisError || 'QRIS belum tersedia.'}</p>
+                  )}
+                  <button type="button" onClick={copyQrisPayload} disabled={!qrisPayload}>
+                    Salin payload QRIS
+                  </button>
                 </div>
               ) : (
                 <div className="customer-process-va-box">
@@ -483,24 +556,18 @@ export default function CustomerPaymentProcessPage() {
                 ))}
               </div>
 
-              <div className="customer-process-actions">
-                <button
-                  type="button"
-                  className="secondary"
-                  disabled={!isPending || actionLoading !== null}
-                  onClick={() => handleBookingAction('cancel')}
-                >
-                  {actionLoading === 'cancel' ? 'Memproses...' : 'Batalkan booking'}
-                </button>
-                <button
-                  type="button"
-                  className="primary"
-                  disabled={!isPending || remainingPaymentMs <= 0 || actionLoading !== null}
-                  onClick={() => handleBookingAction('confirm_payment')}
-                >
-                  {actionLoading === 'confirm' ? 'Memproses...' : 'Saya sudah bayar'}
-                </button>
-              </div>
+              {isPending && (
+                <div className="customer-process-actions single">
+                  <button
+                    type="button"
+                    className="primary"
+                    disabled={remainingPaymentMs <= 0 || actionLoading !== null}
+                    onClick={() => void handleConfirmPayment()}
+                  >
+                    {actionLoading === 'confirm' ? 'Memproses...' : 'Saya sudah bayar'}
+                  </button>
+                </div>
+              )}
             </section>
           </div>
 
@@ -544,21 +611,21 @@ export default function CustomerPaymentProcessPage() {
               <div className="customer-process-side-pricing">
                 <div className="detail-row">
                   <span className="detail-label">Subtotal</span>
-                  <span className="detail-value">Rp {new Intl.NumberFormat('id-ID').format(detail?.summary?.total_payment || 0)}</span>
+                  <span className="detail-value">Rp {new Intl.NumberFormat('id-ID').format(detail?.summary?.subtotal || 0)}</span>
                 </div>
                 <div className="detail-row">
                   <span className="detail-label">Biaya layanan</span>
-                  <span className="detail-value">Rp 2.500</span>
+                  <span className="detail-value">Rp {new Intl.NumberFormat('id-ID').format(detail?.summary?.service_fee || 0)}</span>
                 </div>
                 <div className="detail-row">
                   <span className="detail-label">PPN (11%)</span>
-                  <span className="detail-value">Rp {new Intl.NumberFormat('id-ID').format(Math.round((detail?.summary?.total_payment || 0) * 0.11))}</span>
+                  <span className="detail-value">Rp {new Intl.NumberFormat('id-ID').format(detail?.summary?.tax_amount || 0)}</span>
                 </div>
               </div>
 
               <div className="customer-process-side-total">
                 <span className="total-label">Total bayar</span>
-                <span className="total-amount">Rp {new Intl.NumberFormat('id-ID').format((detail?.summary?.total_payment || 0) + 2500 + Math.round((detail?.summary?.total_payment || 0) * 0.11))}</span>
+                <span className="total-amount">Rp {new Intl.NumberFormat('id-ID').format(detail?.summary?.total_payment || 0)}</span>
               </div>
 
               <button
