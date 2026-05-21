@@ -308,6 +308,8 @@
 .content {
   padding: 18px 50px 28px;
   flex: 1;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 /* STAT CARDS */
