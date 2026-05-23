@@ -1,3 +1,9 @@
+.pageContainer {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
 .wrapper {
   min-height: calc(100vh - 120px);
   padding: 32px 24px 56px;
@@ -51,16 +57,7 @@
   line-height: 1.6;
 }
 
-.backButton {
-  border: none;
-  border-radius: 16px;
-  padding: 12px 18px;
-  background: #e2e8f0;
-  color: #0f172a;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-}
+/* .backButton styling removed as BackButton component is used */
 
 .successBox,
 .errorBox {

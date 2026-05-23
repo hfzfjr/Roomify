@@ -887,10 +887,7 @@ function CustomerRooms() {
   return (
     <div className="rooms-page-v2">
       {/* Header with back button - acts as main navigation */}
-      <div className="rooms-header">
-        <BackButton href="/customer/dashboard" />
-        <h1>Hasil Pencarian</h1>
-      </div>
+      <BackButton href="/customer/dashboard" title="Hasil Pencarian" />
 
       {/* Search Bar */}
       {renderSearchBar()}

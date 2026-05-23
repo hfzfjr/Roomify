@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { formatDate, formatTime } from '@/utils/formatDate'
 import { formatRupiah } from '@/utils/formatRupiah'
+import BackButton from '@/components/layout/BackButton'
 import '@/styles/rooms.css'
 
 type PaymentMethod = 'qris' | 'bca_va' | 'bni_va' | 'gopay'
@@ -241,14 +242,7 @@ export default function CustomerPaymentDetailPage() {
   if (loading) {
     return (
       <div className="customer-payment-page">
-        <div className="customer-payment-subheader">
-          <button type="button" disabled aria-label="Batalkan">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
-              <path strokeLinecap="round" strokeLinejoin="round" d="m15 18-6-6 6-6" />
-            </svg>
-          </button>
-          <h1>Detail Pembayaran</h1>
-        </div>
+        <BackButton title="Detail Pembayaran" />
 
         <div className="customer-payment-shell">
           <div className="customer-payment-layout">
@@ -375,14 +369,7 @@ export default function CustomerPaymentDetailPage() {
 
   return (
     <div className="customer-payment-page">
-      <div className="customer-payment-subheader">
-        <button type="button" onClick={() => setShowCancelOverlay(true)} aria-label="Batalkan">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
-            <path strokeLinecap="round" strokeLinejoin="round" d="m15 18-6-6 6-6" />
-          </svg>
-        </button>
-        <h1>Detail Pembayaran</h1>
-      </div>
+      <BackButton title="Detail Pembayaran" onClick={() => setShowCancelOverlay(true)} />
 
       <div className="customer-payment-shell">
         <div className="customer-payment-layout">

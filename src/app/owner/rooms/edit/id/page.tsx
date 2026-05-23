@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef, useCallback, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import BackButton from '@/components/layout/BackButton'
 import styles from './EditRoomPage.module.css'
 
 interface SessionUser {
@@ -504,14 +505,7 @@ function EditRoomForm() {
 
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <Link href="/owner/dashboard" className={styles.backBtn} aria-label="Kembali">
-          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <path d="M19 12H5M12 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </Link>
-        <h1>Edit Ruangan</h1>
-      </header>
+      <BackButton href="/owner/dashboard" title="Edit Ruangan" />
 
       <main className={styles.main}>
         <aside className={styles.sidebarCard}>

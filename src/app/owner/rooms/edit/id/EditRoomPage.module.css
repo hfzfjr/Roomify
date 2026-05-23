@@ -3,51 +3,7 @@
   background: #dff3fb;
 }
 
-.header {
-  position: sticky;
-  top: 0;
-  z-index: 150;
-  height: 80px;
-  background: #ffffff;
-  border-bottom: 1px solid #e5e7eb;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 0 24px;
-}
-
-.backBtn {
-  width: 40px;
-  height: 40px;
-  border-radius: 999px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: #050505;
-  text-decoration: none;
-  transition: background-color 0.2s, transform 0.15s;
-}
-
-.backBtn:hover {
-  background: rgba(15, 23, 42, 0.06);
-}
-
-.backBtn:active {
-  transform: scale(0.95);
-}
-
-.backBtn svg {
-  width: 22px !important;
-  height: 22px !important;
-}
-
-.header h1 {
-  margin: 0;
-  font-size: 24px;
-  line-height: 1;
-  font-weight: 700;
-  color: #101828;
-}
+/* Header styles removed as BackButton component is used */
 
 .main {
   width: min(1200px, calc(100% - 48px));
@@ -364,19 +320,7 @@
 }
 
 @media (max-width: 768px) {
-  .header {
-    height: 72px;
-    padding: 0 16px;
-  }
 
-  .backBtn {
-    width: 36px;
-    height: 36px;
-  }
-
-  .header h1 {
-    font-size: 20px;
-  }
 
   .main {
     width: min(100%, calc(100% - 24px));

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import BackButton from '@/components/layout/BackButton';
 import styles from './AddRoomPage.module.css';
 
 interface SessionUser {
@@ -393,14 +394,7 @@ export default function AddRoomPage() {
   return (
     <div className={styles.container}>
       {/* Header */}
-      <header className={styles.header}>
-        <button className={styles.backButton} onClick={handleBack} type="button">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M19 12H5M12 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </button>
-        <h1 className={styles.headerTitle}>Tambah Ruangan</h1>
-      </header>
+      <BackButton onClick={handleBack} title="Tambah Ruangan" />
 
       {/* Main Content */}
       <div className={styles.mainContent}>

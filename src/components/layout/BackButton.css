@@ -1,42 +1,64 @@
-/* Header - NON STICKY (ikut scroll) */
-.rooms-header {
+/* Premium Header Container */
+.rooms-back-header {
+  background: #ffffff;
+  border-bottom: 1px solid #f1f5f9; /* sleek, very subtle premium border */
+  position: relative;
+  z-index: 50;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Inner layout container for aligning with page shell widths */
+.rooms-back-header-inner {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 20px 40px;
-  background: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
-  position: relative;
-  z-index: 10;
+  gap: 20px;
+  padding: 16px 24px;
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 
-.rooms-header h1 {
-  font-size: 20px;
+
+/* Page Title next to the back button */
+.rooms-back-header-title {
+  font-size: 21px;
   font-weight: 700;
-  color: #0f172a;
+  color: #0f172a; /* Slate 900 */
   margin: 0;
+  font-family: var(--font-family, 'Inter', sans-serif);
+  line-height: 1.2;
 }
 
-.rooms-back-btn {
+/* Minimalist sleek back button matching the image precisely */
+.rooms-back-header-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: 42px;
+  height: 42px;
   border: none;
-  background: #e0f7ff;
-  color: #0891b2;
+  background: transparent;
+  color: #0f172a; /* Slate 900, matching the arrow in the image */
   cursor: pointer;
-  border-radius: 12px;
-  transition: background 0.2s ease;
+  border-radius: 50%;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0;
 }
 
-.rooms-back-btn:hover {
-  background: #b3eafe;
+/* Premium hover micro-interactions */
+.rooms-back-header-btn:hover {
+  background: #f1f5f9; /* sleek light hover circle */
+  color: #0284c7; /* subtle color transition to ocean blue */
+  transform: translateX(-3px); /* premium nudge to the left */
 }
 
-.rooms-back-btn svg {
+.rooms-back-header-btn:active {
+  transform: translateX(-3px) scale(0.95);
+}
+
+.rooms-back-header-btn svg {
   width: 24px;
   height: 24px;
-  stroke-width: 2.5;
+  stroke-width: 2.5; /* nice crisp thickness */
 }

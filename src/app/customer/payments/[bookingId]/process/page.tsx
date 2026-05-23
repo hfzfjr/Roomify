@@ -353,14 +353,7 @@ export default function CustomerPaymentProcessPage() {
   if (loading) {
     return (
       <div className="customer-payment-page">
-        <div className="customer-payment-subheader">
-          <button type="button" disabled aria-label="Kembali">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
-              <path strokeLinecap="round" strokeLinejoin="round" d="m15 18-6-6 6-6" />
-            </svg>
-          </button>
-          <h1>Pembayaran</h1>
-        </div>
+        <BackButton href="/customer/bookings" title="Pembayaran" />
 
         <div className="customer-payment-shell">
           <div className="customer-process-layout">
@@ -491,10 +484,7 @@ export default function CustomerPaymentProcessPage() {
 
   return (
     <div className="customer-payment-page">
-      <div className="customer-payment-subheader">
-        <BackButton href="/customer/bookings" />
-        <h1>Pembayaran</h1>
-      </div>
+      <BackButton href="/customer/bookings" title="Pembayaran" />
 
       <div className="customer-payment-shell">
         <div className="customer-process-layout">

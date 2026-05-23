@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { User } from '@/types'
+import BackButton from '@/components/layout/BackButton'
 import styles from './page.module.css'
 
 type OwnerApplication = {
@@ -172,102 +173,102 @@ export default function OwnerApplicationPage() {
   }
 
   return (
+    <div className={styles.pageContainer}>
+      <BackButton href="/customer/dashboard" title="Ajukan Sebagai Owner" />
       <div className={styles.wrapper}>
         <div className={styles.card}>
-        <div className={styles.header}>
-          <div>
-            <span className={styles.eyebrow}>Program Owner</span>
-            <h1>Ajukan Ruangan Anda ke Roomify</h1>
-            <p>
-              Isi data bisnis untuk mendaftarkan akun Anda sebagai owner. Pengajuan akan ditinjau admin secara manual
-              sebelum akses dashboard owner dibuka.
-            </p>
-          </div>
-          <button type="button" className={styles.backButton} onClick={() => router.push('/customer/dashboard')}>
-            Kembali
-          </button>
-        </div>
-
-        {message && <div className={styles.successBox}>{message}</div>}
-        {error && <div className={styles.errorBox}>{error}</div>}
-
-        {isOwnerActive && (
-          <div className={styles.statusPanel}>
-            <span className={`${styles.statusBadge} ${styles.active}`}>Owner Active</span>
-            <h2>Pengajuan Anda sudah disetujui</h2>
-            <p>
-              Akun Anda sekarang berstatus owner. Anda sudah bisa mengelola ruangan dan membuka dashboard owner kapan pun.
-            </p>
-            <button type="button" className={styles.primaryButton} onClick={() => router.push('/owner/dashboard')}>
-              Buka Dashboard Owner
-            </button>
-          </div>
-        )}
-
-        {!isOwnerActive && (
-          <>
-            <div className={styles.statusPanel}>
-              <span className={`${styles.statusBadge} ${isPending ? styles.pending : styles.idle}`}>
-                {isPending ? 'Pending Review' : applicationStatus === 'rejected' ? 'Perlu Diperbarui' : 'Belum Diajukan'}
-              </span>
-              <h2>{isPending ? 'Pengajuan sedang ditinjau admin' : 'Lengkapi data bisnis Anda'}</h2>
+          <div className={styles.header}>
+            <div>
+              <span className={styles.eyebrow}>Program Owner</span>
+              <h1>Ajukan Ruangan Anda ke Roomify</h1>
               <p>
-                {isPending
-                  ? 'Anda masih bisa memperbarui data pengajuan jika ada yang perlu dikoreksi sebelum admin menyetujui.'
-                  : 'Nama pemilik, nomor rekening, nama bisnis, dan nomor telepon akan digunakan untuk proses verifikasi owner.'}
+                Isi data bisnis untuk mendaftarkan akun Anda sebagai owner. Pengajuan akan ditinjau admin secara manual
+                sebelum akses dashboard owner dibuka.
               </p>
             </div>
+          </div>
 
-            <form className={styles.form} onSubmit={handleSubmit}>
-              <label className={styles.field}>
-                <span>Nama Pemilik</span>
-                <input
-                  type="text"
-                  value={form.name}
-                  onChange={(event) => updateField('name', event.target.value)}
-                  placeholder="Masukkan nama lengkap"
-                />
-              </label>
+          {message && <div className={styles.successBox}>{message}</div>}
+          {error && <div className={styles.errorBox}>{error}</div>}
 
-              <label className={styles.field}>
-                <span>Nomor Rekening</span>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  value={form.account_number}
-                  onChange={(event) => updateField('account_number', event.target.value)}
-                  placeholder="Masukkan nomor rekening"
-                />
-              </label>
+          {isOwnerActive && (
+            <div className={styles.statusPanel}>
+              <span className={`${styles.statusBadge} ${styles.active}`}>Owner Active</span>
+              <h2>Pengajuan Anda sudah disetujui</h2>
+              <p>
+                Akun Anda sekarang berstatus owner. Anda sudah bisa mengelola ruangan dan membuka dashboard owner kapan pun.
+              </p>
+              <button type="button" className={styles.primaryButton} onClick={() => router.push('/owner/dashboard')}>
+                Buka Dashboard Owner
+              </button>
+            </div>
+          )}
 
-              <label className={styles.field}>
-                <span>Nama Bisnis</span>
-                <input
-                  type="text"
-                  value={form.business_name}
-                  onChange={(event) => updateField('business_name', event.target.value)}
-                  placeholder="Contoh: Ruang Kreatif Nusantara"
-                />
-              </label>
-
-              <label className={styles.field}>
-                <span>Nomor Telepon</span>
-                <input
-                  type="tel"
-                  value={form.business_phone}
-                  onChange={(event) => updateField('business_phone', event.target.value)}
-                  placeholder="Contoh: 081234567890"
-                />
-              </label>
-
-              <div className={styles.actions}>
-                <button type="submit" className={styles.primaryButton} disabled={submitting}>
-                  {submitting ? 'Mengirim...' : isPending ? 'Perbarui Pengajuan' : 'Kirim Pengajuan'}
-                </button>
+          {!isOwnerActive && (
+            <>
+              <div className={styles.statusPanel}>
+                <span className={`${styles.statusBadge} ${isPending ? styles.pending : styles.idle}`}>
+                  {isPending ? 'Pending Review' : applicationStatus === 'rejected' ? 'Perlu Diperbarui' : 'Belum Diajukan'}
+                </span>
+                <h2>{isPending ? 'Pengajuan sedang ditinjau admin' : 'Lengkapi data bisnis Anda'}</h2>
+                <p>
+                  {isPending
+                    ? 'Anda masih bisa memperbarui data pengajuan jika ada yang perlu dikoreksi sebelum admin menyetujui.'
+                    : 'Nama pemilik, nomor rekening, nama bisnis, dan nomor telepon akan digunakan untuk proses verifikasi owner.'}
+                </p>
               </div>
-            </form>
-          </>
-        )}
+
+              <form className={styles.form} onSubmit={handleSubmit}>
+                <label className={styles.field}>
+                  <span>Nama Pemilik</span>
+                  <input
+                    type="text"
+                    value={form.name}
+                    onChange={(event) => updateField('name', event.target.value)}
+                    placeholder="Masukkan nama lengkap"
+                  />
+                </label>
+
+                <label className={styles.field}>
+                  <span>Nomor Rekening</span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={form.account_number}
+                    onChange={(event) => updateField('account_number', event.target.value)}
+                    placeholder="Masukkan nomor rekening"
+                  />
+                </label>
+
+                <label className={styles.field}>
+                  <span>Nama Bisnis</span>
+                  <input
+                    type="text"
+                    value={form.business_name}
+                    onChange={(event) => updateField('business_name', event.target.value)}
+                    placeholder="Contoh: Ruang Kreatif Nusantara"
+                  />
+                </label>
+
+                <label className={styles.field}>
+                  <span>Nomor Telepon</span>
+                  <input
+                    type="tel"
+                    value={form.business_phone}
+                    onChange={(event) => updateField('business_phone', event.target.value)}
+                    placeholder="Contoh: 081234567890"
+                  />
+                </label>
+
+                <div className={styles.actions}>
+                  <button type="submit" className={styles.primaryButton} disabled={submitting}>
+                    {submitting ? 'Mengirim...' : isPending ? 'Perbarui Pengajuan' : 'Kirim Pengajuan'}
+                  </button>
+                </div>
+              </form>
+            </>
+          )}
+        </div>
       </div>
     </div>
   )

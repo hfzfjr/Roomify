@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { use, useEffect, useState } from 'react'
 import BackButton from '@/components/layout/BackButton'
@@ -51,11 +51,8 @@ export default function CustomerRoomDetailPage({
   if (loading) {
     return (
       <div className="customer-room-detail-page">
+        <BackButton title="Detail Ruangan" />
         <div className="customer-room-detail-shell">
-          <div className="rooms-header">
-            <BackButton />
-            <h1>Detail Ruangan</h1>
-          </div>
           <div className="customer-room-detail-skeleton">
             <div className="customer-room-detail-grid">
               <div className="customer-room-detail-main">
@@ -111,11 +108,8 @@ export default function CustomerRoomDetailPage({
   if (error || !room) {
     return (
       <div className="customer-room-detail-page">
+        <BackButton title="Detail Ruangan" />
         <div className="customer-room-detail-shell">
-          <div className="rooms-header">
-            <BackButton />
-            <h1>Detail Ruangan</h1>
-          </div>
           <div className="customer-room-detail-error">Ruangan tidak ditemukan</div>
         </div>
       </div>
@@ -126,13 +120,10 @@ export default function CustomerRoomDetailPage({
 
   return (
     <div className="customer-room-detail-page">
-      <div className="customer-room-detail-shell">
-        {/* Header with back button */}
-        <div className="rooms-header">
-          <BackButton />
-          <h1>Detail Ruangan</h1>
-        </div>
+      {/* Header with back button */}
+      <BackButton title="Detail Ruangan" />
 
+      <div className="customer-room-detail-shell">
         <div className="customer-room-detail-grid">
           <div className="customer-room-detail-main">
             <section className="customer-room-card">
