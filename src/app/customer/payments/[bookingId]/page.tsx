@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { formatDate, formatTime } from '@/utils/formatDate'
 import { formatRupiah } from '@/utils/formatRupiah'
-import BackButton from '@/components/layout/BackButton'
+import BackButton from '@/components/ui/BackButton'
 import '@/styles/rooms.css'
 
 type PaymentMethod = 'qris' | 'bca_va' | 'bni_va' | 'gopay'

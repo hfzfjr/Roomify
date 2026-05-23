@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import BackButton from '@/components/layout/BackButton'
+import BackButton from '@/components/ui/BackButton'
 import styles from './page.module.css'
 
 type OwnerVerification = {

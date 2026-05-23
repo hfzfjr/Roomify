@@ -6,7 +6,7 @@ import { addMonths, eachDayOfInterval, endOfMonth, endOfWeek, format, getMonth, 
 import { Room } from '@/types'
 import { formatRupiah } from '@/utils/formatRupiah'
 import { getLocationOptionLabel, getLocationOptionSubtitle, getLocationQueryValue, getLocationSearchText, type Location } from '@/utils/locations'
-import BackButton from '@/components/layout/BackButton'
+import BackButton from '@/components/ui/BackButton'
 import '@/styles/rooms.css'
 
 const ROOM_TYPES = [

@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, useCallback, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import BackButton from '@/components/layout/BackButton'
+import BackButton from '@/components/ui/BackButton'
 import styles from './EditRoomPage.module.css'
 
 interface SessionUser {

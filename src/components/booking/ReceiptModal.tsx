@@ -1,8 +1,8 @@
 'use client'
 
+import './ReceiptModal.css'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { formatDate, formatTime } from '@/utils/formatDate'
-import '@/styles/rooms.css'
 
 type InvoiceData = {
   invoice: {

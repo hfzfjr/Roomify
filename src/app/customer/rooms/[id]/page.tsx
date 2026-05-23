@@ -1,8 +1,8 @@
 'use client'
 
 import { use, useEffect, useState } from 'react'
-import BackButton from '@/components/layout/BackButton'
-import RoomBookingPanel from '@/components/rooms/RoomBookingPanel'
+import BackButton from '@/components/ui/BackButton'
+import BookingForm from '@/components/booking/BookingForm'
 import RoomImageCarousel from '@/components/rooms/RoomImageCarousel'
 import { formatDate, formatTime } from '@/utils/formatDate'
 import { formatRupiah } from '@/utils/formatRupiah'
@@ -200,7 +200,7 @@ export default function CustomerRoomDetailPage({
             </section>
           </div>
 
-          <RoomBookingPanel room={room} />
+          <BookingForm room={room} />
         </div>
       </div>
     </div>

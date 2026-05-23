@@ -1,5 +1,7 @@
 'use client'
 
+import './AccountDropdown.css'
+
 interface AccountDropdownProps {
   name: string
   role: string

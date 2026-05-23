@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { User } from '@/types'
-import BackButton from '@/components/layout/BackButton'
+import BackButton from '@/components/ui/BackButton'
 import styles from './page.module.css'
 
 type OwnerApplication = {

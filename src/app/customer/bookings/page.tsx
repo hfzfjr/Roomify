@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Navbar from '@/components/layout/Navbar'
-import ReceiptModal from '@/components/ReceiptModal'
+import ReceiptModal from '@/components/booking/ReceiptModal'
 import { Booking, User } from '@/types'
 import { formatPaymentCountdown, getRemainingPaymentMs } from '@/utils/booking'
 import { formatDate, formatTime, formatDateLong } from '@/utils/formatDate'
