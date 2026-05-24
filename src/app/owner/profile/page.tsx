@@ -71,6 +71,8 @@ export default function OwnerProfilePage() {
     return <ProfilePage showNavbar={false} />
   }
 
+  const isBusinessTab = activeTab === 'business'
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -100,13 +102,13 @@ export default function OwnerProfilePage() {
 
           <nav className={styles.navigation}>
             <button
-              className={`${styles.navItem} ${activeTab === 'personal' ? styles.active : ''}`}
+              className={`${styles.navItem} ${!isBusinessTab ? styles.active : ''}`}
               onClick={() => setActiveTab('personal')}
             >
               Profil Pribadi
             </button>
             <button
-              className={`${styles.navItem} ${activeTab === 'business' ? styles.active : ''}`}
+              className={`${styles.navItem} ${isBusinessTab ? styles.active : ''}`}
               onClick={() => setActiveTab('business')}
             >
               Profil Bisnis
