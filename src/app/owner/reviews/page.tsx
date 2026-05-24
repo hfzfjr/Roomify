@@ -13,6 +13,7 @@ type Review = {
 }
 
 export default function ReviewPage() {
+  const [user, setUser] = useState<any>(null)
   const [selectedRooms, setSelectedRooms] = useState<string[]>(['semua'])
   const [selectedRatings, setSelectedRatings] = useState<string[]>(['semua'])
   const [rooms, setRooms] = useState<string[]>([])
@@ -20,12 +21,24 @@ export default function ReviewPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchData()
+    const userData = localStorage.getItem('user')
+    if (userData) {
+      setUser(JSON.parse(userData))
+    } else {
+      setLoading(false)
+    }
   }, [])
 
-  const fetchData = async () => {
+  useEffect(() => {
+    if (user?.user_id) {
+      fetchData(user.user_id)
+    }
+  }, [user])
+
+  const fetchData = async (userId: string) => {
     try {
-      const response = await fetch('/api/reviews')
+      setLoading(true)
+      const response = await fetch(`/api/reviews?user_id=${encodeURIComponent(userId)}`)
       const data = await response.json()
 
       if (!response.ok) {

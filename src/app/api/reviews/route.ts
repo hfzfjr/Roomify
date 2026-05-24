@@ -4,19 +4,25 @@ import { createClient } from '@/lib/supabase/server'
 export async function GET(request: Request) {
   try {
     const supabase = await createClient()
-
-    // Gunakan getSession() — lebih toleran dari getUser() untuk client-side fetch
-    const { data: { session } } = await supabase.auth.getSession()
+    const { searchParams } = new URL(request.url)
+    let userId = searchParams.get('user_id')
 
     console.log('=== REVIEWS API DEBUG ===')
-    console.log('Session user:', session?.user?.id ?? 'null')
+    console.log('Query param user_id:', userId)
 
-    if (!session?.user) {
-      console.log('No session found')
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    if (!userId) {
+      // Fallback to supabase session if available
+      const { data: { session } } = await supabase.auth.getSession()
+      console.log('Session user:', session?.user?.id ?? 'null')
+      if (session?.user) {
+        userId = session.user.id
+      }
     }
 
-    const userId = session.user.id
+    if (!userId) {
+      console.log('No user identity found')
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     console.log('User ID:', userId)
 
     // Get owner_id dari user_id
