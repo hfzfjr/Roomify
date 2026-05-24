@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server'
 import { existsSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
-import { chromium } from 'playwright-core'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { ensureCustomerRecord } from '@/lib/customer'
@@ -458,6 +457,9 @@ async function buildReceiptPdfBufferFromHtml(data: ReceiptPdfData) {
 
   const logoDataUri = await getReceiptLogoDataUri()
   const html = buildReceiptPdfHtml(data, logoDataUri)
+
+  // Dynamic import to avoid module loading issues in Vercel
+  const { chromium } = await import('playwright-core')
   const browser = await chromium.launch({
     executablePath,
     headless: true,
