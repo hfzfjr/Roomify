@@ -31,7 +31,7 @@ function getStoredUser(): SessionUser | null {
   }
 }
 
-const chartVisualHeight = 216;
+const chartVisualHeight = 272;
 const chartSkeletonHeights = [84, 156, 112, 178, 136, 98, 164];
 
 export default function OwnerDashboard() {
@@ -397,6 +397,15 @@ export default function OwnerDashboard() {
                 </div>
 
                 <div className={styles.chartWrap}>
+                  <div className={styles.chartArea}>
+                    {yAxisLabels.map((_, index) => (
+                      <div
+                        key={index}
+                        className={styles.chartGridLine}
+                        style={{ top: `${(index / (yAxisLabels.length - 1)) * 272}px` }}
+                      />
+                    ))}
+                  </div>
                   {dashboardLoading && activeChartData.length === 0 ? (
                     <>
                       {chartSkeletonHeights.slice(0, chartPeriod === 'weekly' ? 7 : 6).map((height, index) => (
