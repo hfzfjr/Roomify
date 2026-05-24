@@ -58,7 +58,6 @@ export async function getRoomDetail(roomId: string): Promise<RoomDetail | null> 
     .from('room_amenity')
     .select('amenity')
     .eq('room_id', roomId)
-    .returns<AmenityRecord[]>()
 
   if (amenitiesError) {
     throw new Error(amenitiesError.message)

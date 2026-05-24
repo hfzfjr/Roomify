@@ -6,6 +6,24 @@ import { formatDate, formatTime } from '@/utils/formatDate'
 import { formatRupiah } from '@/utils/formatRupiah'
 import BackButton from '@/components/ui/BackButton'
 import '@/styles/rooms.css'
+import Microphone from '@/components/icons/facility/Microphone'
+import Whiteboard from '@/components/icons/facility/Whiteboard'
+import SoundSystem from '@/components/icons/facility/SoundSystem'
+import Proyektor from '@/components/icons/facility/Proyektor'
+import AC from '@/components/icons/facility/AC'
+import Podium from '@/components/icons/facility/Podium'
+import Monitor from '@/components/icons/facility/Monitor'
+import HDMICable from '@/components/icons/facility/HDMICable'
+import Lightning from '@/components/icons/facility/Lightning'
+import GreenScreen from '@/components/icons/facility/GreenScreen'
+import Computer from '@/components/icons/facility/Computer'
+import Wifi from '@/components/icons/facility/Wifi'
+import Printer from '@/components/icons/facility/Printer'
+import Locker from '@/components/icons/facility/Locker'
+import CameraDSLR from '@/components/icons/facility/CameraDSLR'
+import MixerAudio from '@/components/icons/facility/MixerAudio'
+import SoundProofing from '@/components/icons/facility/SoundProofing'
+import VideoConference from '@/components/icons/facility/VideoConference'
 
 type PaymentMethod = 'qris' | 'bca_va' | 'bni_va' | 'gopay'
 
@@ -71,69 +89,46 @@ function normalizeFacilityKey(value: string) {
 function FacilityIcon({ facility }: { facility: string }) {
   const key = normalizeFacilityKey(facility)
 
-  if (key.includes('microphone') || key.includes('mic')) {
-    return (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <rect x="9" y="2" width="6" height="12" rx="3" />
-        <path d="M5 11a7 7 0 0 0 14 0" />
-        <line x1="12" y1="18" x2="12" y2="22" />
-      </svg>
-    )
+  const iconMap: Record<string, React.ReactNode> = {
+    microphone: <Microphone />,
+    mic: <Microphone />,
+    whiteboard: <Whiteboard />,
+    board: <Whiteboard />,
+    sound: <SoundSystem />,
+    sound_system: <SoundSystem />,
+    soundsystem: <SoundSystem />,
+    speaker: <SoundSystem />,
+    proyektor: <Proyektor />,
+    projector: <Proyektor />,
+    ac: <AC />,
+    air_conditioner: <AC />,
+    podium: <Podium />,
+    monitor: <Monitor />,
+    hdmi_cable: <HDMICable />,
+    hdmi: <HDMICable />,
+    lighting: <Lightning />,
+    light: <Lightning />,
+    green_screen: <GreenScreen />,
+    computer: <Computer />,
+    komputer: <Computer />,
+    wifi: <Wifi />,
+    'wi-fi': <Wifi />,
+    printer: <Printer />,
+    locker: <Locker />,
+    camera_dslr: <CameraDSLR />,
+    kamera_dslr: <CameraDSLR />,
+    camera: <CameraDSLR />,
+    kamera: <CameraDSLR />,
+    dslr: <CameraDSLR />,
+    mixer_audio: <MixerAudio />,
+    mixer: <MixerAudio />,
+    sound_proofing: <SoundProofing />,
+    soundproofing: <SoundProofing />,
+    video_conference: <VideoConference />,
+    videoconference: <VideoConference />,
   }
 
-  if (key.includes('whiteboard') || key.includes('board')) {
-    return (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <rect x="3" y="4" width="18" height="12" rx="2" />
-        <line x1="8" y1="20" x2="10" y2="16" />
-        <line x1="16" y1="20" x2="14" y2="16" />
-      </svg>
-    )
-  }
-
-  if (key.includes('sound') || key.includes('speaker')) {
-    return (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <rect x="6" y="3" width="12" height="18" rx="2" />
-        <circle cx="12" cy="8" r="2.2" />
-        <circle cx="12" cy="15.5" r="3.3" />
-      </svg>
-    )
-  }
-
-  if (key.includes('proyektor') || key.includes('projector')) {
-    return (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <rect x="3" y="7" width="18" height="10" rx="2" />
-        <circle cx="8" cy="12" r="2" />
-        <line x1="14" y1="12" x2="18" y2="12" />
-      </svg>
-    )
-  }
-
-  if (key === 'ac' || key.includes('air_conditioner')) {
-    return (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <rect x="3" y="5" width="18" height="6" rx="2" />
-        <line x1="7" y1="15" x2="7" y2="21" />
-        <line x1="12" y1="15" x2="12" y2="21" />
-        <line x1="17" y1="15" x2="17" y2="21" />
-      </svg>
-    )
-  }
-
-  if (key.includes('wifi') || key.includes('wi-fi')) {
-    return (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M2 8a16 16 0 0 1 20 0" />
-        <path d="M5 12a11 11 0 0 1 14 0" />
-        <path d="M8.5 15.5a6 6 0 0 1 7 0" />
-        <circle cx="12" cy="19" r="1.2" fill="currentColor" stroke="none" />
-      </svg>
-    )
-  }
-
-  return (
+  return iconMap[key] || (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <circle cx="12" cy="12" r="8" />
       <path d="M12 8v4l3 2" />

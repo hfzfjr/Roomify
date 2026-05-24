@@ -1,15 +1,3 @@
-:root {
-  --owner-cyan: #56d7ff;
-  --owner-cyan-soft: #bdeffd;
-  --owner-cyan-surface: #ddf7ff;
-  --owner-bg: #effbff;
-  --owner-border: #d2d9de;
-  --owner-border-soft: #e2e8ec;
-  --owner-text: #111827;
-  --owner-muted: #6b7280;
-  --owner-red: #ff1c1c;
-}
-
 .container {
   min-height: 100vh;
   background: var(--owner-bg);
@@ -31,7 +19,7 @@
 
 .sidebarLogo {
   height: 118px;
-  border-bottom: 1.5px solid rgba(255, 255, 255, 0.55);
+  border-bottom: 1.5px solid var(--owner-white-55);
   display: flex;
   align-items: center;
   padding: 22px 32px;
@@ -46,14 +34,14 @@
 .accountMenu {
   position: relative;
   padding: 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  border-bottom: 1px solid var(--owner-white-20);
 }
 
 .sidebarUserButton {
   width: 100%;
   border: none;
   background: transparent;
-  color: #ffffff;
+  color: var(--owner-white);
   text-align: left;
   padding: 0;
   display: flex;
@@ -73,7 +61,7 @@
   width: 42px;
   height: 42px;
   border-radius: 999px;
-  background: #ff3648;
+  background: var(--owner-red-bg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -81,7 +69,7 @@
   font-size: 17px;
   line-height: 1;
   flex-shrink: 0;
-  border: 2px solid rgba(255, 255, 255, 0.4);
+  border: 2px solid var(--owner-white-40);
 }
 
 .userInfo strong {
@@ -100,7 +88,7 @@
   margin-top: 6px;
   font-size: 16px;
   line-height: 1;
-  color: rgba(255, 255, 255, 0.95);
+  color: var(--owner-white-95);
   font-weight: 500;
 }
 
@@ -109,10 +97,10 @@
   top: calc(100% - 6px);
   left: 16px;
   right: 16px;
-  background: rgba(255, 255, 255, 0.97);
-  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: var(--owner-white-97);
+  border: 1px solid var(--owner-slate-border);
   border-radius: 20px;
-  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.16);
+  box-shadow: 0 18px 40px var(--owner-slate-shadow);
   overflow: hidden;
   backdrop-filter: blur(10px);
   z-index: 220;
@@ -123,20 +111,20 @@
   flex-direction: column;
   gap: 4px;
   padding: 16px 18px 14px;
-  background: linear-gradient(135deg, rgba(86, 215, 255, 0.12), rgba(255, 139, 253, 0.12));
-  border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+  background: linear-gradient(135deg, var(--owner-cyan-gradient), var(--owner-purple-gradient));
+  border-bottom: 1px solid var(--owner-slate-border-16);
 }
 
 .accountDropdownName {
   font-size: 15px;
   font-weight: 800;
-  color: #111827;
+  color: var(--owner-text);
 }
 
 .accountDropdownRole {
   font-size: 12px;
   font-weight: 700;
-  color: #6B7280;
+  color: var(--owner-muted);
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
@@ -150,19 +138,19 @@
   font-family: inherit;
   font-size: 14px;
   font-weight: 700;
-  color: #111827;
+  color: var(--owner-text);
   cursor: pointer;
   transition: background 0.2s ease, color 0.2s ease;
 }
 
 .accountDropdownItem:hover {
-  background: rgba(86, 215, 255, 0.08);
-  color: #0689aa;
+  background: var(--owner-cyan-hover-bg);
+  color: var(--owner-cyan-hover);
 }
 
 .accountDropdownItem.danger:hover {
-  background: rgba(239, 68, 68, 0.08);
-  color: #dc2626;
+  background: var(--owner-red-hover-bg);
+  color: var(--owner-red-error);
 }
 
 .sidebarNav {
@@ -178,7 +166,7 @@
   align-items: center;
   gap: 10px;
   padding: 12px 18px;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--owner-white-90);
   font-size: 18px;
   font-weight: 700;
   cursor: pointer;
@@ -187,13 +175,13 @@
 }
 
 .navItem:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--owner-white-15);
 }
 
 .navItem.active {
-  background: rgba(255, 255, 255, 0.22);
-  color: #fff;
-  border-left-color: #fff;
+  background: var(--owner-white-22);
+  color: var(--owner-white);
+  border-left-color: var(--owner-white);
 }
 
 .sidebarCta {
@@ -203,9 +191,9 @@
 
 .sidebarCtaButton {
   width: 100%;
-  border: 2px solid rgba(255, 255, 255, 0.62);
+  border: 2px solid var(--owner-white-62);
   background: transparent;
-  color: #ffffff;
+  color: var(--owner-white);
   border-radius: 20px;
   padding: 20px 16px;
   display: flex;
@@ -216,15 +204,15 @@
 }
 
 .sidebarCtaButton:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--owner-white-10);
 }
 
 .sidebarCtaIcon {
   width: 48px;
   height: 48px;
   border-radius: 999px;
-  background: #b9edfa;
-  color: #129ec2;
+  background: var(--owner-cyan-light);
+  color: var(--owner-cyan-dark);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -249,7 +237,7 @@
   font-size: 12px;
   line-height: 1.1;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.92);
+  color: var(--owner-white-92);
 }
 
 .main {
@@ -275,14 +263,14 @@
 .topbar h1 {
   margin: 0;
   font-size: 28px;
-  color: #ffffff;
+  color: var(--owner-white);
   font-weight: 600;
   line-height: 1;
   letter-spacing: -0.3px;
 }
 
 .topbarDate {
-  color: #ffffff;
+  color: var(--owner-white);
   font-size: 18px;
   font-weight: 600;
 }
@@ -302,10 +290,10 @@
 }
 
 .statCard {
-  background: #ffffff;
+  background: var(--owner-white);
   border-radius: 16px;
   padding: 22px 24px 18px;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 20px var(--owner-shadow);
   position: relative;
   overflow: hidden;
   display: flex;
@@ -315,7 +303,7 @@
 }
 
 .statCard.highlight {
-  color: #ffffff;
+  color: var(--owner-white);
   border-color: transparent;
   background: var(--owner-cyan);
 }
@@ -326,7 +314,7 @@
   width: 160px;
   height: 160px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.12);
+  background: var(--owner-white-12);
   bottom: -50px;
   right: -30px;
 }
@@ -337,7 +325,7 @@
   width: 100px;
   height: 100px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--owner-white-10);
   top: -20px;
   right: 60px;
 }
@@ -350,7 +338,7 @@
 }
 
 .highlight .label {
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--owner-white-90);
 }
 
 .value {
@@ -366,12 +354,12 @@
 }
 
 .highlight .value {
-  color: #ffffff;
+  color: var(--owner-white);
 }
 
 .valueDivider {
   font-size: 30px;
-  color: #9ca3af;
+  color: var(--owner-gray);
   font-weight: 500;
   margin-left: 4px;
 }
@@ -397,14 +385,14 @@
 
 .up {
   background: rgba(225, 252, 255, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.66);
-  color: #ffffff;
+  border: 1px solid var(--owner-white-66);
+  color: var(--owner-white);
 }
 
 .upWhite {
   background: var(--owner-cyan-surface);
   border: 1.5px solid var(--owner-cyan);
-  color: #0689aa;
+  color: var(--owner-cyan-hover);
 }
 
 .skeletonValue,
@@ -415,7 +403,7 @@
 .tableSkeletonShort,
 .tableSkeletonTiny {
   border-radius: 999px;
-  background: linear-gradient(90deg, #eef3f7 20%, #e3ebf2 50%, #eef3f7 80%);
+  background: linear-gradient(90deg, var(--owner-skeleton-1) 20%, var(--owner-skeleton-2) 50%, var(--owner-skeleton-1) 80%);
   background-size: 220% 100%;
   animation: shimmer 1.5s infinite;
 }
@@ -451,10 +439,10 @@
 }
 
 .card {
-  background: #ffffff;
+  background: var(--owner-white);
   border-radius: 16px;
   padding: 22px 24px;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 20px var(--owner-shadow);
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -495,7 +483,7 @@
 }
 
 .toggleBtn.active {
-  color: #ffffff;
+  color: var(--owner-white);
   background: var(--owner-cyan);
 }
 
@@ -577,7 +565,7 @@
 }
 
 .bar.gray {
-  background: #9ca3af;
+  background: var(--owner-gray);
 }
 
 .bar.cyan {
@@ -596,12 +584,12 @@
 
 .badgeUnread {
   background: var(--owner-cyan-surface);
-  color: #0689aa;
+  color: var(--owner-cyan-hover);
   font-size: 14px;
   font-weight: 500;
   padding: 4px 10px;
   border-radius: 20px;
-  border: 1.5px solid #0689aa;
+  border: 1.5px solid var(--owner-cyan-hover);
 }
 
 .requestList {
@@ -614,7 +602,7 @@
 }
 
 .requestList::-webkit-scrollbar-thumb {
-  background: rgba(24, 154, 186, 0.3);
+  background: var(--owner-scrollbar);
   border-radius: 999px;
 }
 
@@ -652,7 +640,7 @@
   border: 1.5px solid var(--owner-cyan);
   border-radius: 999px;
   padding: 4px 14px;
-  color: #0da1c5;
+  color: var(--owner-cyan-tag);
   font-size: 14px;
 }
 
@@ -660,7 +648,7 @@
   margin-top: 14px;
   font-size: 16px;
   line-height: 1.5;
-  color: #4b5563;
+  color: var(--owner-gray-text);
 }
 
 .requestActions {
@@ -675,7 +663,7 @@
   border: none;
   border-radius: 40px;
   padding: 7px;
-  color: #ffffff;
+  color: var(--owner-white);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -688,7 +676,7 @@
 }
 
 .btnDecline {
-  background: #f10f0f;
+  background: var(--owner-red-decline);
 }
 
 .btnAccept:hover,
@@ -716,14 +704,14 @@
 .emptyInCard {
   padding: 24px;
   text-align: center;
-  color: #64748b;
+  color: var(--owner-gray-light);
 }
 
 .tableCard {
-  background: #ffffff;
+  background: var(--owner-white);
   border-radius: 16px;
   padding: 22px 24px;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 20px var(--owner-shadow);
 }
 
 .tableHeader {
@@ -764,7 +752,7 @@
 }
 
 .searchBox input::placeholder {
-  color: #9ca3af;
+  color: var(--owner-gray);
 }
 
 .table {
@@ -791,7 +779,7 @@
 }
 
 .table tbody tr:hover {
-  background: #f8fdff;
+  background: var(--owner-table-hover);
 }
 
 .table tbody tr:last-child td {
@@ -819,15 +807,15 @@
 }
 
 .statusBadge.available {
-  color: #09b6dc;
-  border-color: #09b6dc;
-  background: #e9fbff;
+  color: var(--owner-cyan-status);
+  border-color: var(--owner-cyan-status);
+  background: var(--owner-cyan-status-bg);
 }
 
 .statusBadge.booked {
-  color: #ff2020;
-  border-color: #ff2020;
-  background: #ffe8e8;
+  color: var(--owner-red-status);
+  border-color: var(--owner-red-status);
+  background: var(--owner-red-status-bg);
 }
 
 .rowActions {
@@ -849,13 +837,13 @@
 }
 
 .iconBtn.edit {
-  color: #03c0e4;
-  background: #d7f5fd;
+  color: var(--owner-cyan-edit);
+  background: var(--owner-cyan-edit-bg);
 }
 
 .iconBtn.delete {
-  color: #ff1111;
-  background: #ffd9d9;
+  color: var(--owner-red-delete);
+  background: var(--owner-red-delete-bg);
 }
 
 .tableSkeletonShort {
@@ -871,7 +859,7 @@
 .emptyTable {
   padding: 22px;
   text-align: center;
-  color: #64748b;
+  color: var(--owner-gray-light);
 }
 
 .errorState {
@@ -881,7 +869,7 @@
   align-items: center;
   padding: 24px;
   font-size: 16px;
-  color: #dc2626;
+  color: var(--owner-red-error);
 }
 
 .topbarLeft {
@@ -894,7 +882,7 @@
   display: none;
   background: transparent;
   border: none;
-  color: #ffffff;
+  color: var(--owner-white);
   cursor: pointer;
   padding: 8px;
   border-radius: 8px;
@@ -904,7 +892,7 @@
 }
 
 .hamburgerBtn:hover {
-  background-color: rgba(255, 255, 255, 0.15);
+  background-color: var(--owner-white-15);
   transform: scale(1.05);
 }
 
@@ -919,7 +907,7 @@
 .sidebarBackdrop {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.4);
+  background: var(--owner-slate-backdrop);
   backdrop-filter: blur(4px);
   z-index: 190;
   animation: fadeIn 0.2s ease-out;
@@ -1002,7 +990,7 @@
     z-index: 200;
     transform: translateX(-100%);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 10px 0 30px rgba(0, 0, 0, 0.15);
+    box-shadow: 10px 0 30px var(--owner-shadow-light);
   }
 
   .sidebar.sidebarOpen {
@@ -1016,9 +1004,9 @@
     position: absolute;
     top: 24px;
     right: 24px;
-    background: rgba(255, 255, 255, 0.12);
+    background: var(--owner-white-12);
     border: none;
-    color: #ffffff;
+    color: var(--owner-white);
     width: 40px;
     height: 40px;
     border-radius: 50%;
@@ -1028,7 +1016,7 @@
   }
 
   .sidebarCloseBtn:hover {
-    background-color: rgba(255, 255, 255, 0.25);
+    background-color: var(--owner-white-25);
     transform: scale(1.05);
   }
 

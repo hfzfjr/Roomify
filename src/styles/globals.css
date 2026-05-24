@@ -31,6 +31,64 @@
   --cancel-button-bg: #f8cccc;
   --cancel-button-text: #db0000;
   
+  /* Owner Dashboard Colors */
+  --owner-cyan: #00D4FF;
+  --owner-cyan-soft: #bdeffd;
+  --owner-cyan-surface: #ddf7ff;
+  --owner-bg: #effbff;
+  --owner-border: #d2d9de;
+  --owner-border-soft: #e2e8ec;
+  --owner-text: #111827;
+  --owner-muted: #6b7280;
+  --owner-red: #ff1c1c;
+  --owner-white: #ffffff;
+  --owner-white-55: rgba(255, 255, 255, 0.55);
+  --owner-white-20: rgba(255, 255, 255, 0.2);
+  --owner-white-40: rgba(255, 255, 255, 0.4);
+  --owner-white-95: rgba(255, 255, 255, 0.95);
+  --owner-white-97: rgba(255, 255, 255, 0.97);
+  --owner-white-92: rgba(255, 255, 255, 0.92);
+  --owner-white-90: rgba(255, 255, 255, 0.9);
+  --owner-white-22: rgba(255, 255, 255, 0.22);
+  --owner-white-62: rgba(255, 255, 255, 0.62);
+  --owner-white-10: rgba(255, 255, 255, 0.1);
+  --owner-white-15: rgba(255, 255, 255, 0.15);
+  --owner-white-25: rgba(255, 255, 255, 0.25);
+  --owner-white-12: rgba(255, 255, 255, 0.12);
+  --owner-white-66: rgba(255, 255, 255, 0.66);
+  --owner-red-bg: #ff3648;
+  --owner-cyan-light: #b9edfa;
+  --owner-cyan-dark: #129ec2;
+  --owner-cyan-hover: #54d2f9;
+  --owner-cyan-tag: #0da1c5;
+  --owner-cyan-edit: #03c0e4;
+  --owner-cyan-edit-bg: #d7f5fd;
+  --owner-cyan-status: #09b6dc;
+  --owner-cyan-status-bg: #e9fbff;
+  --owner-gray: #9ca3af;
+  --owner-gray-text: #4b5563;
+  --owner-gray-light: #64748b;
+  --owner-red-decline: #f10f0f;
+  --owner-red-delete: #ff1111;
+  --owner-red-delete-bg: #ffd9d9;
+  --owner-red-error: #dc2626;
+  --owner-red-status: #ff2020;
+  --owner-red-status-bg: #ffe8e8;
+  --owner-slate-border: rgba(148, 163, 184, 0.2);
+  --owner-slate-border-16: rgba(148, 163, 184, 0.16);
+  --owner-slate-shadow: rgba(15, 23, 42, 0.16);
+  --owner-slate-backdrop: rgba(15, 23, 42, 0.4);
+  --owner-cyan-gradient: rgba(86, 215, 255, 0.12);
+  --owner-purple-gradient: rgba(255, 139, 253, 0.12);
+  --owner-cyan-hover-bg: rgba(86, 215, 255, 0.08);
+  --owner-red-hover-bg: rgba(239, 68, 68, 0.08);
+  --owner-skeleton-1: #eef3f7;
+  --owner-skeleton-2: #e3ebf2;
+  --owner-scrollbar: rgba(24, 154, 186, 0.3);
+  --owner-table-hover: #f8fdff;
+  --owner-shadow: rgba(0, 0, 0, 0.2);
+  --owner-shadow-light: rgba(0, 0, 0, 0.15);
+  
   /* Font */
   --font-family: 'Plus Jakarta Sans', sans-serif;
   

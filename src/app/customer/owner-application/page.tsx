@@ -18,16 +18,24 @@ type OwnerApplication = {
 
 type FormState = {
   name: string
-  account_number: string
   business_name: string
+  business_email: string
   business_phone: string
+  account_number: string
+  sync_name: boolean
+  sync_email: boolean
+  sync_phone: boolean
 }
 
 const initialFormState: FormState = {
   name: '',
-  account_number: '',
   business_name: '',
+  business_email: '',
   business_phone: '',
+  account_number: '',
+  sync_name: false,
+  sync_email: false,
+  sync_phone: false,
 }
 
 export default function OwnerApplicationPage() {
@@ -80,9 +88,13 @@ export default function OwnerApplicationPage() {
         setApplication(ownerApplication ?? null)
         setForm({
           name: latestUser?.name ?? parsedUser.name ?? '',
-          account_number: ownerApplication?.account_number ?? '',
           business_name: ownerApplication?.business_name ?? '',
+          business_email: latestUser?.email ?? parsedUser.email ?? '',
           business_phone: ownerApplication?.business_phone ?? latestUser?.phone_number ?? '',
+          account_number: ownerApplication?.account_number ?? '',
+          sync_name: false,
+          sync_email: false,
+          sync_phone: false,
         })
       } catch (loadError) {
         setError(loadError instanceof Error ? loadError.message : 'Gagal memuat data pengajuan owner.')
@@ -174,100 +186,101 @@ export default function OwnerApplicationPage() {
 
   return (
     <div className={styles.pageContainer}>
-      <BackButton href="/customer/dashboard" title="Ajukan Sebagai Owner" />
+      <BackButton href="/customer/dashboard" title="Daftar Owner" />
       <div className={styles.wrapper}>
         <div className={styles.card}>
           <div className={styles.header}>
             <div>
-              <span className={styles.eyebrow}>Program Owner</span>
-              <h1>Ajukan Ruangan Anda ke Roomify</h1>
-              <p>
-                Isi data bisnis untuk mendaftarkan akun Anda sebagai owner. Pengajuan akan ditinjau admin secara manual
-                sebelum akses dashboard owner dibuka.
-              </p>
+              <h1>Daftar Sebagai Mitra</h1>
+              <p>Kelola penyewaan ruangan bisnis Anda dengan sistem yang terintegrasi</p>
             </div>
           </div>
 
           {message && <div className={styles.successBox}>{message}</div>}
           {error && <div className={styles.errorBox}>{error}</div>}
 
-          {isOwnerActive && (
-            <div className={styles.statusPanel}>
-              <span className={`${styles.statusBadge} ${styles.active}`}>Owner Active</span>
-              <h2>Pengajuan Anda sudah disetujui</h2>
-              <p>
-                Akun Anda sekarang berstatus owner. Anda sudah bisa mengelola ruangan dan membuka dashboard owner kapan pun.
-              </p>
-              <button type="button" className={styles.primaryButton} onClick={() => router.push('/owner/dashboard')}>
-                Buka Dashboard Owner
+          <form className={styles.form} onSubmit={handleSubmit}>
+            <label className={styles.field}>
+              <span>Nama Pemilik</span>
+              <input
+                type="text"
+                value={form.name}
+                onChange={(event) => updateField('name', event.target.value)}
+                placeholder="Masukkan nama lengkap"
+              />
+              <label className={styles.checkboxLabel}>
+                <input
+                  type="checkbox"
+                  checked={form.sync_name}
+                  onChange={(event) => updateField('sync_name', event.target.checked)}
+                />
+                <span>Sesuaikan dengan nama di mode Customer</span>
+              </label>
+            </label>
+
+            <label className={styles.field}>
+              <span>Nama Bisnis</span>
+              <input
+                type="text"
+                value={form.business_name}
+                onChange={(event) => updateField('business_name', event.target.value)}
+                placeholder="Masukkan nama bisnis"
+              />
+            </label>
+
+            <label className={styles.field}>
+              <span>Email Bisnis</span>
+              <input
+                type="email"
+                value={form.business_email}
+                onChange={(event) => updateField('business_email', event.target.value)}
+                placeholder="Masukkan email bisnis"
+              />
+              <label className={styles.checkboxLabel}>
+                <input
+                  type="checkbox"
+                  checked={form.sync_email}
+                  onChange={(event) => updateField('sync_email', event.target.checked)}
+                />
+                <span>Sesuaikan dengan email di mode Customer</span>
+              </label>
+            </label>
+
+            <label className={styles.field}>
+              <span>Nomor Telepon Operasional</span>
+              <input
+                type="tel"
+                value={form.business_phone}
+                onChange={(event) => updateField('business_phone', event.target.value)}
+                placeholder="Masukkan nomor telepon"
+              />
+              <label className={styles.checkboxLabel}>
+                <input
+                  type="checkbox"
+                  checked={form.sync_phone}
+                  onChange={(event) => updateField('sync_phone', event.target.checked)}
+                />
+                <span>Sesuaikan dengan nomor telepon di mode Customer</span>
+              </label>
+            </label>
+
+            <label className={styles.field}>
+              <span>Nomor Rekening</span>
+              <input
+                type="text"
+                inputMode="numeric"
+                value={form.account_number}
+                onChange={(event) => updateField('account_number', event.target.value)}
+                placeholder="Masukkan nomor rekening"
+              />
+            </label>
+
+            <div className={styles.actions}>
+              <button type="submit" className={styles.primaryButton} disabled={submitting}>
+                {submitting ? 'Mengirim...' : 'Kirim Pengajuan'}
               </button>
             </div>
-          )}
-
-          {!isOwnerActive && (
-            <>
-              <div className={styles.statusPanel}>
-                <span className={`${styles.statusBadge} ${isPending ? styles.pending : styles.idle}`}>
-                  {isPending ? 'Pending Review' : applicationStatus === 'rejected' ? 'Perlu Diperbarui' : 'Belum Diajukan'}
-                </span>
-                <h2>{isPending ? 'Pengajuan sedang ditinjau admin' : 'Lengkapi data bisnis Anda'}</h2>
-                <p>
-                  {isPending
-                    ? 'Anda masih bisa memperbarui data pengajuan jika ada yang perlu dikoreksi sebelum admin menyetujui.'
-                    : 'Nama pemilik, nomor rekening, nama bisnis, dan nomor telepon akan digunakan untuk proses verifikasi owner.'}
-                </p>
-              </div>
-
-              <form className={styles.form} onSubmit={handleSubmit}>
-                <label className={styles.field}>
-                  <span>Nama Pemilik</span>
-                  <input
-                    type="text"
-                    value={form.name}
-                    onChange={(event) => updateField('name', event.target.value)}
-                    placeholder="Masukkan nama lengkap"
-                  />
-                </label>
-
-                <label className={styles.field}>
-                  <span>Nomor Rekening</span>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    value={form.account_number}
-                    onChange={(event) => updateField('account_number', event.target.value)}
-                    placeholder="Masukkan nomor rekening"
-                  />
-                </label>
-
-                <label className={styles.field}>
-                  <span>Nama Bisnis</span>
-                  <input
-                    type="text"
-                    value={form.business_name}
-                    onChange={(event) => updateField('business_name', event.target.value)}
-                    placeholder="Contoh: Ruang Kreatif Nusantara"
-                  />
-                </label>
-
-                <label className={styles.field}>
-                  <span>Nomor Telepon</span>
-                  <input
-                    type="tel"
-                    value={form.business_phone}
-                    onChange={(event) => updateField('business_phone', event.target.value)}
-                    placeholder="Contoh: 081234567890"
-                  />
-                </label>
-
-                <div className={styles.actions}>
-                  <button type="submit" className={styles.primaryButton} disabled={submitting}>
-                    {submitting ? 'Mengirim...' : isPending ? 'Perbarui Pengajuan' : 'Kirim Pengajuan'}
-                  </button>
-                </div>
-              </form>
-            </>
-          )}
+          </form>
         </div>
       </div>
     </div>

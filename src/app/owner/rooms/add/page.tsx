@@ -4,6 +4,24 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import BackButton from '@/components/ui/BackButton';
 import styles from './AddRoomPage.module.css';
+import Microphone from '@/components/icons/facility/Microphone';
+import Whiteboard from '@/components/icons/facility/Whiteboard';
+import SoundSystem from '@/components/icons/facility/SoundSystem';
+import Proyektor from '@/components/icons/facility/Proyektor';
+import AC from '@/components/icons/facility/AC';
+import Podium from '@/components/icons/facility/Podium';
+import Monitor from '@/components/icons/facility/Monitor';
+import HDMICable from '@/components/icons/facility/HDMICable';
+import Lightning from '@/components/icons/facility/Lightning';
+import GreenScreen from '@/components/icons/facility/GreenScreen';
+import Computer from '@/components/icons/facility/Computer';
+import Wifi from '@/components/icons/facility/Wifi';
+import Printer from '@/components/icons/facility/Printer';
+import Locker from '@/components/icons/facility/Locker';
+import CameraDSLR from '@/components/icons/facility/CameraDSLR';
+import MixerAudio from '@/components/icons/facility/MixerAudio';
+import SoundProofing from '@/components/icons/facility/SoundProofing';
+import VideoConference from '@/components/icons/facility/VideoConference';
 
 interface SessionUser {
   user_id: string;
@@ -85,6 +103,7 @@ export default function AddRoomPage() {
     province_id: '',
     province_name: '',
     address: '',
+    facilities: [] as string[],
   });
 
   // Fetch regions and provinces
@@ -267,12 +286,45 @@ export default function AddRoomPage() {
     return photos.length > 0;
   };
 
+  const facilitiesList = [
+    { id: 'microphone', name: 'Microphone', icon: <Microphone /> },
+    { id: 'whiteboard', name: 'Whiteboard', icon: <Whiteboard /> },
+    { id: 'sound_system', name: 'Sound System', icon: <SoundSystem /> },
+    { id: 'projector', name: 'Proyektor', icon: <Proyektor /> },
+    { id: 'ac', name: 'AC', icon: <AC /> },
+    { id: 'podium', name: 'Podium', icon: <Podium /> },
+    { id: 'monitor', name: 'Monitor', icon: <Monitor /> },
+    { id: 'hdmi_cable', name: 'HDMI Cable', icon: <HDMICable /> },
+    { id: 'lighting', name: 'Lighting', icon: <Lightning /> },
+    { id: 'green_screen', name: 'Green Screen', icon: <GreenScreen /> },
+    { id: 'computer', name: 'Komputer', icon: <Computer /> },
+    { id: 'wifi', name: 'Wifi', icon: <Wifi /> },
+    { id: 'printer', name: 'Printer', icon: <Printer /> },
+    { id: 'locker', name: 'Locker', icon: <Locker /> },
+    { id: 'camera_dslr', name: 'Camera DSLR', icon: <CameraDSLR /> },
+    { id: 'mixer_audio', name: 'Mixer Audio', icon: <MixerAudio /> },
+    { id: 'sound_proofing', name: 'Sound Proofing', icon: <SoundProofing /> },
+    { id: 'video_conference', name: 'Video Conference', icon: <VideoConference /> },
+  ];
+
+  const handleFacilityToggle = (facilityId: string) => {
+    setFormData((prevData) => {
+      const currentFacilities = prevData.facilities || [];
+      if (currentFacilities.includes(facilityId)) {
+        return { ...prevData, facilities: currentFacilities.filter((id) => id !== facilityId) };
+      } else {
+        return { ...prevData, facilities: [...currentFacilities, facilityId] };
+      }
+    });
+  };
+
   const completedSections = [
     !isFieldEmpty(formData.name) &&
       !isFieldEmpty(formData.description) &&
       !isFieldEmpty(formData.price_per_hour) &&
       !isFieldEmpty(formData.capacity),
     !isFieldEmpty(formData.type),
+    formData.facilities && formData.facilities.length > 0,
     !isFieldEmpty(formData.region_id) && !isFieldEmpty(formData.address),
     photos.length > 0,
   ];
@@ -494,6 +546,31 @@ export default function AddRoomPage() {
                   </span>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Fasilitas */}
+          <div className={styles.sectionCard}>
+            <div className={styles.sectionHeader}>
+              <h2 className={styles.sectionTitle}>Fasilitas</h2>
+              <p className={styles.sectionSubtitle}>Pilih fasilitas yang tersedia di ruangan</p>
+            </div>
+
+            <div className={styles.facilitiesGrid}>
+              {facilitiesList.map((facility) => {
+                const isSelected = formData.facilities?.includes(facility.id);
+                return (
+                  <button
+                    key={facility.id}
+                    type="button"
+                    className={`${styles.facilityButton} ${isSelected ? styles.selected : ''}`}
+                    onClick={() => handleFacilityToggle(facility.id)}
+                  >
+                    <span className={styles.facilityIcon}>{facility.icon}</span>
+                    <span className={styles.facilityName}>{facility.name}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -792,19 +869,6 @@ export default function AddRoomPage() {
                 <span>Informasi Dasar</span>
               </div>
 
-              <div className={`${styles.checklistItem} ${completedSections[1] ? styles.active : ''}`}>
-                <span className={`${styles.checkNumber} ${completedSections[1] ? styles.completed : ''}`}>
-                  {completedSections[1] ? (
-                    <svg className={styles.checkIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                      <path d="M5 12l5 5L20 7" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  ) : (
-                    '2'
-                  )}
-                </span>
-                <span>Tipe Ruangan</span>
-              </div>
-
               <div className={`${styles.checklistItem} ${completedSections[2] ? styles.active : ''}`}>
                 <span className={`${styles.checkNumber} ${completedSections[2] ? styles.completed : ''}`}>
                   {completedSections[2] ? (
@@ -812,10 +876,23 @@ export default function AddRoomPage() {
                       <path d="M5 12l5 5L20 7" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   ) : (
+                    '2'
+                  )}
+                </span>
+                <span>Fasilitas</span>
+              </div>
+
+              <div className={`${styles.checklistItem} ${completedSections[1] ? styles.active : ''}`}>
+                <span className={`${styles.checkNumber} ${completedSections[1] ? styles.completed : ''}`}>
+                  {completedSections[1] ? (
+                    <svg className={styles.checkIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                      <path d="M5 12l5 5L20 7" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  ) : (
                     '3'
                   )}
                 </span>
-                <span>Lokasi</span>
+                <span>Tipe Ruangan</span>
               </div>
 
               <div className={`${styles.checklistItem} ${completedSections[3] ? styles.active : ''}`}>
@@ -826,6 +903,19 @@ export default function AddRoomPage() {
                     </svg>
                   ) : (
                     '4'
+                  )}
+                </span>
+                <span>Lokasi</span>
+              </div>
+
+              <div className={`${styles.checklistItem} ${completedSections[4] ? styles.active : ''}`}>
+                <span className={`${styles.checkNumber} ${completedSections[4] ? styles.completed : ''}`}>
+                  {completedSections[4] ? (
+                    <svg className={styles.checkIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                      <path d="M5 12l5 5L20 7" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  ) : (
+                    '5'
                   )}
                 </span>
                 <span>Foto Ruangan</span>

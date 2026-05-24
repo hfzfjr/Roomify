@@ -1,4 +1,5 @@
 import FaqPage from '@/components/faq/FaqPage'
+import Navbar from '@/components/layout/Navbar'
 
 const categories = [
   {
@@ -65,5 +66,12 @@ const categories = [
 ]
 
 export default function Page() {
-  return <FaqPage categories={categories} />
+  return (
+    <>
+      <Navbar />
+      <div style={{ paddingTop: '80px' }}>
+        <FaqPage categories={categories} />
+      </div>
+    </>
+  )
 }

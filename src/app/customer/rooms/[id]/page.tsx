@@ -9,6 +9,24 @@ import { formatRupiah } from '@/utils/formatRupiah'
 import { getRoomTypeLabel } from '@/utils/room'
 import { RoomDetail } from '@/types'
 import '@/styles/rooms.css'
+import Microphone from '@/components/icons/facility/Microphone'
+import Whiteboard from '@/components/icons/facility/Whiteboard'
+import SoundSystem from '@/components/icons/facility/SoundSystem'
+import Proyektor from '@/components/icons/facility/Proyektor'
+import AC from '@/components/icons/facility/AC'
+import Podium from '@/components/icons/facility/Podium'
+import Monitor from '@/components/icons/facility/Monitor'
+import HDMICable from '@/components/icons/facility/HDMICable'
+import Lightning from '@/components/icons/facility/Lightning'
+import GreenScreen from '@/components/icons/facility/GreenScreen'
+import Computer from '@/components/icons/facility/Computer'
+import Wifi from '@/components/icons/facility/Wifi'
+import Printer from '@/components/icons/facility/Printer'
+import Locker from '@/components/icons/facility/Locker'
+import CameraDSLR from '@/components/icons/facility/CameraDSLR'
+import MixerAudio from '@/components/icons/facility/MixerAudio'
+import SoundProofing from '@/components/icons/facility/SoundProofing'
+import VideoConference from '@/components/icons/facility/VideoConference'
 
 export default function CustomerRoomDetailPage({
   params
@@ -118,6 +136,49 @@ export default function CustomerRoomDetailPage({
 
   const roomAddress = [room.location, room.region_name, room.province_name].filter(Boolean).join(', ')
 
+  const getFacilityIcon = (facility: string) => {
+    const key = facility.toLowerCase().replace(/\s+/g, '_')
+    const iconMap: Record<string, React.ReactNode> = {
+      microphone: <Microphone />,
+      mic: <Microphone />,
+      whiteboard: <Whiteboard />,
+      board: <Whiteboard />,
+      sound_system: <SoundSystem />,
+      soundsystem: <SoundSystem />,
+      sound: <SoundSystem />,
+      speaker: <SoundSystem />,
+      proyektor: <Proyektor />,
+      projector: <Proyektor />,
+      ac: <AC />,
+      air_conditioner: <AC />,
+      podium: <Podium />,
+      monitor: <Monitor />,
+      hdmi_cable: <HDMICable />,
+      hdmi: <HDMICable />,
+      lighting: <Lightning />,
+      light: <Lightning />,
+      green_screen: <GreenScreen />,
+      computer: <Computer />,
+      komputer: <Computer />,
+      wifi: <Wifi />,
+      'wi-fi': <Wifi />,
+      printer: <Printer />,
+      locker: <Locker />,
+      camera_dslr: <CameraDSLR />,
+      kamera_dslr: <CameraDSLR />,
+      camera: <CameraDSLR />,
+      kamera: <CameraDSLR />,
+      dslr: <CameraDSLR />,
+      mixer_audio: <MixerAudio />,
+      mixer: <MixerAudio />,
+      sound_proofing: <SoundProofing />,
+      soundproofing: <SoundProofing />,
+      video_conference: <VideoConference />,
+      videoconference: <VideoConference />,
+    }
+    return iconMap[key] || null
+  }
+
   return (
     <div className="customer-room-detail-page">
       {/* Header with back button */}
@@ -187,9 +248,11 @@ export default function CustomerRoomDetailPage({
                 {room.facilities.length > 0 ? (
                   room.facilities.map((facility: string) => (
                     <div key={facility} className="customer-room-facility-item">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
+                      {getFacilityIcon(facility) || (
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      )}
                       {facility}
                     </div>
                   ))

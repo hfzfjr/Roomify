@@ -70,10 +70,12 @@ export async function PUT(
     }
 
     if (Array.isArray(facilities) && facilities.length > 0) {
+      // Generate UUID for amenity_id and insert with amenity name
       const { error: insertError } = await supabase
         .from('room_amenity')
         .insert(
           facilities.map((fac: string) => ({
+            amenity_id: crypto.randomUUID(),
             room_id: id,
             amenity: fac
           }))

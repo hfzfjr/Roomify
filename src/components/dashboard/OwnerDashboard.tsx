@@ -176,11 +176,11 @@ export default function OwnerDashboard() {
 
   const navItems = [
     { label: 'Dashboard', path: '/owner/dashboard', isActive: pathname === '/owner/dashboard' },
-    { label: 'Profil', path: '/customer/profile', isActive: pathname.startsWith('/customer/profile') },
-    { label: 'Review & Feedback', path: '/owner/dashboard/facility-requests', isActive: pathname.startsWith('/owner/dashboard/facility-requests') },
+    { label: 'Profil', path: '/owner/profile', isActive: pathname.startsWith('/customer/profile') },
+    { label: 'Review & Feedback', path: '/owner/reviews', isActive: pathname.startsWith('/owner/dashboard/facility-requests') },
     { label: 'Laporan Transaksi', path: '/owner/reports', isActive: pathname.startsWith('/owner/reports') },
     { label: 'Tambah Ruangan', path: '/owner/rooms/add', isActive: pathname.startsWith('/owner/rooms/add') },
-    { label: 'Bantuan', path: '/owner/dashboard#help', isActive: false },
+    { label: 'Bantuan', path: '/owner/faq', isActive: false },
   ];
 
   if (dashboardError) {
@@ -370,7 +370,7 @@ export default function OwnerDashboard() {
           <div className={styles.grid2}>
             <div className={styles.card}>
               <div className={styles.cardHeader}>
-                <span className={styles.cardTitle}>Costumer Map</span>
+                <span className={styles.cardTitle}>Customer Map</span>
                 <div className={styles.toggleGroup}>
                   <button
                     type="button"

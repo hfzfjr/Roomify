@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from 'react'
-import Navbar from '@/components/layout/Navbar'
 import FaqAccordion from './FaqAccordion'
 import styles from './faq.module.css'
 
@@ -17,8 +16,6 @@ export default function FaqPage({ categories }: { categories: Category[] }) {
 
   return (
     <div className={styles.pageWrap}>
-      <Navbar />
-
       <main className={styles.container}>
         <aside className={styles.leftCard}>
           <h3 className={styles.leftTitle}>Pertanyaan</h3>

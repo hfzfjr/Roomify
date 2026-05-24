@@ -1,8 +1,7 @@
 .pageWrap {
   min-height: 100vh;
   background: #eaf9fb;
-  /* account for fixed header height (80px) and a small gap */
-  padding-top: 104px;
+  padding-top: 24px;
   font-size: 16px;
 }
 
