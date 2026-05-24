@@ -892,6 +892,8 @@ export async function POST(request: Request) {
       )
     }
 
+    console.log('Booking request:', { user_id, room_id, date, start_time, end_time })
+
     const checkInDate = new Date(`${date}T${start_time}:00`)
     const checkOutDate = new Date(`${date}T${end_time}:00`)
 

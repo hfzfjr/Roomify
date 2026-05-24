@@ -421,9 +421,22 @@ export default function BookingForm({ room }: Props) {
         })
       })
 
-      const result = await response.json()
+      const responseText = await response.text()
 
-      if (!response.ok || !result.success) {
+      if (!response.ok) {
+        console.error('Booking API error:', response.status, responseText)
+        throw new Error(`Server error (${response.status}): ${responseText}`)
+      }
+
+      let result
+      try {
+        result = JSON.parse(responseText)
+      } catch (parseError) {
+        console.error('Failed to parse JSON:', responseText)
+        throw new Error('Server mengembalikan respons yang tidak valid. Silakan coba lagi.')
+      }
+
+      if (!result.success) {
         throw new Error(result.message || 'Booking gagal diproses.')
       }
 
