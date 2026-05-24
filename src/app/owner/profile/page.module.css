@@ -3,28 +3,6 @@
   background: #e0f2fe;
 }
 
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 40px;
-  background: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.logo {
-  font-size: 24px;
-  font-weight: 800;
-  color: #0ea5e9;
-  letter-spacing: 0.05em;
-}
-
-.greeting {
-  font-size: 16px;
-  font-weight: 600;
-  color: #64748b;
-}
-
 .content {
   display: flex;
   gap: 32px;

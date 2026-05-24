@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import BackButton from '@/components/ui/BackButton'
 import ProfilePage from '@/components/profile/ProfilePage'
 import styles from './page.module.css'
 import { User } from '@/types'
@@ -75,10 +76,7 @@ export default function OwnerProfilePage() {
 
   return (
     <div className={styles.container}>
-      <div className={styles.header}>
-        <div className={styles.logo}>ROOMIFY</div>
-        <div className={styles.greeting}>Hai, {user?.name?.split(' ')[0]}! {user?.name?.split(' ')[0]?.[0]}</div>
-      </div>
+      <BackButton href="/owner/dashboard" title="Profil" />
 
       <div className={styles.content}>
         <div className={styles.sidebar}>
