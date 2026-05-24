@@ -336,7 +336,7 @@ export default function AddRoomPage() {
   const validateForm = () => {
     const requiredFields = ['name', 'description', 'price_per_hour', 'capacity', 'type', 'region_id', 'address'];
     return (
-      requiredFields.every((field) => !isFieldEmpty(formData[field as keyof typeof formData])) &&
+      requiredFields.every((field) => !isFieldEmpty(formData[field as keyof typeof formData] as string)) &&
       photos.length > 0
     );
   };
