@@ -19,6 +19,9 @@ export default function Navbar() {
   useEffect(() => {
     let isMounted = true
 
+    // Add has-navbar class to body when navbar is mounted
+    document.body.classList.add('has-navbar')
+
     async function loadCurrentUser() {
       const stored = localStorage.getItem('user')
       if (!stored) {
@@ -79,6 +82,7 @@ export default function Navbar() {
     return () => {
       isMounted = false
       window.removeEventListener('storage', handleStorageSync)
+      document.body.classList.remove('has-navbar')
     }
   }, [])
 
