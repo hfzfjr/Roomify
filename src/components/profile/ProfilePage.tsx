@@ -259,7 +259,7 @@ export default function ProfilePage({ userType = 'customer', showNavbar = true, 
     return (
       <>
         {showNavbar && NavbarComponent && <NavbarComponent />}
-        <div className="profile-page">
+        <div className={`profile-page ${!showNavbar ? 'no-navbar' : ''}`}>
           <div className="profile-layout">
             <div className="profile-shell profile-shell-loading">
               <aside className="profile-sidebar-panel">
