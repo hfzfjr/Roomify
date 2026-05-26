@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import styles from './OwnerDashboard.module.css';
 import { useOwnerDashboard, useFacilityRequests } from '@/hooks/useDashboard';
+import SidebarOwner from '@/components/layout/SidebarOwner';
 
 interface SessionUser {
   user_id: string;
@@ -45,8 +46,6 @@ export default function OwnerDashboard() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [chartPeriod, setChartPeriod] = useState<ChartPeriod>('weekly');
-  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
-  const accountMenuRef = useRef<HTMLDivElement | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const sidebarRef = useRef<HTMLElement | null>(null);
 
@@ -55,9 +54,6 @@ export default function OwnerDashboard() {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (accountMenuRef.current && !accountMenuRef.current.contains(event.target as Node)) {
-        setAccountMenuOpen(false);
-      }
       if (sidebarRef.current && !sidebarRef.current.contains(event.target as Node)) {
         setSidebarOpen(false);
       }
@@ -152,18 +148,6 @@ export default function OwnerDashboard() {
     }
   };
 
-  const handleProfileClick = () => {
-    setAccountMenuOpen(false);
-    router.push('/customer/profile');
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setAccountMenuOpen(false);
-    router.push('/auth/login');
-  };
-
   const formatChangeLabel = (value: number | null, fallback: string) => {
     if (value === null) {
       return fallback;
@@ -173,15 +157,6 @@ export default function OwnerDashboard() {
     const trend = value >= 0 ? 'Kenaikan dari bulan sebelumnya' : 'Penurunan dari bulan sebelumnya';
     return `${percent}% ${trend}`;
   };
-
-  const navItems = [
-    { label: 'Dashboard', path: '/owner/dashboard', isActive: pathname === '/owner/dashboard' },
-    { label: 'Profil', path: '/owner/profile', isActive: pathname.startsWith('/customer/profile') },
-    { label: 'Review & Feedback', path: '/owner/reviews', isActive: pathname.startsWith('/owner/dashboard/facility-requests') },
-    { label: 'Laporan Transaksi', path: '/owner/reports', isActive: pathname.startsWith('/owner/reports') },
-    { label: 'Tambah Ruangan', path: '/owner/rooms/add', isActive: pathname.startsWith('/owner/rooms/add') },
-    { label: 'Bantuan', path: '/owner/faq', isActive: false },
-  ];
 
   if (dashboardError) {
     return (
@@ -200,90 +175,7 @@ export default function OwnerDashboard() {
           aria-hidden="true"
         />
       )}
-      <aside ref={sidebarRef} className={`${styles.sidebar} ${sidebarOpen ? styles.sidebarOpen : ''}`}>
-        <button
-          type="button"
-          className={styles.sidebarCloseBtn}
-          onClick={() => setSidebarOpen(false)}
-          aria-label="Tutup sidebar"
-        >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <line x1="18" y1="6" x2="6" y2="18" strokeLinecap="round" />
-            <line x1="6" y1="6" x2="18" y2="18" strokeLinecap="round" />
-          </svg>
-        </button>
-        <div className={styles.sidebarLogo}>
-          <img src="/images/roomify-putih.png" alt="Roomify" className={styles.logoImage} />
-        </div>
-
-        <div className={styles.accountMenu} ref={accountMenuRef}>
-          <button
-            type="button"
-            className={`${styles.sidebarUserButton} ${accountMenuOpen ? styles.menuOpen : ''}`}
-            onClick={() => setAccountMenuOpen((current) => !current)}
-            aria-haspopup="menu"
-            aria-expanded={accountMenuOpen}
-          >
-            <div className={styles.userAvatar}>{user?.name?.charAt(0).toUpperCase() || 'S'}</div>
-            <div className={styles.userInfo}>
-              <strong>{user?.name || 'Owner'}</strong>
-              <span>Owner</span>
-            </div>
-          </button>
-
-          {accountMenuOpen && (
-            <div className={styles.accountDropdown} role="menu">
-              <div className={styles.accountDropdownHeader}>
-                <span className={styles.accountDropdownName}>{user?.name || 'Owner'}</span>
-                <span className={styles.accountDropdownRole}>OWNER</span>
-              </div>
-              <button type="button" className={styles.accountDropdownItem} onClick={handleProfileClick}>
-                Profil
-              </button>
-              <button
-                type="button"
-                className={`${styles.accountDropdownItem} ${styles.danger}`}
-                onClick={handleLogout}
-              >
-                Logout
-              </button>
-            </div>
-          )}
-        </div>
-
-        <nav className={styles.sidebarNav}>
-          {navItems.map((item) => (
-            <button
-              key={item.label}
-              type="button"
-              className={`${styles.navItem} ${item.isActive ? styles.active : ''}`}
-              onClick={() => router.push(item.path)}
-            >
-              {item.label}
-            </button>
-          ))}
-        </nav>
-
-        <div className={styles.sidebarCta}>
-          <button
-            type="button"
-            className={styles.sidebarCtaButton}
-            onClick={() => router.push('/customer/dashboard')}
-          >
-            <span className={styles.sidebarCtaIcon} aria-hidden="true">
-              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                <path d="M4 21V7.5a1.5 1.5 0 0 1 1.5-1.5h13A1.5 1.5 0 0 1 20 7.5V21" />
-                <path d="M9 21V10h6v11" />
-                <path d="M3 21h18" />
-              </svg>
-            </span>
-            <span className={styles.sidebarCtaCopy}>
-              <strong>Sewa Ruangan</strong>
-              <span>Pindah ke mode customer untuk sewa ruangan</span>
-            </span>
-          </button>
-        </div>
-      </aside>
+      <SidebarOwner user={user} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} sidebarRef={sidebarRef} />
 
       <main className={styles.main}>
         <div className={styles.topbar}>
@@ -317,11 +209,15 @@ export default function OwnerDashboard() {
               ) : (
                 <>
                   <div className={styles.value}>{formatCurrency(stats?.totalRevenue || 0)}</div>
-                  <div className={`${styles.statBadge} ${styles.up}`}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
-                      <path d="m5 14 7-7 7 7" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                    {formatChangeLabel(stats?.revenueMonthChangePercent ?? null, 'Belum ada data perbandingan')}
+                  <div className={styles.revenueTrendContainer}>
+                    <div className={`${styles.statBadge} ${styles.up}`}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
+                        <path d="M12 4v16" strokeLinecap="round" />
+                        <path d="m6.5 9.5 5.5-5.5 5.5 5.5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                      {stats?.revenueMonthChangePercent ?? 0}%
+                    </div>
+                    <span className={styles.trendText}>Kenaikan dari bulan sebelumnya</span>
                   </div>
                 </>
               )}
@@ -337,12 +233,18 @@ export default function OwnerDashboard() {
               ) : (
                 <>
                   <div className={styles.value}>{stats?.totalBookings || 0}</div>
-                  <div className={`${styles.statBadge} ${styles.upWhite}`}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
-                      <path d="M12 4v16" strokeLinecap="round" />
-                      <path d="m6.5 9.5 5.5-5.5 5.5 5.5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                    {formatChangeLabel(stats?.bookingsMonthChangePercent ?? null, 'Belum ada data perbandingan')}
+                  <div className={styles.bookingTrendContainer}>
+                    <div className={`${styles.statBadge} ${styles.upBlue}`}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
+                        <path d="M12 4v16" strokeLinecap="round" />
+                        <path d="m6.5 9.5 5.5-5.5 5.5 5.5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                      5
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M16 11c1.7 0 3-1.3 3-3s-1.3-3-3-3-3 1.3-3 3 1.3 3 3 3Zm-8 0c1.7 0 3-1.3 3-3S9.7 5 8 5 5 6.3 5 8s1.3 3 3 3Zm0 2c-2.7 0-5 1.3-5 3v2h10v-2c0-1.7-2.3-3-5-3Zm8 0c-.3 0-.6 0-.9.1 1.2.8 1.9 1.8 1.9 2.9v2h6v-2c0-1.7-2.3-3-5-3Z" />
+                      </svg>
+                    </div>
+                    <span className={styles.trendText}>Kenaikan dari bulan sebelumnya</span>
                   </div>
                 </>
               )}

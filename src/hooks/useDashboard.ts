@@ -154,11 +154,18 @@ interface AdminDashboardData {
     email: string
     created_at: string
   }>
-  chartData: Array<{
-    label: string
-    value: number
-    active: boolean
-  }>
+  chartData: {
+    weekly: Array<{
+      label: string
+      value: number
+      active: boolean
+    }>
+    monthly: Array<{
+      label: string
+      value: number
+      active: boolean
+    }>
+  }
 }
 
 export function useAdminDashboard() {

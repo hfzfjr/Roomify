@@ -134,7 +134,7 @@ export default function SidebarCustomer({
             onClick={(e) => { e.preventDefault(); handleSidebarNavigate('/customer/bookings'); }}
           >
             <ReviewsIcon className="sb-icon" />
-            Riwayat
+            Riwayat Booking
           </a>
           <a
             href="#"

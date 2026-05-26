@@ -7,7 +7,7 @@
 
 /* ── Body ── */
 .body {
-  padding: 24px 32px 40px;
+  padding: 32px 32px 40px;
   max-width: 1400px;
   margin: 0 auto;
 }
@@ -304,4 +304,69 @@
   .sortRow {
     flex-wrap: wrap;
   }
+}
+
+/* ── Skeleton Loading ── */
+@keyframes shimmer {
+  0% {
+    background-position: 220% 0;
+  }
+  100% {
+    background-position: -220% 0;
+  }
+}
+
+.skeletonValue,
+.skeletonText,
+.skeletonLine,
+.skeletonLineShort,
+.skeletonLineText {
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--owner-skeleton-1, #eef3f7) 20%, var(--owner-skeleton-2, #e3ebf2) 50%, var(--owner-skeleton-1, #eef3f7) 80%);
+  background-size: 220% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.skeletonValue {
+  margin-top: 16px;
+  height: 24px;
+  width: 70%;
+}
+
+.skeletonText {
+  margin-top: 12px;
+  height: 14px;
+  width: 56%;
+}
+
+.skeletonLine {
+  height: 16px;
+  width: 62%;
+}
+
+.skeletonLineShort {
+  height: 13px;
+  width: 36%;
+  margin-top: 10px;
+}
+
+.skeletonLineText {
+  height: 13px;
+  width: 78%;
+  margin-top: 12px;
+}
+
+.skeletonCard {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 22px 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.skeletonFilterBox {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  padding: 18px 20px;
+  height: 200px;
 }

@@ -12,18 +12,34 @@ export interface UserProfile {
   created_at: string
 }
 
+type OwnerApplication = {
+  owner_id: string
+  account_number: string
+  status: 'pending' | 'active' | 'rejected'
+  business_name: string
+  business_phone: string
+  business_email: string
+  applied_at: string | null
+  approved_at: string | null
+}
+
 interface ProfilePageProps {
   userType?: 'customer' | 'owner'
   showNavbar?: boolean
   NavbarComponent?: React.ComponentType
+  onNavigateToBusiness?: () => void
+  showBusinessTab?: boolean
 }
 
-export default function ProfilePage({ userType = 'customer', showNavbar = true, NavbarComponent }: ProfilePageProps) {
+export default function ProfilePage({ userType = 'customer', showNavbar = true, NavbarComponent, onNavigateToBusiness, showBusinessTab = false }: ProfilePageProps) {
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
+  const [userRole, setUserRole] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState<'personal' | 'business'>('personal')
+  const [application, setApplication] = useState<OwnerApplication | null>(null)
 
   const [name, setName] = useState('')
   const [phoneNumber, setPhoneNumber] = useState('')
@@ -50,6 +66,39 @@ export default function ProfilePage({ userType = 'customer', showNavbar = true, 
     localStorage.setItem('user', JSON.stringify(user))
     window.dispatchEvent(new Event('storage'))
   }, [profile])
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user')
+    if (storedUser) {
+      const user = JSON.parse(storedUser)
+      setUserRole(user?.role || null)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!showBusinessTab || !userRole || userRole !== 'owner') return
+
+    async function fetchBusinessData() {
+      const storedUser = localStorage.getItem('user')
+      if (!storedUser) return
+
+      try {
+        const parsedUser = JSON.parse(storedUser)
+
+        const response = await fetch(`/api/owner-applications?user_id=${encodeURIComponent(parsedUser.user_id)}`)
+        const result = await response.json()
+
+        if (response.ok && result.success) {
+          const ownerApplication = result.data?.application as OwnerApplication | null | undefined
+          setApplication(ownerApplication ?? null)
+        }
+      } catch {
+        // Error handling
+      }
+    }
+
+    void fetchBusinessData()
+  }, [showBusinessTab, userRole])
 
   async function fetchProfile() {
     try {
@@ -256,7 +305,7 @@ export default function ProfilePage({ userType = 'customer', showNavbar = true, 
   return (
     <>
       {showNavbar && NavbarComponent && <NavbarComponent />}
-      <div className="profile-page">
+      <div className={`profile-page ${!showNavbar ? 'no-navbar' : ''}`}>
         <div className="profile-layout">
           {message && (
             <div className={`profile-alert ${message.type}`}>
@@ -290,12 +339,93 @@ export default function ProfilePage({ userType = 'customer', showNavbar = true, 
               <h2 className="profile-sidebar-name">{name || '-'}</h2>
               <p className="profile-sidebar-email">{profile?.email || '-'}</p>
 
-              <button type="button" className="profile-sidebar-tab active">
-                Profil Pribadi
-              </button>
+              {showBusinessTab ? (
+                <>
+                  <button
+                    type="button"
+                    className={`profile-sidebar-tab ${activeTab === 'personal' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('personal')}
+                  >
+                    Profil Pribadi
+                  </button>
+                  <button
+                    type="button"
+                    className={`profile-sidebar-tab ${activeTab === 'business' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('business')}
+                  >
+                    Profil Bisnis
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button type="button" className="profile-sidebar-tab active">
+                    Profil Pribadi
+                  </button>
+
+                  {userRole === 'owner' && onNavigateToBusiness && (
+                    <button
+                      type="button"
+                      className="profile-sidebar-tab"
+                      onClick={onNavigateToBusiness}
+                    >
+                      Profil Bisnis
+                    </button>
+                  )}
+                </>
+              )}
             </aside>
 
-            <form className="profile-main-panel" onSubmit={handleSave}>
+            {showBusinessTab && activeTab === 'business' ? (
+              <div className="profile-main-panel">
+                <section className="profile-main-section">
+                  <h3>Informasi Bisnis</h3>
+                  <div className="profile-field">
+                    <label htmlFor="businessName">Nama Bisnis</label>
+                    <input
+                      type="text"
+                      id="businessName"
+                      className="profile-input"
+                      value={application?.business_name || ''}
+                      readOnly
+                    />
+                  </div>
+                  <div className="profile-field">
+                    <label htmlFor="businessEmail">Email Bisnis</label>
+                    <input
+                      type="email"
+                      id="businessEmail"
+                      className="profile-input"
+                      value={application?.business_email || profile?.email || ''}
+                      readOnly
+                    />
+                  </div>
+                  <div className="profile-field">
+                    <label htmlFor="businessPhone">Nomor Telepon Operasional</label>
+                    <input
+                      type="tel"
+                      id="businessPhone"
+                      className="profile-input"
+                      value={application?.business_phone || ''}
+                      readOnly
+                    />
+                  </div>
+                  <div className="profile-field">
+                    <label htmlFor="accountNumber">Nomor Rekening</label>
+                    <input
+                      type="text"
+                      id="accountNumber"
+                      className="profile-input"
+                      value={application?.account_number || ''}
+                      readOnly
+                    />
+                  </div>
+                </section>
+                <div className="profile-submit-row">
+                  <button type="button" className="profile-save-btn">Simpan</button>
+                </div>
+              </div>
+            ) : (
+              <form className="profile-main-panel" onSubmit={handleSave}>
               <section className="profile-main-section">
                 <h3>Informasi Dasar</h3>
 
@@ -446,6 +576,7 @@ export default function ProfilePage({ userType = 'customer', showNavbar = true, 
                 </button>
               </div>
             </form>
+            )}
           </div>
         </div>
       </div>

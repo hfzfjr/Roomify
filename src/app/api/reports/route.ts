@@ -169,12 +169,160 @@ async function getCustomerNameMapSafe(supabase: Awaited<ReturnType<typeof create
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
-    const type = searchParams.get('type') // 'owner' or 'admin'
-    const user_id = searchParams.get('user_id') // for owner dashboard
+    const type = searchParams.get('type') // 'owner', 'admin', or 'reports'
+    const user_id = searchParams.get('user_id') // for owner dashboard/reports
+    const period = searchParams.get('period') // for reports: 7, 30, 90, 365
+    const room_id = searchParams.get('room_id') // for reports: specific room or 'all'
+    const search = searchParams.get('search') // for reports: search term
 
     const supabase = await createClient()
 
-    if (type === 'owner') {
+    if (type === 'reports') {
+      // Owner Reports Data
+      if (!user_id) {
+        return NextResponse.json({ success: false, message: 'user_id required for reports' }, { status: 400 })
+      }
+
+      // Map logged-in user_id to actual owner_id
+      const { data: ownerRecord, error: ownerLookupError } = await supabase
+        .from('owner')
+        .select('owner_id')
+        .eq('user_id', user_id)
+        .maybeSingle()
+
+      if (ownerLookupError) {
+        return NextResponse.json({ success: false, message: ownerLookupError.message }, { status: 500 })
+      }
+
+      if (!ownerRecord?.owner_id) {
+        return NextResponse.json({
+          success: true,
+          data: {
+            transactions: [],
+            stats: {
+              totalRevenue: 0,
+              successfulTransactions: 0,
+              failedTransactions: 0,
+              pendingTransactions: 0
+            }
+          }
+        })
+      }
+
+      const ownerId = ownerRecord.owner_id
+
+      // Get owner's rooms
+      const { data: ownerRooms, error: roomsError } = await supabase
+        .from('room')
+        .select('room_id, name')
+        .eq('owner_id', ownerId)
+
+      if (roomsError) {
+        return NextResponse.json({ success: false, message: roomsError.message }, { status: 500 })
+      }
+
+      const roomIds = ownerRooms?.map(room => room.room_id) || []
+      const filteredRoomIds = room_id && room_id !== 'all' ? [room_id] : roomIds
+
+      // Calculate date filter
+      const periodDays = period ? parseInt(period, 10) : 30
+      const startDate = new Date()
+      startDate.setDate(startDate.getDate() - periodDays)
+      startDate.setHours(0, 0, 0, 0)
+
+      // Fetch bookings with filters
+      let bookingsQuery = supabase
+        .from('booking')
+        .select(`
+          booking_id,
+          booking_date,
+          check_in,
+          check_out,
+          total_cost,
+          status,
+          customer_id,
+          room_id,
+          room (
+            room_id,
+            name
+          )
+        `)
+        .in('room_id', filteredRoomIds)
+        .gte('booking_date', startDate.toISOString())
+        .order('booking_date', { ascending: false })
+
+      const { data: bookings, error: bookingsError } = await bookingsQuery
+
+      if (bookingsError) {
+        return NextResponse.json({ success: false, message: bookingsError.message }, { status: 500 })
+      }
+
+      // Get customer names
+      const customerIds = Array.from(new Set((bookings || []).map(b => b.customer_id).filter(Boolean)))
+      const customerMap = await getCustomerNameMapSafe(supabase, customerIds)
+
+      // Build room map
+      const roomMap = new Map((ownerRooms || []).map(room => [room.room_id, room.name]))
+
+      // Format transactions
+      const transactions = (bookings || []).map(booking => {
+        const statusMap: Record<string, 'lunas' | 'batal' | 'pending'> = {
+          'completed': 'lunas',
+          'cancelled': 'batal',
+          'pending': 'pending',
+          'confirmed': 'pending'
+        }
+
+        return {
+          id: `#${booking.booking_id.toUpperCase()}`,
+          date: new Date(booking.booking_date).toLocaleDateString('id-ID', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+          }).replace(/\//g, '/'),
+          roomName: roomMap.get(booking.room_id) || 'Unknown',
+          renter: customerMap.get(booking.customer_id) || 'Unknown',
+          status: statusMap[booking.status] || 'pending'
+        }
+      })
+
+      // Apply search filter
+      let filteredTransactions = transactions
+      if (search) {
+        const searchLower = search.toLowerCase()
+        filteredTransactions = transactions.filter(t =>
+          t.id.toLowerCase().includes(searchLower) ||
+          t.roomName.toLowerCase().includes(searchLower) ||
+          t.renter.toLowerCase().includes(searchLower)
+        )
+      }
+
+      // Calculate stats
+      const successfulTransactions = transactions.filter(t => t.status === 'lunas').length
+      const failedTransactions = transactions.filter(t => t.status === 'batal').length
+      const pendingTransactions = transactions.filter(t => t.status === 'pending').length
+      const totalRevenue = transactions
+        .filter(t => t.status === 'lunas')
+        .reduce((sum, t) => {
+          const booking = bookings?.find(b => b.booking_id === t.id.replace('#', ''))
+          return sum + (booking?.total_cost || 0)
+        }, 0)
+
+      return NextResponse.json({
+        success: true,
+        data: {
+          transactions: filteredTransactions,
+          stats: {
+            totalRevenue,
+            successfulTransactions,
+            failedTransactions,
+            pendingTransactions
+          },
+          rooms: ownerRooms || []
+        }
+      })
+
+    } else if (type === 'owner') {
       // Owner Dashboard Data
       if (!user_id) {
         return NextResponse.json({ success: false, message: 'user_id required for owner dashboard' }, { status: 400 })
@@ -568,38 +716,31 @@ export async function GET(request: Request) {
         }
       }
 
-      // Get chart data (user registrations per day for last 7 days)
-      const sevenDaysAgo = new Date()
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+      // Get chart data (user registrations for weekly and monthly view)
+      const nowForAdminChart = new Date()
 
-      const { data: chartData, error: chartError } = await supabase
+      const adminSevenDaysAgo = startOfDay(new Date(nowForAdminChart))
+      adminSevenDaysAgo.setDate(adminSevenDaysAgo.getDate() - 6)
+
+      const adminSixMonthsAgo = startOfMonth(new Date(nowForAdminChart))
+      adminSixMonthsAgo.setMonth(adminSixMonthsAgo.getMonth() - 5)
+
+      const { data: adminChartData, error: adminChartError } = await supabase
         .from('users')
         .select('created_at')
-        .gte('created_at', sevenDaysAgo.toISOString())
+        .gte('created_at', adminSixMonthsAgo.toISOString())
 
-      if (chartError) {
-        console.warn('Error fetching chart data:', chartError.message)
+      if (adminChartError) {
+        console.warn('Error fetching chart data:', adminChartError.message)
       }
 
-      // Process chart data
-      const chartMap: { [key: string]: number } = {}
-      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+      const adminCheckInLike = (adminChartData || []).map(u => ({ check_in: u.created_at }))
+      const adminWeeklyData = adminCheckInLike.filter(({ check_in }) => new Date(check_in) >= adminSevenDaysAgo)
 
-      // Initialize with 0
-      days.forEach(day => chartMap[day] = 0)
-
-      // Count registrations per day
-      chartData?.forEach(user => {
-        const date = new Date(user.created_at)
-        const dayName = days[date.getDay()]
-        chartMap[dayName]++
-      })
-
-      const processedChartData = days.map(day => ({
-        label: day,
-        value: chartMap[day],
-        active: day === days[new Date().getDay()]
-      }))
+      const processedChartData = {
+        weekly: buildWeeklyCheckInChart(adminWeeklyData, nowForAdminChart),
+        monthly: buildMonthlyCheckInChart(adminCheckInLike, nowForAdminChart),
+      }
 
       return NextResponse.json({
         success: true,

@@ -60,11 +60,9 @@
   --owner-cyan-light: #b9edfa;
   --owner-cyan-dark: #129ec2;
   --owner-cyan-hover: #54d2f9;
-  --owner-cyan-tag: #0da1c5;
+  --owner-cyan-tag: #54d2f9;
   --owner-cyan-edit: #03c0e4;
   --owner-cyan-edit-bg: #d7f5fd;
-  --owner-cyan-status: #09b6dc;
-  --owner-cyan-status-bg: #e9fbff;
   --owner-gray: #9ca3af;
   --owner-gray-text: #4b5563;
   --owner-gray-light: #64748b;
@@ -88,6 +86,39 @@
   --owner-table-hover: #f8fdff;
   --owner-shadow: rgba(0, 0, 0, 0.2);
   --owner-shadow-light: rgba(0, 0, 0, 0.15);
+
+  /* Admin Dashboard Colors */
+  --admin-cyan: #00D4FF;
+  --admin-cyan-dark: #00B8D9;
+  --admin-cyan-light: #E0F9FF;
+  --admin-red: #f10f0f;
+  --admin-gray-50: #F9FAFB;
+  --admin-gray-100: #F3F4F6;
+  --admin-gray-200: #E5E7EB;
+  --admin-gray-400: #9CA3AF;
+  --admin-gray-500: #6B7280;
+  --admin-gray-700: #374151;
+  --admin-gray-900: #111827;
+  --sidebar-width: 300px;
+  --admin-list-white: #ffffff;
+  --admin-list-border: #e2e8f0;
+  --admin-list-text-dark: #0f172a;
+  --admin-list-text-gray: #64748b;
+  --admin-list-text-medium: #334155;
+  --admin-list-cyan: #0891b2;
+  --admin-list-cyan-light: #06b6d4;
+  --admin-list-cyan-bg: #e0f7fa;
+  --admin-list-bg-light: #f8fafc;
+  --admin-list-text-light: #94a3b8;
+  --admin-list-border-light: #f1f5f9;
+  --admin-list-text-darker: #1e293b;
+  --admin-list-text-muted: #475569;
+  --admin-list-border-gray: #cbd5e1;
+  --admin-list-red: #ef4444;
+  --admin-list-red-dark: #dc2626;
+  --admin-list-yellow-bg: #fef3c7;
+  --admin-list-yellow: #f59e0b;
+  --admin-list-yellow-dark: #d97706;
   
   /* Font */
   --font-family: 'Plus Jakarta Sans', sans-serif;
