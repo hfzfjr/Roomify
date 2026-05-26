@@ -453,9 +453,37 @@ export default function AddRoomPage() {
         {/* Form Sections */}
         <div className={styles.formSections}>
           {!user ? (
-            <div className={styles.sectionCard} style={{ minHeight: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <div>Memuat...</div>
-            </div>
+            <>
+              <div className={styles.skeletonCard}>
+                <div className={styles.skeletonText} />
+                <div className={styles.skeletonLine} />
+                <div className={styles.skeletonLineShort} />
+                <div className={styles.skeletonValue} />
+                <div className={styles.skeletonValue} />
+              </div>
+              <div className={styles.skeletonCard}>
+                <div className={styles.skeletonText} />
+                <div className={styles.skeletonLine} />
+                <div className={styles.skeletonLineShort} />
+                <div className={styles.skeletonValue} />
+              </div>
+              <div className={styles.skeletonCard}>
+                <div className={styles.skeletonText} />
+                <div className={styles.skeletonLine} />
+                <div className={styles.skeletonValue} />
+              </div>
+              <div className={styles.skeletonCard}>
+                <div className={styles.skeletonText} />
+                <div className={styles.skeletonLine} />
+                <div className={styles.skeletonValue} />
+                <div className={styles.skeletonValue} />
+              </div>
+              <div className={styles.skeletonCard}>
+                <div className={styles.skeletonText} />
+                <div className={styles.skeletonLine} />
+                <div className={styles.skeletonValue} />
+              </div>
+            </>
           ) : (
             <>
           {/* Informasi Dasar */}

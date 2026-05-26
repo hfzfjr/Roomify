@@ -1,0 +1,320 @@
+.container {
+  min-height: calc(100vh - 80px);
+  background: var(--background-light-blue);
+}
+
+.mainContent {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Header Card */
+.headerCard {
+  background: var(--admin-list-white);
+  border: 1px solid var(--admin-list-border);
+  border-radius: 16px;
+  padding: 28px 32px;
+  margin-bottom: 20px;
+}
+
+.headerCard h2 {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--admin-list-text-dark);
+  margin: 0 0 8px 0;
+  font-family: var(--font-family, 'Inter', sans-serif);
+}
+
+.headerCard p {
+  font-size: 14px;
+  color: var(--admin-list-text-gray);
+  margin: 0;
+  font-family: var(--font-family, 'Inter', sans-serif);
+}
+
+/* Sort Row */
+.sortRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.sortLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--admin-list-text-medium);
+  font-family: var(--font-family, 'Inter', sans-serif);
+}
+
+.sortSelectWrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.sortArrow {
+  position: absolute;
+  left: 14px;
+  color: var(--admin-list-cyan);
+  font-size: 14px;
+  font-weight: 700;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.sortSelect {
+  appearance: none;
+  -webkit-appearance: none;
+  background: var(--admin-list-white);
+  border: 1.5px solid var(--admin-list-cyan-light);
+  border-radius: 24px;
+  padding: 8px 36px 8px 34px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--admin-list-cyan);
+  cursor: pointer;
+  font-family: var(--font-family, 'Inter', sans-serif);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230891b2' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 16px;
+  outline: none;
+}
+
+.sortSelect:focus {
+  border-color: var(--admin-list-cyan);
+}
+
+/* Table Card */
+.tableCard {
+  background: var(--admin-list-white);
+  border: 1px solid var(--admin-list-border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.tableCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 28px 16px;
+  border-bottom: 1px solid var(--admin-list-border);
+}
+
+.tableCardHeader h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--admin-list-text-dark);
+  margin: 0;
+  font-family: var(--font-family, 'Inter', sans-serif);
+}
+
+/* Search */
+.searchWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.searchInput {
+  border: 1.5px solid var(--admin-list-border);
+  border-radius: 24px;
+  padding: 9px 40px 9px 18px;
+  font-size: 14px;
+  color: var(--admin-list-text-medium);
+  outline: none;
+  width: 220px;
+  background: var(--admin-list-bg-light);
+  font-family: var(--font-family, 'Inter', sans-serif);
+  transition: border-color 0.2s ease;
+}
+
+.searchInput:focus {
+  border-color: var(--admin-list-cyan-light);
+  background: var(--admin-list-white);
+}
+
+.searchInput::placeholder {
+  color: var(--admin-list-text-light);
+}
+
+.searchIcon {
+  position: absolute;
+  right: 14px;
+  font-size: 15px;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+/* Table */
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table thead tr {
+  background: transparent;
+}
+
+.table th {
+  padding: 14px 20px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--admin-list-text-light);
+  border-bottom: 1px solid var(--admin-list-border-light);
+  letter-spacing: 0.02em;
+  font-family: var(--font-family, 'Inter', sans-serif);
+}
+
+.table tbody tr {
+  border-bottom: 1px solid var(--admin-list-border-light);
+  transition: background-color 0.15s ease;
+}
+
+.table tbody tr:hover {
+  background: var(--admin-list-bg-light);
+}
+
+.table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.table td {
+  padding: 18px 20px;
+  font-size: 14px;
+  color: var(--admin-list-text-medium);
+  font-family: var(--font-family, 'Inter', sans-serif);
+}
+
+.ownerId {
+  font-weight: 600;
+  color: var(--admin-list-text-darker);
+}
+
+.ownerBusiness {
+  font-weight: 500;
+  color: var(--admin-list-text-darker);
+}
+
+.ownerName {
+  color: var(--admin-list-text-muted);
+}
+
+/* Status Badge */
+.statusBadge {
+  display: inline-block;
+  padding: 5px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1.5px solid;
+  font-family: var(--font-family, 'Inter', sans-serif);
+}
+
+.statusActive {
+  background: var(--admin-list-white);
+  border-color: var(--admin-list-cyan-light);
+  color: var(--admin-list-cyan);
+}
+
+.statusInactive {
+  background: var(--admin-list-white);
+  border-color: var(--admin-list-red);
+  color: var(--admin-list-red-dark);
+}
+
+.statusPending {
+  background: var(--admin-list-yellow-bg);
+  border-color: var(--admin-list-yellow);
+  color: var(--admin-list-yellow-dark);
+}
+
+/* Action Buttons */
+.actionButtons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.btnView,
+.btnDelete {
+  padding: 8px 18px;
+  border: none;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+  font-family: var(--font-family, 'Inter', sans-serif);
+}
+
+.btnView {
+  background: var(--admin-list-cyan-light);
+  color: var(--admin-list-white);
+}
+
+.btnView:hover {
+  background: var(--admin-list-cyan);
+  transform: translateY(-1px);
+}
+
+.btnDelete {
+  background: var(--admin-list-red);
+  color: var(--admin-list-white);
+}
+
+.btnDelete:hover {
+  background: var(--admin-list-red-dark);
+  transform: translateY(-1px);
+}
+
+/* Empty State */
+.emptyState {
+  text-align: center;
+  padding: 64px 24px;
+  color: var(--admin-list-text-light);
+  font-size: 15px;
+  font-family: var(--font-family, 'Inter', sans-serif);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .mainContent {
+    padding: 16px;
+  }
+
+  .headerCard h2 {
+    font-size: 22px;
+  }
+
+  .tableCardHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .searchInput {
+    width: 100%;
+  }
+
+  .table {
+    min-width: 600px;
+  }
+
+  .actionButtons {
+    flex-direction: column;
+  }
+
+  .btnView,
+  .btnDelete {
+    width: 100%;
+    text-align: center;
+  }
+}

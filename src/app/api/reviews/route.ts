@@ -7,9 +7,6 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
     let userId = searchParams.get('user_id')
 
-    console.log('=== REVIEWS API DEBUG ===')
-    console.log('Query param user_id:', userId)
-
     if (!userId) {
       // Fallback to supabase session if available
       const { data: { session } } = await supabase.auth.getSession()
@@ -23,7 +20,6 @@ export async function GET(request: Request) {
       console.log('No user identity found')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-    console.log('User ID:', userId)
 
     // Get owner_id dari user_id
     const { data: ownerRecord, error: ownerLookupError } = await supabase
@@ -37,15 +33,12 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: ownerLookupError.message }, { status: 500 })
     }
 
-    console.log('Owner record:', ownerRecord)
-
     if (!ownerRecord?.owner_id) {
       console.log('No owner_id found for user')
       return NextResponse.json({ reviews: [], rooms: [] })
     }
 
     const ownerId = ownerRecord.owner_id
-    console.log('Owner ID:', ownerId)
 
     // Fetch rooms milik owner
     const { data: roomsData, error: roomsError } = await supabase
@@ -60,7 +53,6 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: roomsError.message }, { status: 500 })
     }
 
-    console.log('Rooms data:', roomsData)
 
     if (!roomsData || roomsData.length === 0) {
       console.log('No rooms found for owner')
@@ -68,7 +60,6 @@ export async function GET(request: Request) {
     }
 
     const ownerRoomIds = roomsData.map((r: any) => r.room_id)
-    console.log('Owner room IDs:', ownerRoomIds)
 
     // Fetch reviews untuk room milik owner
     const { data: reviewsData, error: reviewsError } = await supabase
@@ -90,8 +81,6 @@ export async function GET(request: Request) {
       console.error('Reviews fetch error:', reviewsError)
       return NextResponse.json({ error: reviewsError.message }, { status: 500 })
     }
-
-    console.log('Reviews data:', reviewsData)
 
     const formattedReviews = (reviewsData || []).map((r: any) => {
       const roomName = Array.isArray(r.room)

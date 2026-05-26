@@ -105,9 +105,47 @@ export default function ReviewPage() {
 
       <div className={styles.body}>
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '48px', color: '#888' }}>
-            Memuat data...
-          </div>
+          <>
+            {/* Summary Card Skeleton */}
+            <div className={styles.summaryCard}>
+              <div className={styles.skeletonText} />
+              <div className={styles.summaryStats}>
+                <div className={styles.statItem}>
+                  <div className={styles.skeletonValue} />
+                </div>
+                <div className={styles.statItem}>
+                  <div className={styles.skeletonValue} />
+                </div>
+              </div>
+            </div>
+
+            {/* Sort Row Skeleton */}
+            <div className={styles.sortRow}>
+              <div className={styles.skeletonLineShort} />
+              <div className={styles.skeletonLineShort} />
+            </div>
+
+            {/* Main Grid Skeleton */}
+            <div className={styles.mainGrid}>
+              {/* Sidebar Skeleton */}
+              <div className={styles.sidebar}>
+                <div className={styles.skeletonFilterBox} />
+                <div className={styles.skeletonFilterBox} />
+              </div>
+
+              {/* Reviews Skeleton */}
+              <div className={styles.reviewsContainer}>
+                {[...Array(3)].map((_, index) => (
+                  <div key={index} className={styles.skeletonCard}>
+                    <div className={styles.skeletonLine} />
+                    <div className={styles.skeletonLineShort} />
+                    <div className={styles.skeletonLineText} />
+                    <div className={styles.skeletonLineText} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
         ) : (
           <>
             {/* Summary Card */}
