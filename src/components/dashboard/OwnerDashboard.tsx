@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import styles from './OwnerDashboard.module.css';
 import { useOwnerDashboard, useFacilityRequests } from '@/hooks/useDashboard';
 import SidebarOwner from '@/components/layout/SidebarOwner';
+import EditRoomOverlay from '@/components/ui/EditRoomOverlay';
 
 interface SessionUser {
   user_id: string;
@@ -39,6 +40,8 @@ export default function OwnerDashboard() {
   const router = useRouter();
   const pathname = usePathname();
   const [user, setUser] = useState<SessionUser | null>(null);
+  const [showEditOverlay, setShowEditOverlay] = useState(false);
+  const [editingRoomId, setEditingRoomId] = useState<string | null>(null);
 
   useEffect(() => {
     setUser(getStoredUser());
@@ -148,6 +151,23 @@ export default function OwnerDashboard() {
     }
   };
 
+  const handleEditRoom = (roomId: string) => {
+    setEditingRoomId(roomId);
+    setShowEditOverlay(true);
+  };
+
+  const handleEditOverlayConfirm = () => {
+    setShowEditOverlay(false);
+    if (editingRoomId) {
+      router.push(`/owner/rooms/edit/id?id=${editingRoomId}`);
+    }
+  };
+
+  const handleEditOverlayCancel = () => {
+    setShowEditOverlay(false);
+    setEditingRoomId(null);
+  };
+
   const formatChangeLabel = (value: number | null, fallback: string) => {
     if (value === null) {
       return fallback;
@@ -167,7 +187,8 @@ export default function OwnerDashboard() {
   }
 
   return (
-    <div className={styles.container}>
+    <>
+      <div className={styles.container}>
       {sidebarOpen && (
         <div
           className={styles.sidebarBackdrop}
@@ -455,7 +476,7 @@ export default function OwnerDashboard() {
                           <button
                             type="button"
                             className={`${styles.iconBtn} ${styles.edit}`}
-                            onClick={() => router.push(`/owner/rooms/edit/id?id=${room.room_id}`)}
+                            onClick={() => handleEditRoom(room.room_id)}
                             aria-label="Edit ruangan"
                           >
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
@@ -491,5 +512,13 @@ export default function OwnerDashboard() {
         </div>
       </main>
     </div>
+
+    {showEditOverlay && (
+      <EditRoomOverlay
+        onConfirm={handleEditOverlayConfirm}
+        onCancel={handleEditOverlayCancel}
+      />
+    )}
+    </>
   );
 }

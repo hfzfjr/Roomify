@@ -4,7 +4,8 @@ import './Navbar.css'
 import { useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { User } from '@/types'
-import SidebarCustomer from '@/components/layout/SidebarCustomer';
+import SidebarCustomer from '@/components/layout/SidebarCustomer'
+import RegisterOwnerOverlay from '@/components/ui/RegisterOwnerOverlay'
 
 type OwnerApplicationStatus = 'pending' | 'active' | 'rejected' | null
 
@@ -14,6 +15,7 @@ export default function Navbar() {
   const [ownerApplicationStatus, setOwnerApplicationStatus] = useState<OwnerApplicationStatus>(null)
   const [accountMenuOpen, setAccountMenuOpen] = useState(false)
   const [avatarImageError, setAvatarImageError] = useState(false)
+  const [showRegisterOverlay, setShowRegisterOverlay] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -108,7 +110,16 @@ export default function Navbar() {
       return
     }
 
+    setShowRegisterOverlay(true)
+  }
+
+  function handleRegisterOverlayConfirm() {
+    setShowRegisterOverlay(false)
     router.push('/customer/owner-application')
+  }
+
+  function handleRegisterOverlayCancel() {
+    setShowRegisterOverlay(false)
   }
 
   function handleSidebarNavigate(path: string) {
@@ -147,6 +158,12 @@ export default function Navbar() {
 
   return (
     <>
+      {showRegisterOverlay && (
+        <RegisterOwnerOverlay
+          onConfirm={handleRegisterOverlayConfirm}
+          onCancel={handleRegisterOverlayCancel}
+        />
+      )}
       <SidebarCustomer
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}

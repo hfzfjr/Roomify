@@ -22,6 +22,7 @@ import { id as localeId } from 'date-fns/locale'
 import { useRouter } from 'next/navigation'
 import { RoomDetail, User } from '@/types'
 import '@/styles/dashboard.css'
+import BookingOverlay from '@/components/ui/BookingOverlay'
 
 interface Props {
   room: RoomDetail
@@ -742,29 +743,10 @@ export default function BookingForm({ room }: Props) {
       )}
 
       {showConfirmModal && (
-        <div className="customer-room-modal-backdrop" role="presentation" onClick={() => setShowConfirmModal(false)}>
-          <div className="customer-room-confirm-modal" role="dialog" aria-modal="true" onClick={event => event.stopPropagation()}>
-            <div className="customer-room-confirm-icon">
-              <svg width="70" height="70" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                <path d="M3 20h6l.8-3H3z" />
-                <path d="m9.8 17 5.9-2.1c.8-.3 1.7.2 2 1 .3.8-.2 1.7-1 2l-4.7 1.7H8.9" />
-                <path d="M14 11c1.7 0 3-1.3 3-3s-1.3-3-3-3-3 1.3-3 3 1.3 3 3 3Z" />
-              </svg>
-            </div>
-
-            <h4>Booking sekarang?</h4>
-            <p>Pastikan jadwal dan detail ruangan sudah sesuai sebelum lanjut ke pembayaran</p>
-
-            <div className="customer-room-confirm-actions">
-              <button type="button" className="cancel" onClick={() => setShowConfirmModal(false)}>
-                Tidak
-              </button>
-              <button type="button" className="confirm" onClick={submitBooking} disabled={isSubmitting}>
-                {isSubmitting ? 'Memproses...' : 'Ya'}
-              </button>
-            </div>
-          </div>
-        </div>
+        <BookingOverlay
+          onConfirm={submitBooking}
+          onCancel={() => setShowConfirmModal(false)}
+        />
       )}
     </>
   )
