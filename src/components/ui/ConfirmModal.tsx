@@ -7,9 +7,9 @@ interface ModalProps {
   /** Icon component yang akan ditampilkan di dalam lingkaran */
   icon: ReactNode
   /** Warna background lingkaran icon, e.g. '#e0f7fa' */
-  iconBgColor: string
+  iconBgColor?: string
   /** Warna border lingkaran icon, e.g. '#67e8f9' */
-  iconBorderColor: string
+  iconBorderColor?: string
   /** Judul modal */
   title: string
   /** Deskripsi / pesan modal */
@@ -19,23 +19,23 @@ interface ModalProps {
   /** Label tombol confirm (default: 'Ya') */
   confirmLabel?: string
   /** Warna background tombol confirm, e.g. '#22d3ee' */
-  confirmColor: string
+  confirmColor?: string
   /** Warna background tombol confirm saat hover */
-  confirmHoverColor: string
+  confirmHoverColor?: string
   onCancel: () => void
   onConfirm: () => void
 }
 
 export default function ConfirmModal({
   icon,
-  iconBgColor,
-  iconBorderColor,
+  iconBgColor = 'var(--background-cyan)',
+  iconBorderColor = 'var(--cyan)',
   title,
   description,
   cancelLabel = 'Tidak',
   confirmLabel = 'Ya',
-  confirmColor,
-  confirmHoverColor,
+  confirmColor = 'var(--cyan)',
+  confirmHoverColor = 'var(--cyan-dark)',
   onCancel,
   onConfirm,
 }: ModalProps) {

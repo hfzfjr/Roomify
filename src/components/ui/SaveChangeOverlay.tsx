@@ -3,17 +3,17 @@
 import ConfirmModal from '@/components/ui/ConfirmModal'
 import EditRoomOverlayIcon from '@/components/icons/overlay/EditRoomOverlayIcon'
 
-interface EditRoomOverlayProps {
+interface SaveChangeOverlayProps {
   onConfirm: () => void
   onCancel: () => void
 }
 
-export default function EditRoomOverlay({ onConfirm, onCancel }: EditRoomOverlayProps) {
+export default function SaveChangeOverlay({ onConfirm, onCancel }: SaveChangeOverlayProps) {
   return (
     <ConfirmModal
       icon={<EditRoomOverlayIcon />}
-      title="Edit Ruangan?"
-      description="Tindakan ini akan mengarahkan Anda ke halaman edit ruangan"
+      title="Simpan Perubahan"
+      description="Pastikan perubahan yang dilakukan sudah benar"
       onCancel={onCancel}
       onConfirm={onConfirm}
     />

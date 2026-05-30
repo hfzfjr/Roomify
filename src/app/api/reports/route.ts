@@ -366,7 +366,7 @@ export async function GET(request: Request) {
       // Get owner's rooms
       const { data: ownerRooms, error: roomsError } = await supabase
         .from('room')
-        .select('room_id, name, capacity, price_per_hour, is_available')
+        .select('room_id, name, capacity, price_per_hour, is_available, status')
         .eq('owner_id', ownerId)
 
       if (roomsError) {

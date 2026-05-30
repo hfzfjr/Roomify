@@ -23,6 +23,7 @@ import CameraDSLR from '@/components/icons/facility/CameraDSLR'
 import MixerAudio from '@/components/icons/facility/MixerAudio'
 import SoundProofing from '@/components/icons/facility/SoundProofing'
 import VideoConference from '@/components/icons/facility/VideoConference'
+import SaveChangeOverlay from '@/components/ui/SaveChangeOverlay'
 
 interface SessionUser {
   user_id: string
@@ -107,6 +108,7 @@ function EditRoomForm() {
   const [message, setMessage] = useState<string | null>(null)
   const [showValidation, setShowValidation] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const [showOverlay, setShowOverlay] = useState(false)
 
   // Basic Info States
   const [roomName, setRoomName] = useState('')
@@ -409,13 +411,21 @@ function EditRoomForm() {
       return
     }
 
+    // Show overlay instead of immediately submitting
+    setShowOverlay(true)
+  }
+
+  const confirmSave = async () => {
+    setShowOverlay(false)
+    if (!roomId) return
+
     try {
       setSaving(true)
       setError(null)
       setMessage(null)
 
       const cleanPrice = Number(price.replace(/[^0-9]/g, ''))
-      
+
       // Separate out new photo uploads and existing photos
       const newPhotosToUpload = photos.filter(p => !p.isExisting)
       let finalUrls: string[] = []
@@ -495,9 +505,81 @@ function EditRoomForm() {
 
   if (loading) {
     return (
-      <div className={styles.page} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-        <div style={{ background: '#ffffff', padding: '32px', borderRadius: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', textAlign: 'center' }}>
-          <p style={{ margin: 0, fontWeight: 700, fontSize: '16px', color: '#101828' }}>Memuat data ruangan dari database...</p>
+      <div className={styles.container}>
+        <BackButton onClick={() => router.push('/owner/dashboard')} title="Edit Ruangan" />
+
+        <div className={styles.mainContent}>
+          <div className={styles.formSections}>
+            {/* Informasi Dasar */}
+            <div className={styles.skeletonCard}>
+              <div className={`${styles.skeleton} ${styles.skeletonText}`} />
+              <div className={`${styles.skeleton} ${styles.skeletonLine}`} />
+              <div className={`${styles.skeleton} ${styles.skeletonLineShort}`} />
+              <div className={`${styles.skeleton} ${styles.skeletonValue}`} />
+              <div className={`${styles.skeleton} ${styles.skeletonValue}`} />
+            </div>
+
+            {/* Tipe Ruangan */}
+            <div className={styles.skeletonCard}>
+              <div className={`${styles.skeleton} ${styles.skeletonText}`} />
+              <div className={`${styles.skeleton} ${styles.skeletonLine}`} />
+              <div className={`${styles.skeleton} ${styles.skeletonValue}`} />
+            </div>
+
+            {/* Fasilitas */}
+            <div className={styles.skeletonCard}>
+              <div className={`${styles.skeleton} ${styles.skeletonText}`} />
+              <div className={`${styles.skeleton} ${styles.skeletonLine}`} />
+              <div className={`${styles.skeleton} ${styles.skeletonValue}`} />
+            </div>
+
+            {/* Lokasi */}
+            <div className={styles.skeletonCard}>
+              <div className={`${styles.skeleton} ${styles.skeletonText}`} />
+              <div className={`${styles.skeleton} ${styles.skeletonLine}`} />
+              <div className={`${styles.skeleton} ${styles.skeletonValue}`} />
+              <div className={`${styles.skeleton} ${styles.skeletonValue}`} />
+            </div>
+
+            {/* Foto Ruangan */}
+            <div className={styles.skeletonCard}>
+              <div className={`${styles.skeleton} ${styles.skeletonText}`} />
+              <div className={`${styles.skeleton} ${styles.skeletonLine}`} />
+              <div className={`${styles.skeleton} ${styles.skeletonValue}`} />
+            </div>
+          </div>
+
+          <aside className={styles.sidebar}>
+            <div className={styles.sidebarCard}>
+              <div className={`${styles.skeleton} ${styles.skeletonText}`} />
+              <div className={styles.checklist}>
+                <div className={styles.checklistItem}>
+                  <div className={`${styles.skeleton} ${styles.checkNumber}`} />
+                  <div className={`${styles.skeleton} ${styles.skeletonLineShort}`} />
+                </div>
+                <div className={styles.checklistItem}>
+                  <div className={`${styles.skeleton} ${styles.checkNumber}`} />
+                  <div className={`${styles.skeleton} ${styles.skeletonLineShort}`} />
+                </div>
+                <div className={styles.checklistItem}>
+                  <div className={`${styles.skeleton} ${styles.checkNumber}`} />
+                  <div className={`${styles.skeleton} ${styles.skeletonLineShort}`} />
+                </div>
+                <div className={styles.checklistItem}>
+                  <div className={`${styles.skeleton} ${styles.checkNumber}`} />
+                  <div className={`${styles.skeleton} ${styles.skeletonLineShort}`} />
+                </div>
+                <div className={styles.checklistItem}>
+                  <div className={`${styles.skeleton} ${styles.checkNumber}`} />
+                  <div className={`${styles.skeleton} ${styles.skeletonLineShort}`} />
+                </div>
+              </div>
+              <div className={styles.actionButtons}>
+                <div className={`${styles.skeleton} ${styles.skeletonButton}`} />
+                <div className={`${styles.skeleton} ${styles.skeletonButton}`} />
+              </div>
+            </div>
+          </aside>
         </div>
       </div>
     )
@@ -983,6 +1065,14 @@ function EditRoomForm() {
           </div>
         </aside>
       </div>
+
+      {/* Save Change Overlay */}
+      {showOverlay && (
+        <SaveChangeOverlay
+          onConfirm={confirmSave}
+          onCancel={() => setShowOverlay(false)}
+        />
+      )}
     </div>
   )
 }

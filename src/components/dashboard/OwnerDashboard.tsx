@@ -6,6 +6,9 @@ import styles from './OwnerDashboard.module.css';
 import { useOwnerDashboard, useFacilityRequests } from '@/hooks/useDashboard';
 import SidebarOwner from '@/components/layout/SidebarOwner';
 import EditRoomOverlay from '@/components/ui/EditRoomOverlay';
+import RequestFacilityOverlay from '@/components/ui/RequestFacilityOverlay';
+import DeleteRoomOverlay from '@/components/ui/DeleteRoomOverlay';
+import ConfirmChangeStatusOverlay from '@/components/ui/ConfirmChangeStatusOverlay';
 
 interface SessionUser {
   user_id: string;
@@ -42,6 +45,16 @@ export default function OwnerDashboard() {
   const [user, setUser] = useState<SessionUser | null>(null);
   const [showEditOverlay, setShowEditOverlay] = useState(false);
   const [editingRoomId, setEditingRoomId] = useState<string | null>(null);
+  const [showRequestOverlay, setShowRequestOverlay] = useState(false);
+  const [acceptingRequestId, setAcceptingRequestId] = useState<string | null>(null);
+  const [showDeleteOverlay, setShowDeleteOverlay] = useState(false);
+  const [deletingRoomId, setDeletingRoomId] = useState<string | null>(null);
+  const [deletingRoomName, setDeletingRoomName] = useState<string | null>(null);
+  const [showStatusOverlay, setShowStatusOverlay] = useState(false);
+  const [togglingRoomId, setTogglingRoomId] = useState<string | null>(null);
+  const [togglingRoomName, setTogglingRoomName] = useState<string | null>(null);
+  const [togglingCurrentStatus, setTogglingCurrentStatus] = useState<string | null>(null);
+  const [togglingNewStatus, setTogglingNewStatus] = useState<string | null>(null);
 
   useEffect(() => {
     setUser(getStoredUser());
@@ -138,10 +151,24 @@ export default function OwnerDashboard() {
   };
 
   const handleAcceptRequest = async (requestId: string) => {
-    const success = await updateRequestStatus(requestId, 'approved');
-    if (success) {
-      refetch();
+    setAcceptingRequestId(requestId);
+    setShowRequestOverlay(true);
+  };
+
+  const handleRequestOverlayConfirm = async () => {
+    setShowRequestOverlay(false);
+    if (acceptingRequestId) {
+      const success = await updateRequestStatus(acceptingRequestId, 'approved');
+      if (success) {
+        refetch();
+      }
+      setAcceptingRequestId(null);
     }
+  };
+
+  const handleRequestOverlayCancel = () => {
+    setShowRequestOverlay(false);
+    setAcceptingRequestId(null);
   };
 
   const handleDeclineRequest = async (requestId: string) => {
@@ -166,6 +193,89 @@ export default function OwnerDashboard() {
   const handleEditOverlayCancel = () => {
     setShowEditOverlay(false);
     setEditingRoomId(null);
+  };
+
+  const handleDeleteRoom = (roomId: string, roomName: string) => {
+    setDeletingRoomId(roomId);
+    setDeletingRoomName(roomName);
+    setShowDeleteOverlay(true);
+  };
+
+  const handleDeleteOverlayConfirm = async () => {
+    if (!deletingRoomId) return;
+
+    try {
+      const response = await fetch(`/api/rooms/${deletingRoomId}`, {
+        method: 'DELETE',
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setShowDeleteOverlay(false);
+        setDeletingRoomId(null);
+        setDeletingRoomName(null);
+        refetch();
+      } else {
+        alert(result.message || 'Gagal menghapus ruangan');
+      }
+    } catch (error) {
+      console.error('Error deleting room:', error);
+      alert('Terjadi kesalahan saat menghapus ruangan');
+    }
+  };
+
+  const handleDeleteOverlayCancel = () => {
+    setShowDeleteOverlay(false);
+    setDeletingRoomId(null);
+    setDeletingRoomName(null);
+  };
+
+  const handleToggleRoomStatus = (roomId: string, roomName: string, currentStatus: string) => {
+    const newStatus = currentStatus === 'aktif' ? 'nonaktif' : 'aktif';
+    setTogglingRoomId(roomId);
+    setTogglingRoomName(roomName);
+    setTogglingCurrentStatus(currentStatus);
+    setTogglingNewStatus(newStatus);
+    setShowStatusOverlay(true);
+  };
+
+  const handleConfirmToggleStatus = async () => {
+    if (!togglingRoomId || !togglingNewStatus) return;
+
+    try {
+      const response = await fetch(`/api/rooms/${togglingRoomId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: togglingNewStatus }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setShowStatusOverlay(false);
+        setTogglingRoomId(null);
+        setTogglingRoomName(null);
+        setTogglingCurrentStatus(null);
+        setTogglingNewStatus(null);
+        refetch();
+      } else {
+        alert(result.message || 'Gagal mengubah status ruangan');
+      }
+    } catch (error) {
+      console.error('Error toggling room status:', error);
+      alert('Terjadi kesalahan saat mengubah status ruangan');
+    }
+  };
+
+  const handleCancelToggleStatus = () => {
+    setShowStatusOverlay(false);
+    setTogglingRoomId(null);
+    setTogglingRoomName(null);
+    setTogglingCurrentStatus(null);
+    setTogglingNewStatus(null);
   };
 
   const formatChangeLabel = (value: number | null, fallback: string) => {
@@ -430,11 +540,12 @@ export default function OwnerDashboard() {
             <table className={styles.table}>
               <thead>
                 <tr>
-                  <th>Room name</th>
-                  <th>Room ID</th>
-                  <th>Capacity</th>
-                  <th>Hourly Rate</th>
+                  <th>ID Ruangan</th>
+                  <th>Nama Ruangan</th>
+                  <th>Kapasitas</th>
+                  <th>Harga per Jam</th>
                   <th>Status</th>
+                  <th>Ketersediaan</th>
                   <th></th>
                 </tr>
               </thead>
@@ -442,10 +553,11 @@ export default function OwnerDashboard() {
                 {dashboardLoading && roomRows.length === 0 ? (
                   [...Array(6)].map((_, index) => (
                     <tr key={index}>
-                      <td><div className={styles.tableSkeletonShort} /></td>
-                      <td><div className={styles.tableSkeletonTiny} /></td>
                       <td><div className={styles.tableSkeletonTiny} /></td>
                       <td><div className={styles.tableSkeletonShort} /></td>
+                      <td><div className={styles.tableSkeletonTiny} /></td>
+                      <td><div className={styles.tableSkeletonShort} /></td>
+                      <td><div className={styles.tableSkeletonTiny} /></td>
                       <td><div className={styles.tableSkeletonTiny} /></td>
                       <td><div className={styles.tableSkeletonTiny} /></td>
                     </tr>
@@ -453,8 +565,8 @@ export default function OwnerDashboard() {
                 ) : (
                   roomRows.map((room) => (
                     <tr key={room.room_id}>
-                      <td>{room.name}</td>
                       <td>{room.room_id}</td>
+                      <td>{room.name}</td>
                       <td>
                         <span className={styles.capacityCell}>
                           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
@@ -467,8 +579,17 @@ export default function OwnerDashboard() {
                       </td>
                       <td>{formatCurrency(room.price_per_hour)}</td>
                       <td>
-                        <span className={`${styles.statusBadge} ${room.is_available ? styles.available : styles.booked}`}>
-                          {room.is_available ? 'tersedia' : 'booked'}
+                        <button
+                          type="button"
+                          className={`${styles.statusBadge} ${(room.status || 'aktif') === 'aktif' ? styles.statusActive : (room.status || 'aktif') === 'nonaktif' ? styles.statusInactive : styles.statusSuspend}`}
+                          onClick={() => handleToggleRoomStatus(room.room_id, room.name, room.status || 'aktif')}
+                        >
+                          {room.status ? room.status.charAt(0).toUpperCase() + room.status.slice(1) : 'Aktif'}
+                        </button>
+                      </td>
+                      <td>
+                        <span className={`${styles.availabilityBadge} ${room.is_available ? styles.availableBadge : styles.bookedBadge}`}>
+                          {room.is_available ? 'Tersedia' : 'Booked'}
                         </span>
                       </td>
                       <td>
@@ -487,8 +608,8 @@ export default function OwnerDashboard() {
                           <button
                             type="button"
                             className={`${styles.iconBtn} ${styles.delete}`}
+                            onClick={() => handleDeleteRoom(room.room_id, room.name)}
                             aria-label="Hapus ruangan"
-                            title="Fitur hapus segera tersedia"
                           >
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                               <path d="M3 6h18" />
@@ -517,6 +638,32 @@ export default function OwnerDashboard() {
       <EditRoomOverlay
         onConfirm={handleEditOverlayConfirm}
         onCancel={handleEditOverlayCancel}
+      />
+    )}
+
+    {showRequestOverlay && (
+      <RequestFacilityOverlay
+        onConfirm={handleRequestOverlayConfirm}
+        onCancel={handleRequestOverlayCancel}
+      />
+    )}
+
+    {showDeleteOverlay && (
+      <DeleteRoomOverlay
+        roomName={deletingRoomName || ''}
+        onConfirm={handleDeleteOverlayConfirm}
+        onCancel={handleDeleteOverlayCancel}
+      />
+    )}
+
+    {showStatusOverlay && (
+      <ConfirmChangeStatusOverlay
+        roomName={togglingRoomName || ''}
+        roomId={togglingRoomId || ''}
+        currentStatus={togglingCurrentStatus || 'aktif'}
+        newStatus={togglingNewStatus || 'nonaktif'}
+        onConfirm={handleConfirmToggleStatus}
+        onCancel={handleCancelToggleStatus}
       />
     )}
     </>

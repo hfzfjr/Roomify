@@ -22,6 +22,7 @@ import CameraDSLR from '@/components/icons/facility/CameraDSLR';
 import MixerAudio from '@/components/icons/facility/MixerAudio';
 import SoundProofing from '@/components/icons/facility/SoundProofing';
 import VideoConference from '@/components/icons/facility/VideoConference';
+import AddRoomOverlay from '@/components/ui/AddRoomOverlay';
 
 interface SessionUser {
   user_id: string;
@@ -75,6 +76,7 @@ export default function AddRoomPage() {
   const [showValidation, setShowValidation] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
+  const [showOverlay, setShowOverlay] = useState(false);
 
   // Location data
   const [regions, setRegions] = useState<Region[]>([]);
@@ -360,6 +362,12 @@ export default function AddRoomPage() {
       return;
     }
 
+    // Show overlay instead of immediately submitting
+    setShowOverlay(true);
+  };
+
+  const confirmSubmit = async () => {
+    setShowOverlay(false);
     setIsSubmitting(true);
 
     try {
@@ -370,7 +378,7 @@ export default function AddRoomPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          user_id: user.user_id,
+          user_id: user?.user_id,
           name: formData.name,
           description: formData.description,
           price_per_hour: Number(formData.price_per_hour),
@@ -401,7 +409,7 @@ export default function AddRoomPage() {
         const formDataUpload = new FormData();
         photos.forEach((photo) => formDataUpload.append('photos', photo));
         formDataUpload.append('room_id', roomId);
-        formDataUpload.append('user_id', user.user_id);
+        formDataUpload.append('user_id', user?.user_id || '');
         formDataUpload.append('room_name', formData.name);
 
         const uploadRes = await fetch('/api/upload', {
@@ -1067,6 +1075,14 @@ export default function AddRoomPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Add Room Overlay */}
+      {showOverlay && (
+        <AddRoomOverlay
+          onConfirm={confirmSubmit}
+          onCancel={() => setShowOverlay(false)}
+        />
       )}
     </div>
   );

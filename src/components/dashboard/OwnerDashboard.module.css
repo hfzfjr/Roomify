@@ -571,24 +571,61 @@
 .table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed;
 }
 
 .table th,
 .table td {
   border-bottom: 1.5px solid var(--owner-border-soft);
-  padding: 12px 16px;
+  padding: 12px 12px;
   font-size: 14px;
+}
+
+.table th:nth-child(1),
+.table td:nth-child(1) {
+  width: 15%;
+}
+
+.table th:nth-child(2),
+.table td:nth-child(2) {
+  width: 18%;
+}
+
+.table th:nth-child(3),
+.table td:nth-child(3) {
+  width: 14%;
+}
+
+.table th:nth-child(4),
+.table td:nth-child(4) {
+  width: 15%;
+}
+
+.table th:nth-child(5),
+.table td:nth-child(5) {
+  width: 12%;
+}
+
+.table th:nth-child(6),
+.table td:nth-child(6) {
+  width: 12%;
+}
+
+.table th:nth-child(7),
+.table td:nth-child(7) {
+  width: 11%;
 }
 
 .table th {
   color: var(--owner-muted);
   font-weight: 500;
-  text-align: left;
+  text-align: center;
 }
 
 .table td {
   color: var(--owner-text);
   font-weight: 500;
+  text-align: center;
 }
 
 .table tbody tr:hover {
@@ -609,26 +646,60 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 90px;
+  min-width: 55px;
   border-radius: 20px;
   border: 1.5px solid;
   padding: 4px 10px;
   font-size: 12px;
-  font-weight: 700;
   line-height: 1;
   text-transform: lowercase;
+  cursor: pointer;
 }
 
-.statusBadge.available {
+.statusBadge.statusActive {
   color: var(--owner-cyan-tag);
   border-color: var(--owner-cyan-tag);
   background: var(--owner-cyan-surface);
 }
 
-.statusBadge.booked {
-  color: var(--owner-red-status);
-  border-color: var(--owner-red-status);
-  background: var(--owner-red-status-bg);
+.statusBadge.statusInactive {
+  color: #6b7280;
+  border-color: #6b7280;
+  background: #f3f4f6;
+}
+
+.statusBadge.statusSuspend {
+  color: #ef4444;
+  border-color: #ef4444;
+  background: #fee2e2;
+}
+
+.availabilityBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.availabilityBadge.availableBadge {
+  background: var(--owner-cyan-surface);
+  color: var(--owner-cyan-tag);
+  border: 1px solid var(--owner-cyan-tag);
+}
+
+.availabilityBadge.bookedBadge {
+  background: var(--owner-booked-bg);
+  color: var(--owner-booked-text-border);
+  border: 1px solid var(--owner-booked-text-border);
+}
+
+.availabilityBadge.disabledBadge {
+  background: #9ca3af;
+  color: var(--owner-white);
 }
 
 .rowActions {
@@ -652,6 +723,11 @@
 .iconBtn.edit {
   color: var(--owner-cyan-edit);
   background: var(--owner-cyan-edit-bg);
+}
+
+.iconBtn.toggle {
+  color: #6b7280;
+  background: #f3f4f6;
 }
 
 .iconBtn.delete {

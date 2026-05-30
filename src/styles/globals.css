@@ -30,6 +30,7 @@
   --background-light-blue: #effbff;
   --cancel-button-bg: #f8cccc;
   --cancel-button-text: #db0000;
+  --cancel-button-hover: #b31b1b;
   --cancel-button-text-gray: #959597;
   --cancel-button-bg-gray: #e8e8e8;
   --cancel-button-hover-gray: #ced3d8;
@@ -69,7 +70,8 @@
   --owner-gray: #9ca3af;
   --owner-gray-text: #4b5563;
   --owner-gray-light: #64748b;
-  --owner-red-decline: #f10f0f;
+  --owner-red-decline: #db0000;
+  --owner-red-decline-hover: #b31b1b;
   --owner-red-delete: #ff1111;
   --owner-red-delete-bg: #ffd9d9;
   --owner-red-error: #dc2626;
@@ -89,6 +91,8 @@
   --owner-table-hover: #f8fdff;
   --owner-shadow: rgba(0, 0, 0, 0.2);
   --owner-shadow-light: rgba(0, 0, 0, 0.15);
+  --owner-booked-bg: #fdecce;
+  --owner-booked-text-border: #F59E0B;
 
   /* Admin Dashboard Colors */
   --admin-cyan: #00D4FF;

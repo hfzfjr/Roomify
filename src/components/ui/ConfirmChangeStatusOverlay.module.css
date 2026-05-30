@@ -1,0 +1,233 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal {
+  background: #eaf6fb;
+  border-radius: 24px;
+  max-width: 650px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 28px 20px;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.closeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.closeButton:hover {
+  background: rgba(0, 0, 0, 0.06);
+  color: #0f172a;
+}
+
+.card {
+  background: #ffffff;
+  border-radius: 16px;
+  margin: 0 20px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.roomInfo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+}
+
+.infoLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.roomName {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.roomId {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0;
+}
+
+.statusSection {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.statusLabel {
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.statusBadge {
+  padding: 6px 18px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.statusAktif {
+  background: transparent;
+  color: #06b6d4;
+  border: 2px solid #06b6d4;
+}
+
+.statusNonaktif {
+  background: transparent;
+  color: #64748b;
+  border: 2px solid #64748b;
+}
+
+.statusSuspend {
+  background: transparent;
+  color: #f59e0b;
+  border: 2px solid #f59e0b;
+}
+
+.divider {
+  height: 1px;
+  background: #f1f5f9;
+  margin: 0 24px;
+}
+
+.confirmationMessage {
+  padding: 20px 24px;
+}
+
+.messageTitle {
+  font-size: 17px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 8px 0;
+}
+
+.messageDescription {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  padding: 20px 20px 24px;
+  justify-content: flex-end;
+}
+
+.cancelButton {
+  padding: 12px 28px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  background: #e2e8f0;
+  color: #64748b;
+  transition: all 0.2s;
+}
+
+.cancelButton:hover {
+  background: #cbd5e1;
+}
+
+.confirmButton {
+  padding: 12px 28px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  color: #ffffff;
+  transition: all 0.2s;
+}
+
+.deactivateButton {
+  background: var(--owner-red-decline);
+}
+
+.deactivateButton:hover {
+  background: var(--owner-red-decline-hover);
+}
+
+.activateButton {
+  background: #10b981;
+}
+
+.activateButton:hover {
+  background: #059669;
+}
+
+.suspendButton {
+  background: #f59e0b;
+}
+
+.suspendButton:hover {
+  background: #d97706;
+}
+
+@media (max-width: 480px) {
+  .modal {
+    border-radius: 20px;
+  }
+  .card {
+    margin: 0 16px;
+  }
+  .header {
+    padding: 20px 20px 16px;
+  }
+  .roomInfo {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px 20px;
+  }
+  .actions {
+    padding: 16px 16px 20px;
+  }
+  .confirmButton,
+  .cancelButton {
+    flex: 1;
+  }
+}

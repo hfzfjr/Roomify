@@ -1,0 +1,160 @@
+.delete-room-confirm-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.delete-room-confirm-modal {
+  background: #ffffff;
+  border-radius: 24px;
+  max-width: 520px;
+  width: 100%;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+
+.delete-room-confirm-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 28px;
+}
+
+.delete-room-confirm-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.delete-room-confirm-close {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #64748b;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: background 0.2s;
+  line-height: 1;
+}
+
+.delete-room-confirm-close:hover {
+  background: #f1f5f9;
+}
+
+.delete-room-confirm-divider {
+  height: 1px;
+  background: #e2e8f0;
+}
+
+.delete-room-confirm-body {
+  padding: 24px 28px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.delete-room-confirm-description {
+  font-size: 16px;
+  color: #0f172a;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.delete-room-confirm-input {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: none;
+  background: #f1f5f9;
+  font-size: 15px;
+  color: #0f172a;
+  outline: none;
+  box-sizing: border-box;
+  transition: background 0.2s;
+}
+
+.delete-room-confirm-input::placeholder {
+  color: #94a3b8;
+}
+
+.delete-room-confirm-input:focus {
+  background: #e2e8f0;
+}
+
+.delete-room-confirm-btn {
+  width: 100%;
+  padding: 16px;
+  border-radius: 14px;
+  border: none;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: not-allowed;
+  background: var(--cancel-button-text);
+  color: #ffffff;
+  transition: background 0.2s ease;
+}
+
+.delete-room-confirm-btn.active {
+  background: var(--cancel-button-text);
+  cursor: pointer;
+}
+
+.delete-room-confirm-btn.active:hover {
+  background: var(--cancel-button-hover);
+}
+
+@media (max-width: 640px) {
+  .delete-room-confirm-modal {
+    max-width: 420px;
+  }
+  .delete-room-confirm-header {
+    padding: 20px 22px;
+  }
+  .delete-room-confirm-body {
+    padding: 20px 22px 24px;
+  }
+  .delete-room-confirm-title {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .delete-room-confirm-modal {
+    max-width: 360px;
+  }
+  .delete-room-confirm-header {
+    padding: 18px 20px;
+  }
+  .delete-room-confirm-body {
+    padding: 18px 20px 22px;
+  }
+  .delete-room-confirm-title {
+    font-size: 18px;
+  }
+  .delete-room-confirm-description {
+    font-size: 14px;
+  }
+  .delete-room-confirm-btn {
+    padding: 14px;
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 360px) {
+  .delete-room-confirm-title {
+    font-size: 16px;
+  }
+  .delete-room-confirm-description {
+    font-size: 13px;
+  }
+}

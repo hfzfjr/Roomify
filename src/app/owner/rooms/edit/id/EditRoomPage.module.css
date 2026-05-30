@@ -1,6 +1,6 @@
 .container {
   min-height: 100vh;
-  background: #e8f7fc;
+  background: var(--owner-bg);
   padding-bottom: 40px;
 }
 
@@ -86,7 +86,7 @@
 
 .checkNumber.completed {
   background: #00d4ff;
-  color: #ffffff;
+  color: transparent;
   position: relative;
 }
 
@@ -762,3 +762,56 @@
   flex-shrink: 0;
 }
 
+/* Skeleton Loading */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+}
+
+.skeletonCard {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid #e5e7eb;
+}
+
+.skeletonText {
+  height: 24px;
+  width: 40%;
+  margin-bottom: 12px;
+}
+
+.skeletonLine {
+  height: 16px;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.skeletonLineShort {
+  height: 16px;
+  width: 60%;
+  margin-bottom: 16px;
+}
+
+.skeletonValue {
+  height: 48px;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.skeletonButton {
+  height: 44px;
+  width: 100%;
+  border-radius: 10px;
+}

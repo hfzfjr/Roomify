@@ -15,6 +15,7 @@ interface OwnerDashboardData {
     capacity: number
     price_per_hour: number
     is_available: boolean
+    status: 'aktif' | 'nonaktif' | 'suspend'
   }>
   facilityRequests: Array<{
     request_id: string

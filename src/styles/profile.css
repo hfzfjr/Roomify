@@ -5,7 +5,7 @@
 .profile-page {
   min-height: 100vh;
   min-height: 100dvh;
-  background: #dff2fb;
+  background: var(--owner-bg);
   padding: 104px 20px 24px;
 }
 

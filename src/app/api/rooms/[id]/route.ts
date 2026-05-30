@@ -2,6 +2,95 @@ import { NextResponse } from 'next/server'
 import { getRoomDetail } from '@/lib/rooms'
 import { createClient } from '@/lib/supabase/server'
 
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params
+    const supabase = await createClient()
+
+    // Check if room exists
+    const { data: room } = await supabase
+      .from('room')
+      .select('room_id')
+      .eq('room_id', id)
+      .single()
+
+    if (!room) {
+      return NextResponse.json(
+        { success: false, message: 'Ruangan tidak ditemukan.' },
+        { status: 404 }
+      )
+    }
+
+    // Check if there are any bookings for this room
+    const { data: bookings, error: bookingsError } = await supabase
+      .from('booking')
+      .select('booking_id')
+      .eq('room_id', id)
+
+    if (bookingsError) {
+      console.error('Error checking bookings:', bookingsError.message)
+      return NextResponse.json(
+        { success: false, message: 'Terjadi kesalahan saat memeriksa booking ruangan.' },
+        { status: 500 }
+      )
+    }
+
+    if (bookings && bookings.length > 0) {
+      return NextResponse.json(
+        { success: false, message: 'Ruangan tidak dapat dihapus karena masih memiliki booking aktif. Silakan hapus atau batalkan booking terlebih dahulu.' },
+        { status: 400 }
+      )
+    }
+
+    // Delete room amenities
+    const { error: amenitiesError } = await supabase
+      .from('room_amenity')
+      .delete()
+      .eq('room_id', id)
+
+    if (amenitiesError) {
+      console.warn('Warning: Failed to delete room amenities:', amenitiesError.message)
+    }
+
+    // Delete room images
+    const { error: imagesError } = await supabase
+      .from('room_image')
+      .delete()
+      .eq('room_id', id)
+
+    if (imagesError) {
+      console.warn('Warning: Failed to delete room images:', imagesError.message)
+    }
+
+    // Delete the room
+    const { error: roomError } = await supabase
+      .from('room')
+      .delete()
+      .eq('room_id', id)
+
+    if (roomError) {
+      return NextResponse.json(
+        { success: false, message: 'Gagal menghapus ruangan: ' + roomError.message },
+        { status: 400 }
+      )
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: 'Ruangan berhasil dihapus.'
+    })
+  } catch (error) {
+    console.error('Room delete API error:', error)
+    return NextResponse.json(
+      { success: false, message: 'Terjadi kesalahan saat menghapus ruangan.' },
+      { status: 500 }
+    )
+  }
+}
+
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -34,22 +123,29 @@ export async function PUT(
   try {
     const { id } = await params
     const body = await request.json()
-    const { name, description, price_per_hour, capacity, facilities, type, location, region_id, photos } = body
+    const { name, description, price_per_hour, capacity, facilities, type, location, region_id, photos, status } = body
 
     const supabase = await createClient()
 
     // 1. Update room details in Supabase
+    const updateData: any = {
+      name,
+      description,
+      price_per_hour: Number(price_per_hour),
+      capacity: Number(capacity),
+      type,
+      location,
+      region_id
+    }
+
+    // Include status if provided
+    if (status) {
+      updateData.status = status
+    }
+
     const { error: roomError } = await supabase
       .from('room')
-      .update({
-        name,
-        description,
-        price_per_hour: Number(price_per_hour),
-        capacity: Number(capacity),
-        type,
-        location,
-        region_id
-      })
+      .update(updateData)
       .eq('room_id', id)
 
     if (roomError) {

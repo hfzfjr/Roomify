@@ -1,23 +1,19 @@
 'use client'
 
 import ConfirmModal from '@/components/ui/ConfirmModal'
-import RegisterOwnerIcon from '@/components/icons/overlay/RegisterOwner'
+import RegisterOwnerIcon from '@/components/icons/overlay/RegisterOwnerIcon'
 
-interface RegisterOwnerProps {
+interface RegisterOwnerOverlayProps {
   onConfirm: () => void
   onCancel: () => void
 }
 
-export default function RegisterOwner({ onConfirm, onCancel }: RegisterOwnerProps) {
+export default function RegisterOwnerOverlay({ onConfirm, onCancel }: RegisterOwnerOverlayProps) {
   return (
     <ConfirmModal
       icon={<RegisterOwnerIcon />}
-      iconBgColor="#e0f7fa"
-      iconBorderColor="#67e8f9"
       title="Daftarkan ruangan?"
       description="Anda belum memiliki akun owner. Silakan daftar terlebih dahulu untuk menambahkan ruangan"
-      confirmColor="#22d3ee"
-      confirmHoverColor="#06b6d4"
       onCancel={onCancel}
       onConfirm={onConfirm}
     />
