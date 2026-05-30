@@ -30,6 +30,9 @@
   --background-light-blue: #effbff;
   --cancel-button-bg: #f8cccc;
   --cancel-button-text: #db0000;
+  --cancel-button-text-gray: #959597;
+  --cancel-button-bg-gray: #e8e8e8;
+  --cancel-button-hover-gray: #ced3d8;
   
   /* Owner Dashboard Colors */
   --owner-cyan: #00D4FF;

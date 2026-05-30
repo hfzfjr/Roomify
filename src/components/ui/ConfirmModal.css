@@ -1,0 +1,112 @@
+.confirm-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.confirm-modal {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 24px;
+  max-width: 450px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+}
+
+.confirm-modal-logo {
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: center;
+}
+
+.confirm-modal-logo-circle {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* icon SVG size is defined inside each icon component — no override needed */
+
+.confirm-modal-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 8px 0;
+}
+
+.confirm-modal-description {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0 0 20px 0;
+  line-height: 1.5;
+}
+
+.confirm-modal-actions {
+  display: flex;
+  gap: 16px;
+}
+
+.confirm-modal-btn {
+  flex: 1;
+  padding: 14px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: background 0.2s ease;
+}
+
+.confirm-modal-btn.cancel {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.confirm-modal-btn.cancel:hover {
+  background: #e2e8f0;
+}
+
+.confirm-modal-btn.confirm {
+  color: #ffffff;
+}
+
+@media (max-width: 640px) {
+  .confirm-modal { max-width: 380px; }
+  .confirm-modal-logo-circle { width: 84px; height: 84px; }
+
+  .confirm-modal-title { font-size: 20px; }
+  .confirm-modal-actions { gap: 12px; }
+  .confirm-modal-btn { padding: 13px; font-size: 15px; }
+}
+
+@media (max-width: 480px) {
+  .confirm-modal { padding: 24px 20px 20px; max-width: 340px; }
+  .confirm-modal-logo-circle { width: 78px; height: 78px; }
+
+  .confirm-modal-title { font-size: 18px; }
+  .confirm-modal-description { font-size: 13px; }
+  .confirm-modal-actions { gap: 10px; }
+  .confirm-modal-btn { padding: 12px; font-size: 14px; }
+}
+
+@media (max-width: 360px) {
+  .confirm-modal { padding: 20px 16px 16px; max-width: 300px; }
+  .confirm-modal-logo-circle { width: 72px; height: 72px; }
+
+  .confirm-modal-title { font-size: 16px; }
+  .confirm-modal-description { font-size: 12px; }
+  .confirm-modal-actions { gap: 8px; }
+  .confirm-modal-btn { padding: 10px; font-size: 13px; }
+}

@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import styles from './SidebarOwner.module.css';
+import SwitchToCustomerOverlay from '@/components/ui/SwitchToCustomerOverlay';
 
 interface SessionUser {
   user_id: string;
@@ -22,6 +23,7 @@ export default function SidebarOwner({ user, sidebarOpen, setSidebarOpen, sideba
   const router = useRouter();
   const pathname = usePathname();
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const [showSwitchOverlay, setShowSwitchOverlay] = useState(false);
   const accountMenuRef = useRef<HTMLDivElement | null>(null);
 
   const handleProfileClick = () => {
@@ -36,6 +38,19 @@ export default function SidebarOwner({ user, sidebarOpen, setSidebarOpen, sideba
     router.push('/auth/login');
   };
 
+  const handleSwitchToCustomer = () => {
+    setShowSwitchOverlay(true);
+  };
+
+  const handleSwitchOverlayConfirm = () => {
+    setShowSwitchOverlay(false);
+    router.push('/customer/dashboard');
+  };
+
+  const handleSwitchOverlayCancel = () => {
+    setShowSwitchOverlay(false);
+  };
+
   const navItems = [
     { label: 'Dashboard', path: '/owner/dashboard', isActive: pathname === '/owner/dashboard' },
     { label: 'Profil', path: '/owner/profile', isActive: pathname.startsWith('/customer/profile') },
@@ -46,7 +61,8 @@ export default function SidebarOwner({ user, sidebarOpen, setSidebarOpen, sideba
   ];
 
   return (
-    <aside ref={sidebarRef} className={`${styles.sidebar} ${sidebarOpen ? styles.sidebarOpen : ''}`}>
+    <>
+      <aside ref={sidebarRef} className={`${styles.sidebar} ${sidebarOpen ? styles.sidebarOpen : ''}`}>
       <button
         type="button"
         className={styles.sidebarCloseBtn}
@@ -114,7 +130,7 @@ export default function SidebarOwner({ user, sidebarOpen, setSidebarOpen, sideba
         <button
           type="button"
           className={styles.sidebarCtaButton}
-          onClick={() => router.push('/customer/dashboard')}
+          onClick={handleSwitchToCustomer}
         >
           <span className={styles.sidebarCtaIcon} aria-hidden="true">
             <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
@@ -130,5 +146,13 @@ export default function SidebarOwner({ user, sidebarOpen, setSidebarOpen, sideba
         </button>
       </div>
     </aside>
+
+    {showSwitchOverlay && (
+      <SwitchToCustomerOverlay
+        onConfirm={handleSwitchOverlayConfirm}
+        onCancel={handleSwitchOverlayCancel}
+      />
+    )}
+    </>
   );
 }
