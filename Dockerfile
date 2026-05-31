@@ -12,9 +12,11 @@ FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-# Masukkan ENV Supabase Anda agar ikut ter-build (ganti dengan URL & KEY asli jika perlu)
-ENV NEXT_PUBLIC_SUPABASE_URL="https://lvcuenqrzkeclrvvkdfx.supabase.co"
-ENV NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2Y3VlbnFyemtlY2xydnZrZGZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MTQwOTAsImV4cCI6MjA5MTk5MDA5MH0.jeOqruRDaYBuUGt0J6YTGqdqvftxCTj3XPqzCv9l22U"
+# Key di-pass dari .env.local saat docker build, tidak hardcode di sini
+ARG NEXT_PUBLIC_SUPABASE_URL
+ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
+ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL
+ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY
 RUN npm run build
 
 # 3. Production runner
