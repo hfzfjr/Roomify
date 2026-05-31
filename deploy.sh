@@ -1,5 +1,7 @@
-# Load variabel dari .env.local
-export $(grep -v '^#' .env.local | xargs)
+# Load variabel dari .env.local (lebih aman, support value dengan karakter spesial)
+set -a
+source .env.local
+set +a
 
 git pull origin main
 
