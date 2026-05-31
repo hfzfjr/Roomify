@@ -663,15 +663,15 @@
 }
 
 .statusBadge.statusInactive {
-  color: #6b7280;
-  border-color: #6b7280;
-  background: #f3f4f6;
+  color: var(--cancel-button-text-gray);
+  border-color: var(--cancel-button-text-gray);
+  background: var(--cancel-button-bg-gray);
 }
 
 .statusBadge.statusSuspend {
-  color: #ef4444;
-  border-color: #ef4444;
-  background: #fee2e2;
+  color: var(--cancel-button-text);
+  border-color: var(--cancel-button-text);
+  background: var(--cancel-button-bg);
 }
 
 .availabilityBadge {
@@ -698,8 +698,9 @@
 }
 
 .availabilityBadge.disabledBadge {
-  background: #9ca3af;
-  color: var(--owner-white);
+  background: var(--cancel-button-bg-gray);
+  color: var(--cancel-button-text-gray);
+  border: 1px solid var(--cancel-button-text-gray);
 }
 
 .rowActions {

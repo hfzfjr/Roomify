@@ -29,10 +29,11 @@ export async function GET(request: Request) {
 
     const supabase = await createClient()
 
-    // First get rooms
+    // First get rooms - only fetch rooms with 'aktif' status and is_available = true
     let roomQuery = supabase
       .from('room')
-      .select('room_id, name, capacity, price_per_hour, location, region_id, is_available, description, type')
+      .select('room_id, name, capacity, price_per_hour, location, region_id, is_available, description, type, status')
+      .eq('status', 'aktif')
       .eq('is_available', true)
 
     if (type) roomQuery = roomQuery.eq('type', type)

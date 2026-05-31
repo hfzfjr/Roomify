@@ -29,6 +29,7 @@ export async function DELETE(
       .from('booking')
       .select('booking_id')
       .eq('room_id', id)
+      .in('status', ['pending', 'confirmed', 'checked_in'])
 
     if (bookingsError) {
       console.error('Error checking bookings:', bookingsError.message)
@@ -128,31 +129,29 @@ export async function PUT(
     const supabase = await createClient()
 
     // 1. Update room details in Supabase
-    const updateData: any = {
-      name,
-      description,
-      price_per_hour: Number(price_per_hour),
-      capacity: Number(capacity),
-      type,
-      location,
-      region_id
-    }
+    const updateData: Record<string, string | number> = {}
 
-    // Include status if provided
-    if (status) {
-      updateData.status = status
-    }
+    if (name !== undefined) updateData.name = name
+    if (description !== undefined) updateData.description = description
+    if (price_per_hour !== undefined) updateData.price_per_hour = Number(price_per_hour)
+    if (capacity !== undefined) updateData.capacity = Number(capacity)
+    if (type !== undefined) updateData.type = type
+    if (location !== undefined) updateData.location = location
+    if (region_id !== undefined) updateData.region_id = region_id
+    if (status !== undefined) updateData.status = status
 
-    const { error: roomError } = await supabase
-      .from('room')
-      .update(updateData)
-      .eq('room_id', id)
+    if (Object.keys(updateData).length > 0) {
+      const { error: roomError } = await supabase
+        .from('room')
+        .update(updateData)
+        .eq('room_id', id)
 
-    if (roomError) {
-      return NextResponse.json(
-        { success: false, message: 'Gagal memperbarui room: ' + roomError.message },
-        { status: 400 }
-      )
+      if (roomError) {
+        return NextResponse.json(
+          { success: false, message: 'Gagal memperbarui room: ' + roomError.message },
+          { status: 400 }
+        )
+      }
     }
 
     // 2. Synchronize amenities: Delete old ones and insert new ones

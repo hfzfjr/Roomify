@@ -24,6 +24,7 @@ export interface Room {
   is_available: boolean
   description?: string
   type?: string
+  status?: string | null
   facilities: string[]
   images?: string[]
   image_url?: string | null

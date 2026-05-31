@@ -368,6 +368,7 @@ export async function GET(request: Request) {
         .from('room')
         .select('room_id, name, capacity, price_per_hour, is_available, status')
         .eq('owner_id', ownerId)
+        .order('room_id', { ascending: true })
 
       if (roomsError) {
         return NextResponse.json({ success: false, message: roomsError.message }, { status: 500 })

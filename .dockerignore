@@ -1,0 +1,5 @@
+node_modules
+.next
+.vercel
+supabase.tar.gz
+supabase.exe

@@ -52,8 +52,13 @@ export default function CustomerRoomDetailPage({
       try {
         const response = await fetch(`/api/rooms/${id}`)
         const result = await response.json()
-        if (result.success) {
-          setRoom(result.data)
+        if (result.success && result.data) {
+          // Check if room is 'aktif' before allowing customer to view
+          if (result.data.status !== 'aktif') {
+            setError(true)
+          } else {
+            setRoom(result.data)
+          }
         } else {
           setError(true)
         }

@@ -232,7 +232,18 @@ export default function OwnerDashboard() {
   };
 
   const handleToggleRoomStatus = (roomId: string, roomName: string, currentStatus: string) => {
-    const newStatus = currentStatus === 'aktif' ? 'nonaktif' : 'aktif';
+    // Determine new status based on current status
+    let newStatus: string
+    if (currentStatus === 'suspend') {
+      // If suspended, can only activate
+      newStatus = 'aktif'
+    } else if (currentStatus === 'aktif') {
+      newStatus = 'nonaktif'
+    } else {
+      // nonaktif -> aktif
+      newStatus = 'aktif'
+    }
+    
     setTogglingRoomId(roomId);
     setTogglingRoomName(roomName);
     setTogglingCurrentStatus(currentStatus);
@@ -242,6 +253,12 @@ export default function OwnerDashboard() {
 
   const handleConfirmToggleStatus = async () => {
     if (!togglingRoomId || !togglingNewStatus) return;
+
+    // Prevent confirmation if room is suspended (button should be disabled)
+    if (togglingCurrentStatus === 'suspend') {
+      alert('Ruangan yang suspend hanya dapat diaktifkan oleh admin. Hubungi admin untuk informasi lebih lanjut.');
+      return;
+    }
 
     try {
       const response = await fetch(`/api/rooms/${togglingRoomId}`, {
@@ -287,7 +304,22 @@ export default function OwnerDashboard() {
     const trend = value >= 0 ? 'Kenaikan dari bulan sebelumnya' : 'Penurunan dari bulan sebelumnya';
     return `${percent}% ${trend}`;
   };
-
+  const getAvailabilityStatus = (status: string | undefined, isAvailable: boolean) => {
+    const normalizedStatus = (status || 'aktif').toLowerCase()
+    
+    if (normalizedStatus === 'aktif') {
+      return {
+        label: isAvailable ? 'Tersedia' : 'Booked',
+        className: isAvailable ? styles.availableBadge : styles.bookedBadge
+      }
+    }
+    
+    // For 'nonaktif' and 'suspend', show 'Disable'
+    return {
+      label: 'Disable',
+      className: styles.disabledBadge
+    }
+  };
   if (dashboardError) {
     return (
       <div className={styles.container}>
@@ -588,8 +620,8 @@ export default function OwnerDashboard() {
                         </button>
                       </td>
                       <td>
-                        <span className={`${styles.availabilityBadge} ${room.is_available ? styles.availableBadge : styles.bookedBadge}`}>
-                          {room.is_available ? 'Tersedia' : 'Booked'}
+                        <span className={`${styles.availabilityBadge} ${getAvailabilityStatus(room.status, room.is_available).className}`}>
+                          {getAvailabilityStatus(room.status, room.is_available).label}
                         </span>
                       </td>
                       <td>

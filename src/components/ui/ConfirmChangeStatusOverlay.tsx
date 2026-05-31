@@ -22,6 +22,8 @@ export default function ConfirmChangeStatusOverlay({
 }: ConfirmChangeStatusOverlayProps) {
   const isDeactivating = newStatus === 'nonaktif'
   const isSuspending = newStatus === 'suspend'
+  const isSuspended = currentStatus === 'suspend'
+  const isDisabled = isSuspended // Button disabled when room is suspended
 
   const getStatusBadgeClass = (status: string) => {
     if (status === 'aktif') return styles.statusAktif
@@ -29,29 +31,29 @@ export default function ConfirmChangeStatusOverlay({
     return styles.statusNonaktif
   }
 
-  const getStatusLabel = (status: string) => {
-    if (status === 'aktif') return 'Aktif'
-    if (status === 'suspend') return 'Suspend'
-    return 'Nonaktif'
-  }
-
   const formatStatus = (status: string) => {
     return status.charAt(0).toUpperCase() + status.slice(1)
   }
 
   const getConfirmButtonClass = () => {
+    if (isSuspended) return styles.activateButton // When suspended, show activate button styling
     if (isDeactivating) return styles.deactivateButton
     if (isSuspending) return styles.suspendButton
     return styles.activateButton
   }
 
   const getConfirmLabel = () => {
+    if (isSuspended) return 'Aktifkan' // When suspended, only option is to activate
     if (isDeactivating) return 'Nonaktifkan'
     if (isSuspending) return 'Suspend'
     return 'Aktifkan'
   }
 
   const getMessage = () => {
+    if (isSuspended) return {
+      title: 'Ruangan dalam status Suspend',
+      desc: 'Ruangan ini di-suspend oleh admin dan hanya dapat diaktifkan kembali oleh admin. Hubungi admin untuk informasi lebih lanjut tentang alasan suspend ini.',
+    }
     if (isDeactivating) return {
       title: 'Apakah Anda yakin ingin menonaktifkan ruangan ini?',
       desc: 'Ruangan ini tidak akan muncul di halaman pencarian dan customer tidak bisa melakukan pemesanan baru',
@@ -109,9 +111,10 @@ export default function ConfirmChangeStatusOverlay({
             Batal
           </button>
           <button
-            className={`${styles.confirmButton} ${getConfirmButtonClass()}`}
+            className={`${styles.confirmButton} ${getConfirmButtonClass()} ${isDisabled ? styles.disabled : ''}`}
             onClick={onConfirm}
             type="button"
+            disabled={isDisabled}
           >
             {getConfirmLabel()}
           </button>
