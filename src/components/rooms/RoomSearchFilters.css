@@ -1,0 +1,243 @@
+/* RoomSearchFilters Component Styles */
+
+.dashboard-search-row {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.sf {
+  box-sizing: border-box;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 22px 24px;
+  flex: 1;
+  min-width: 220px;
+  height: 68px;
+  background: rgba(217,217,217,0.3);
+  border: 1px solid #a1ebfa;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.sf-search-location {
+  position: relative;
+  gap: 16px;
+}
+
+.sf-location-input {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  background: none;
+  border: none;
+  outline: none;
+  font-family: var(--font-family);
+  font-weight: 300;
+  font-size: 18px;
+  color: white;
+  flex: 1 1 auto;
+  min-width: 0;
+  cursor: text;
+}
+
+.sf-location-input::placeholder {
+  color: rgba(255,255,255,0.85);
+}
+
+.sf-location-icon {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+}
+
+.sf-location-invalid {
+  border-color: rgba(255,255,255,0.95);
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.15);
+}
+
+.sf-date-field {
+  position: relative;
+  cursor: default;
+}
+
+.sf-type-field {
+  position: relative;
+  cursor: default;
+}
+
+.sf-type-trigger {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: transparent;
+  border: none;
+  border-radius: inherit;
+  cursor: pointer;
+}
+
+.sf-type-value {
+  font-family: var(--font-family);
+  font-weight: 300;
+  font-size: 18px;
+  color: rgba(255,255,255,0.85);
+  text-align: left;
+}
+
+.sf-type-value.has-value {
+  color: #ffffff;
+}
+
+.sf-date-trigger {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: transparent;
+  border: none;
+  border-radius: inherit;
+  appearance: none;
+  font-family: var(--font-family);
+  color: inherit;
+  outline: none;
+  cursor: pointer;
+}
+
+.sf-date-trigger:focus,
+.sf-date-trigger:focus-visible {
+  outline: none;
+}
+
+.sf-date-value {
+  font-family: var(--font-family);
+  font-weight: 400;
+  font-size: 18px;
+  color: rgba(255,255,255,0.85);
+  text-align: center;
+}
+
+.sf-date-value.has-value {
+  color: #ffffff;
+}
+
+.sf input[type="number"]::-webkit-inner-spin-button,
+.sf input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+  display: none;
+}
+
+.sf input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+  background: none;
+  border: none;
+  outline: none;
+  font-family: var(--font-family);
+  font-weight: 300;
+  font-size: 18px;
+  color: white;
+  flex: 1 1 auto;
+  min-width: 0;
+  cursor: text;
+}
+
+.sf input[type="number"]::placeholder {
+  color: rgba(255,255,255,0.85);
+}
+
+.sf svg {
+  flex-shrink: 0;
+  pointer-events: none;
+}
+
+.sf-search-btn {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 140px;
+  height: 68px;
+  padding: 12px 36px;
+  border: none;
+  border-radius: 12px;
+  background: var(--white);
+  color: #000000;
+  font-family: var(--font-family);
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sf-search-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px #00000026;
+}
+
+.sf-search-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .sf {
+    min-width: 180px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .sf {
+    height: 60px;
+    padding: 18px 20px;
+    font-size: 16px;
+  }
+
+  .sf-search-btn {
+    height: 60px;
+    padding: 12px 36px;
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-search-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .sf {
+    flex: 1 1 100%;
+    min-width: 100%;
+  }
+
+  .sf-search-btn {
+    width: 100%;
+    min-width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .sf {
+    height: 56px;
+    padding: 14px 16px;
+  }
+
+  .sf-search-btn {
+    height: 56px;
+    padding: 10px 20px;
+    font-size: 16px;
+  }
+}

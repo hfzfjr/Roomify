@@ -5,7 +5,9 @@ import { useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { User } from '@/types'
 import SidebarCustomer from '@/components/layout/SidebarCustomer'
-import RegisterOwnerOverlay from '@/components/ui/RegisterOwnerOverlay'
+import RegisterOwnerOverlay from '@/components/ui/overlay/RegisterOwnerOverlay'
+import Notification from '@/components/ui/notification/notification'
+import NotificationIcon from '@/components/icons/NotificationIcon'
 
 type OwnerApplicationStatus = 'pending' | 'active' | 'rejected' | null
 
@@ -16,6 +18,8 @@ export default function Navbar() {
   const [accountMenuOpen, setAccountMenuOpen] = useState(false)
   const [avatarImageError, setAvatarImageError] = useState(false)
   const [showRegisterOverlay, setShowRegisterOverlay] = useState(false)
+  const [notificationOpen, setNotificationOpen] = useState(false)
+  const [hasNewNotification, setHasNewNotification] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -59,6 +63,16 @@ export default function Navbar() {
 
         if (ownerApplicationResponse.ok && ownerApplicationResult.success) {
           setOwnerApplicationStatus(ownerApplicationResult.data?.application?.status ?? null)
+        }
+
+        // Fetch unread notifications count
+        if (parsedUser.user_id) {
+          const notificationsResponse = await fetch(`/api/notifications?user_id=${encodeURIComponent(parsedUser.user_id)}`, { cache: 'no-store' })
+          const notificationsResult = await notificationsResponse.json()
+          if (notificationsResponse.ok && notificationsResult.success && notificationsResult.notifications) {
+            const unreadCount = notificationsResult.notifications.filter((n: any) => !n.is_read).length
+            setHasNewNotification(unreadCount > 0)
+          }
         }
       } catch (error) {
         console.error('Failed to load latest navbar user state:', error)
@@ -164,6 +178,11 @@ export default function Navbar() {
           onCancel={handleRegisterOverlayCancel}
         />
       )}
+      <Notification
+        isOpen={notificationOpen}
+        onClose={() => setNotificationOpen(false)}
+        userId={user?.user_id}
+      />
       <SidebarCustomer
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
@@ -195,7 +214,14 @@ export default function Navbar() {
           <img src="/images/roomify-biru.png" alt="Roomify logo" />
         </a>
         <div className="header-right">
-          <span className="hai-text">Hai, {user?.name?.split(' ')[0] ?? 'Pengguna'}!</span>
+          <button
+            className="notification-button"
+            onClick={() => setNotificationOpen(true)}
+            aria-label="Buka notifikasi"
+          >
+            <NotificationIcon hasNotification={hasNewNotification} />
+            <span className="notification-text">Notifikasi</span>
+          </button>
           <div className="account-menu">
             <button
               type="button"

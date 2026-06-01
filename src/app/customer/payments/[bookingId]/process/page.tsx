@@ -6,7 +6,7 @@ import { formatPaymentCountdown, getRemainingPaymentMs } from '@/utils/booking'
 import { formatDate, formatTime } from '@/utils/formatDate'
 import ReceiptModal from '@/components/booking/ReceiptModal'
 import BackButton from '@/components/ui/BackButton'
-import '@/styles/rooms.css'
+import '@/styles/payment.css'
 
 type PaymentMethod = 'qris' | 'bca_va' | 'bni_va' | 'gopay'
 

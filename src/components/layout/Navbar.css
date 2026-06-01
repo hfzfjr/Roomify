@@ -57,7 +57,55 @@ header {
   font-size: 9px; color: #6B7280; letter-spacing: 1.5px; text-transform: uppercase;
 }
 
-.header-right { display: flex; align-items: center; gap: 12px; flex: 1; justify-content: flex-end; }
+.header-right { display: flex; align-items: center; gap: 32px; flex: 1; justify-content: flex-end; }
+
+.notification-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #dcf6fe;
+  border: none;
+  border-radius: 24px;
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.notification-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+  background: #BAE6FD;
+}
+
+.notification-icon-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.notification-icon-wrapper svg {
+  color: #000;
+}
+
+.notification-icon-wrapper .notification-dot {
+  width: 10px;
+  height: 10px;
+  background: #22C55E;
+  border-radius: 50%;
+  position: absolute;
+  top: -2px;
+  right: 0px;
+  border: 2px solid #E0F2FE;
+}
+
+.notification-text {
+  font-weight: 500;
+  font-size: 14px;
+  color: #000;
+  white-space: nowrap;
+}
 
 .hai-text {
   font-weight: 500; font-size: 16px; letter-spacing: -0.01em; color: #000;
@@ -112,6 +160,9 @@ header {
   .logo-wrap img { height: 42px; }
   .header-right { gap: 10px; }
   .hai-text { display: none; }
+  .notification-button { padding: 8px 12px; gap: 6px; }
+  .notification-text { font-size: 13px; }
+  .notification-button svg { width: 18px; height: 18px; }
   .avatar { width: 44px; height: 44px; font-size: 20px; }
 }
 
@@ -127,6 +178,10 @@ header {
   .logo-text-wrap strong { font-size: 16px; }
   .logo-text-wrap span { font-size: 8px; }
   .hai-text { font-size: 14px; }
+  .notification-button { padding: 8px 10px; gap: 5px; }
+  .notification-text { font-size: 12px; }
+  .notification-button svg { width: 16px; height: 16px; }
+  .notification-dot { width: 6px; height: 6px; top: 6px; right: 10px; }
   .avatar { width: 44px; height: 44px; font-size: 20px; }
 }
 
@@ -143,6 +198,10 @@ header {
   .logo-wrap { gap: 8px; }
   .logo-wrap img { height: 36px; }
   .header-right { flex: 1; justify-content: flex-end; gap: 8px; }
+  .notification-button { padding: 6px 10px; gap: 4px; }
+  .notification-text { font-size: 11px; }
+  .notification-button svg { width: 16px; height: 16px; }
+  .notification-dot { width: 6px; height: 6px; top: 5px; right: 10px; }
   .avatar { width: 40px; height: 40px; font-size: 18px; }
 }
 
@@ -158,5 +217,9 @@ header {
   .logo-text-wrap strong { font-size: 14px; }
   .logo-text-wrap span { font-size: 7px; }
   .hai-text { font-size: 12px; }
+  .notification-button { padding: 6px 8px; gap: 4px; }
+  .notification-text { font-size: 10px; }
+  .notification-button svg { width: 14px; height: 14px; }
+  .notification-dot { width: 5px; height: 5px; top: 5px; right: 8px; }
   .avatar { width: 40px; height: 40px; font-size: 18px; }
 }

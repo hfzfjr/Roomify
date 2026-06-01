@@ -198,9 +198,9 @@ export default function ProfilePage({ userType = 'customer', showNavbar = true, 
       setCurrentPassword('')
       setNewPassword('')
       setConfirmPassword('')
-      setMessage({ type: 'success', text: 'Perubahan profil berhasil disimpan.' })
+      setMessage({ type: 'success', text: 'Perubahan profil berhasil disimpan!' })
     } catch {
-      setMessage({ type: 'error', text: 'Terjadi kesalahan saat menyimpan perubahan.' })
+      setMessage({ type: 'error', text: 'Terjadi kesalahan saat menyimpan perubahan!' })
     } finally {
       setSaving(false)
     }

@@ -102,6 +102,8 @@
 .profile-sidebar-tab {
   width: 100%;
   border: none;
+  border-top: 1px solid var(--cyan);
+  border-bottom: 1px solid var(--cyan);
   background: transparent;
   color: #6b7280;
   text-align: left;
@@ -119,7 +121,7 @@
 
 .profile-sidebar-tab.active {
   background: var(--background-cyan);
-  color: var(--border-text-cyan);
+  color: var(--cyan);
 }
 
 .profile-main-panel {
@@ -216,7 +218,7 @@
   height: 50px;
   border: none;
   border-radius: 10px;
-  background: var(--border-text-cyan);
+  background: var(--cyan);
   color: #ffffff;
   font-size: 18px;
   font-weight: 700;
@@ -238,15 +240,15 @@
 }
 
 .profile-alert.success {
-  background: var(--cyan-light);
-  color: var(--cyan-dark);
-  border-color: var(--cyan);
+  background: var(--success-bg);
+  color: var(--success);
+  border-color: var(--success);
 }
 
 .profile-alert.error {
-  background: rgba(239, 68, 68, 0.1);
-  color: #b91c1c;
-  border-color: rgba(239, 68, 68, 0.2);
+  background: var(--error-bg);
+  color: var(--error);
+  border-color: var(--error);
 }
 
 .profile-shell-loading .profile-sidebar-tab {

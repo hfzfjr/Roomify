@@ -7,6 +7,7 @@ import RoomImageCarousel from '@/components/rooms/RoomImageCarousel'
 import { formatDate, formatTime } from '@/utils/formatDate'
 import { formatRupiah } from '@/utils/formatRupiah'
 import { getRoomTypeLabel } from '@/utils/room'
+import { formatFacilityName } from '@/utils/text-helper'
 import { RoomDetail } from '@/types'
 import '@/styles/rooms.css'
 import Microphone from '@/components/icons/facility/Microphone'
@@ -258,7 +259,7 @@ export default function CustomerRoomDetailPage({
                           <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round"/>
                         </svg>
                       )}
-                      {facility}
+                      {formatFacilityName(facility)}
                     </div>
                   ))
                 ) : (
