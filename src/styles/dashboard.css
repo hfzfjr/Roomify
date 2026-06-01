@@ -294,7 +294,7 @@
 }
 
 /* Responsive */
-@media (max-width: 1200px) {
+@media (max-width: 1300px) {
   .dashboard-cards-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .dashboard-search-card { max-width: 100%; padding: 32px 32px 40px; }
 }
@@ -311,7 +311,7 @@
   .dashboard-search-row { gap: 12px; flex-direction: column; align-items: stretch; }
   .dashboard-cards-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .dashboard-main { padding: 32px 16px 40px; }
-  .dashboard-search-card { width: calc(100% - 48px); padding: 28px 24px 32px; margin: -120px auto 0; border-radius: 20px; }
+  .dashboard-search-card { width: calc(100% - 64px); padding: 28px 24px 32px; margin: -120px auto 0; border-radius: 20px; }
   .dashboard-hero { height: 400px; margin-top: -94px; }
   .dashboard-hero-img { object-fit: cover; height: 100%; }
   .dashboard-sc-text { margin-bottom: 30px; }

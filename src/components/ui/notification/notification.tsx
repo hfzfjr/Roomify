@@ -2,6 +2,13 @@
 
 import { useState, useEffect } from 'react'
 import './notification.css'
+import PaymentPendingIcon from '../../icons/notification/PaymentPendingIcon'
+import PaymentSuccessIcon from '@/components/icons/notification/PaymentSuccessIcon'
+import OrderCanceledIcon from '../../icons/notification/OrderCanceledIcon'
+import FacilityApprovedIcon from '../../icons/notification/FacilityApprovedIcon'
+import FacilityRejectedIcon from '../../icons/notification/FacilityRejectedIcon'
+import ReminderIcon from '../../icons/notification/ReminderIcon'
+import FeedbackQuestionIcon from '../../icons/notification/FeedbackQuestionIcon'
 
 interface NotificationItem {
   id: string
@@ -9,6 +16,7 @@ interface NotificationItem {
   description: string
   timestamp: string
   type: 'payment' | 'facility' | 'booking' | 'reminder' | 'system'
+  status?: 'success' | 'pending' | 'approved' | 'rejected' | 'canceled'
   color: 'orange' | 'green' | 'blue' | 'red' | 'gray'
 }
 
@@ -74,7 +82,8 @@ export default function Notification({ isOpen, onClose, userId }: NotificationPr
         description: notif.description || '',
         timestamp: formatTimestamp(notif.created_at),
         type: notif.type,
-        color: getColorByType(notif.type)
+        status: notif.status,
+        color: getColorByType(notif.type, notif.status)
       }
 
       let groupLabel: string
@@ -149,10 +158,14 @@ export default function Notification({ isOpen, onClose, userId }: NotificationPr
            date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB'
   }
 
-  function getColorByType(type: string): NotificationItem['color'] {
+  function getColorByType(type: string, status?: string): NotificationItem['color'] {
     switch (type) {
-      case 'payment': return 'orange'
-      case 'facility': return 'green'
+      case 'payment':
+        if (status === 'success') return 'green'
+        return 'orange'
+      case 'facility':
+        if (status === 'rejected') return 'red'
+        return 'green'
       case 'booking': return 'blue'
       case 'reminder': return 'red'
       case 'system': return 'gray'
@@ -160,45 +173,20 @@ export default function Notification({ isOpen, onClose, userId }: NotificationPr
     }
   }
 
-  const getIcon = (type: NotificationItem['type']) => {
+  const getIcon = (type: NotificationItem['type'], status?: NotificationItem['status']) => {
     switch (type) {
       case 'payment':
-        return (
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-          </svg>
-        )
+        if (status === 'success') return <PaymentSuccessIcon />
+        return <PaymentPendingIcon />
       case 'facility':
-        return (
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-            <polyline points="22 4 12 14.01 9 11.01"/>
-          </svg>
-        )
+        if (status === 'rejected') return <FacilityRejectedIcon />
+        return <FacilityApprovedIcon />
       case 'booking':
-        return (
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-            <line x1="16" y1="2" x2="16" y2="6"/>
-            <line x1="8" y1="2" x2="8" y2="6"/>
-            <line x1="3" y1="10" x2="21" y2="10"/>
-          </svg>
-        )
+        return <OrderCanceledIcon />
       case 'reminder':
-        return (
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10"/>
-            <polyline points="12 6 12 12 16 14"/>
-          </svg>
-        )
+        return <ReminderIcon />
       case 'system':
-        return (
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10"/>
-            <line x1="12" y1="8" x2="12" y2="12"/>
-            <line x1="12" y1="16" x2="12.01" y2="16"/>
-          </svg>
-        )
+        return <FeedbackQuestionIcon />
       default:
         return null
     }
@@ -230,7 +218,7 @@ export default function Notification({ isOpen, onClose, userId }: NotificationPr
                   <div key={item.id} className={`notification-item notification-item-${item.color}`}>
                     <div className="notification-item-bar"></div>
                     <div className="notification-item-icon">
-                      {getIcon(item.type)}
+                      {getIcon(item.type, item.status)}
                     </div>
                     <div className="notification-item-content">
                       <div className="notification-item-title">{item.title}</div>
