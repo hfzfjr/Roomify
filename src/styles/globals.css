@@ -24,7 +24,9 @@
   --text-gray: #6B7280;
   --text-dark: #111827;
   --error: #EF4444;
+  --error-bg: #ffe8e8;
   --success: #10B981;
+  --success-bg: #d1fae5;
   --border-text-cyan: #54d2f9;
   --background-cyan: #ddf7ff;
   --background-light-blue: #effbff;

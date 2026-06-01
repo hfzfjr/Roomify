@@ -58,12 +58,13 @@ export default function Notification({ isOpen, onClose, userId }: NotificationPr
     const yesterday = new Date(today)
     yesterday.setDate(yesterday.getDate() - 1)
 
-    const groups: Record<string, NotificationItem[]> = {
-      'Hari ini': [],
-      'Kemarin': [],
-      'Minggu ini': [],
-      'Lebih lama': []
-    }
+    const lastWeekStart = new Date(today)
+    lastWeekStart.setDate(lastWeekStart.getDate() - 7)
+
+    const lastMonthStart = new Date(today)
+    lastMonthStart.setMonth(lastMonthStart.getMonth() - 1)
+
+    const groups: Record<string, NotificationItem[]> = {}
 
     notifications.forEach((notif) => {
       const createdDate = new Date(notif.created_at)
@@ -76,20 +77,58 @@ export default function Notification({ isOpen, onClose, userId }: NotificationPr
         color: getColorByType(notif.type)
       }
 
+      let groupLabel: string
+
       if (createdDate >= today) {
-        groups['Hari ini'].push(item)
+        groupLabel = 'Hari Ini'
       } else if (createdDate >= yesterday) {
-        groups['Kemarin'].push(item)
-      } else if (createdDate >= new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000)) {
-        groups['Minggu ini'].push(item)
+        groupLabel = 'Kemarin'
+      } else if (createdDate >= lastWeekStart) {
+        groupLabel = 'Minggu Lalu'
+      } else if (createdDate >= lastMonthStart) {
+        groupLabel = 'Bulan Lalu'
       } else {
-        groups['Lebih lama'].push(item)
+        // Format as "April 2026", "Mei 2026", etc.
+        const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
+        groupLabel = `${monthNames[createdDate.getMonth()]} ${createdDate.getFullYear()}`
       }
+
+      if (!groups[groupLabel]) {
+        groups[groupLabel] = []
+      }
+      groups[groupLabel].push(item)
     })
 
-    return Object.entries(groups)
-      .filter(([_, items]) => items.length > 0)
+    // Sort groups by date (newest first)
+    const sortedGroups = Object.entries(groups)
+      .sort(([labelA], [labelB]) => {
+        // Custom sort order
+        const order = ['Hari Ini', 'Kemarin', 'Minggu Lalu', 'Bulan Lalu']
+        const indexA = order.indexOf(labelA)
+        const indexB = order.indexOf(labelB)
+
+        if (indexA !== -1 && indexB !== -1) {
+          return indexA - indexB
+        }
+        if (indexA !== -1) return -1
+        if (indexB !== -1) return 1
+
+        // For month/year labels, sort by date descending
+        const dateA = parseMonthYear(labelA)
+        const dateB = parseMonthYear(labelB)
+        return dateB.getTime() - dateA.getTime()
+      })
       .map(([label, items]) => ({ label, items }))
+
+    return sortedGroups
+  }
+
+  function parseMonthYear(label: string): Date {
+    const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
+    const parts = label.split(' ')
+    const monthIndex = monthNames.indexOf(parts[0])
+    const year = parseInt(parts[1])
+    return new Date(year, monthIndex, 1)
   }
 
   function formatTimestamp(dateString: string): string {

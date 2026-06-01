@@ -69,7 +69,7 @@ export async function PUT(request: NextRequest) {
     if (phone_number !== undefined) updateData.phone_number = phone_number
 
     // Handle password change
-    if (current_password && new_password) {
+    if (new_password) {
       // Get current user data to verify current password
       const { data: currentUser, error: fetchError } = await supabase
         .from('users')
@@ -81,10 +81,37 @@ export async function PUT(request: NextRequest) {
         return NextResponse.json({ error: 'User not found' }, { status: 404 })
       }
 
-      // Verify current password
-      const isPasswordValid = await bcrypt.compare(current_password, currentUser.password)
-      if (!isPasswordValid) {
-        return NextResponse.json({ error: 'Current password is incorrect' }, { status: 400 })
+      console.log('Password field data for user:', user.user_id, {
+        hasPassword: !!currentUser.password,
+        passwordLength: currentUser.password?.length,
+        passwordType: typeof currentUser.password,
+        isHashed: currentUser.password?.startsWith('$2')
+      })
+
+      // If user has a password set, verify current password
+      if (currentUser.password) {
+        if (!current_password) {
+          return NextResponse.json({ error: 'Current password is required' }, { status: 400 })
+        }
+
+        let isPasswordValid = false
+
+        // Check if password is hashed (bcrypt hashes start with $2a$, $2b$, or $2y$)
+        if (currentUser.password.startsWith('$2')) {
+          // Password is hashed, use bcrypt.compare
+          isPasswordValid = await bcrypt.compare(current_password, currentUser.password)
+          console.log('Password comparison (hashed) result:', isPasswordValid, 'for user:', user.user_id)
+        } else {
+          // Password is plain text, do direct comparison
+          isPasswordValid = current_password === currentUser.password
+          console.log('Password comparison (plain text) result:', isPasswordValid, 'for user:', user.user_id)
+        }
+
+        if (!isPasswordValid) {
+          return NextResponse.json({ error: 'Current password is incorrect' }, { status: 400 })
+        }
+      } else {
+        console.log('User has no password set, allowing password change without verification')
       }
 
       // Hash new password
