@@ -1,10 +1,14 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { addMonths, eachDayOfInterval, endOfMonth, endOfWeek, format, getMonth, getYear, isSameDay, isSameMonth, parseISO, setMonth, setYear, startOfMonth, startOfWeek, subMonths } from 'date-fns'
+import { addMonths, format, parseISO, setMonth, setYear, subMonths } from 'date-fns'
 import { getLocationOptionLabel, getLocationOptionSubtitle, getLocationQueryValue, getLocationSearchText, type Location } from '@/utils/locations'
+import LocationDropdown from '@/components/ui/search/LocationDropdown'
+import TypeDropdown, { type RoomType } from '@/components/ui/search/TypeDropdown'
+import DateDropdown from '@/components/ui/search/DateDropdown'
+import './RoomSearchFilters.css'
 
-const ROOM_TYPES = [
+const ROOM_TYPES: RoomType[] = [
   { label: 'Semua tipe', value: '' },
   { label: 'Meeting Room', value: 'meeting_room' },
   { label: 'Seminar Room', value: 'seminar_room' },
@@ -13,9 +17,6 @@ const ROOM_TYPES = [
   { label: 'Coworking Space', value: 'coworking_space' },
   { label: 'Event Hall', value: 'event_hall' }
 ]
-
-const WEEK_DAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
-const MONTH_OPTIONS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
 export type RoomSearchFiltersProps = {
   initialLocationQuery?: string
@@ -76,18 +77,6 @@ export default function RoomSearchFilters({
   const selectedDate = filterDate ? parseISO(filterDate) : null
   const selectedTypeLabel = ROOM_TYPES.find(roomType => roomType.value === filterType)?.label ?? ROOM_TYPES[0].label
 
-  const calendarDays = useMemo(
-    () => eachDayOfInterval({
-      start: startOfWeek(startOfMonth(calendarMonth), { weekStartsOn: 0 }),
-      end: endOfWeek(endOfMonth(calendarMonth), { weekStartsOn: 0 })
-    }),
-    [calendarMonth]
-  )
-
-  const yearOptions = useMemo(
-    () => Array.from({ length: 11 }, (_, index) => getYear(new Date()) - 5 + index),
-    []
-  )
 
   useEffect(() => {
     let isMounted = true
@@ -200,7 +189,7 @@ export default function RoomSearchFilters({
 
   return (
     <div className="dashboard-search-row">
-      <div className={`sf sf-search-location${isLocationSelectionPending ? ' sf-location-invalid' : ''}`}>
+      <div className={`sf${isLocationSelectionPending ? ' sf-location-invalid' : ''}`}>
         <input
           id="filterLocation"
           ref={filterLocationRef}
@@ -230,45 +219,16 @@ export default function RoomSearchFilters({
         </svg>
 
         {showLocationDropdown && (
-          <div className="sf-location-dropdown">
-            {filteredLocations.map((loc, idx) => (
-              <button
-                type="button"
-                key={`${loc.city}-${loc.province}-${idx}`}
-                className={`sf-location-option${filterLocation?.id === loc.id ? ' selected' : ''}`}
-                onMouseDown={e => e.preventDefault()}
-                onClick={() => handleLocationSelect(loc)}
-                style={{
-                  borderBottom: idx < filteredLocations.length - 1 ? '1px solid rgba(15, 23, 42, 0.08)' : 'none'
-                }}
-              >
-                <span className="sf-location-option-icon" aria-hidden="true">
-                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-                    <path
-                      d="M3 21h18M5 21V8.5A1.5 1.5 0 0 1 6.5 7H10v14M10 21V4.5A1.5 1.5 0 0 1 11.5 3h6A1.5 1.5 0 0 1 19 4.5V21"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path d="M8 11h.01M8 15h.01M13 7h.01M13 11h.01M16 7h.01M16 11h.01M13 15h.01M16 15h.01" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
-                  </svg>
-                </span>
-                <span className="sf-location-option-copy">
-                  <span className="sf-location-option-title">{getLocationOptionLabel(loc)}</span>
-                  <span className="sf-location-option-subtitle">{getLocationOptionSubtitle(loc)}</span>
-                </span>
-              </button>
-            ))}
-
-            {filteredLocations.length === 0 && (
-              <div className="sf-location-empty">Provinsi atau kota tidak ditemukan</div>
-            )}
-          </div>
+          <LocationDropdown
+            locations={locations}
+            filteredLocations={filteredLocations}
+            selectedLocation={filterLocation}
+            onSelect={handleLocationSelect}
+          />
         )}
       </div>
 
-      <div className="sf sf-type-field" ref={typeDropdownRef}>
+      <div className="sf" ref={typeDropdownRef}>
         <button
           id="filterType"
           ref={filterTypeRef}
@@ -283,28 +243,18 @@ export default function RoomSearchFilters({
         </button>
 
         {showTypeDropdown && (
-          <div className="sf-type-dropdown">
-            {ROOM_TYPES.map((roomType, index) => (
-              <button
-                key={roomType.value || 'all'}
-                type="button"
-                className={`sf-type-option${filterType === roomType.value ? ' selected' : ''}`}
-                onClick={() => {
-                  setFilterType(roomType.value)
-                  setShowTypeDropdown(false)
-                }}
-                style={{
-                  borderBottom: index < ROOM_TYPES.length - 1 ? '1px solid rgba(15, 23, 42, 0.08)' : 'none'
-                }}
-              >
-                {roomType.label}
-              </button>
-            ))}
-          </div>
+          <TypeDropdown
+            roomTypes={ROOM_TYPES}
+            selectedType={filterType}
+            onSelect={(type) => {
+              setFilterType(type)
+              setShowTypeDropdown(false)
+            }}
+          />
         )}
       </div>
 
-      <div className="sf sf-date-field" ref={datePickerRef}>
+      <div className="sf" ref={datePickerRef}>
         <button
           id="filterDate"
           ref={filterDateRef}
@@ -328,109 +278,17 @@ export default function RoomSearchFilters({
         </button>
 
         {showDatePicker && (
-          <div className="sf-date-dropdown">
-            <div className="sf-date-toolbar">
-              <button type="button" className="sf-date-nav" onClick={() => setCalendarMonth(prev => subMonths(prev, 1))} aria-label="Previous month">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="m15 18-6-6 6-6" />
-                </svg>
-              </button>
-
-              <div className="sf-date-selects">
-                <div className="sf-date-menu-wrap">
-                  <button
-                    type="button"
-                    className={`sf-date-select-button${activeDateMenu === 'month' ? ' open' : ''}`}
-                    onClick={() => setActiveDateMenu(prev => (prev === 'month' ? null : 'month'))}
-                  >
-                    <span>{MONTH_OPTIONS[getMonth(calendarMonth)]}</span>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6" />
-                    </svg>
-                  </button>
-
-                  {activeDateMenu === 'month' && (
-                    <div className="sf-date-menu">
-                      {MONTH_OPTIONS.map((monthLabel, index) => (
-                        <button
-                          key={monthLabel}
-                          type="button"
-                          className={`sf-date-menu-option${getMonth(calendarMonth) === index ? ' selected' : ''}`}
-                          onClick={() => {
-                            setCalendarMonth(prev => setMonth(prev, index))
-                            setActiveDateMenu(null)
-                          }}
-                        >
-                          {monthLabel}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <div className="sf-date-menu-wrap">
-                  <button
-                    type="button"
-                    className={`sf-date-select-button${activeDateMenu === 'year' ? ' open' : ''}`}
-                    onClick={() => setActiveDateMenu(prev => (prev === 'year' ? null : 'year'))}
-                  >
-                    <span>{getYear(calendarMonth)}</span>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6" />
-                    </svg>
-                  </button>
-
-                  {activeDateMenu === 'year' && (
-                    <div className="sf-date-menu sf-date-menu-years">
-                      {yearOptions.map(year => (
-                        <button
-                          key={year}
-                          type="button"
-                          className={`sf-date-menu-option${getYear(calendarMonth) === year ? ' selected' : ''}`}
-                          onClick={() => {
-                            setCalendarMonth(prev => setYear(prev, year))
-                            setActiveDateMenu(null)
-                          }}
-                        >
-                          {year}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <button type="button" className="sf-date-nav" onClick={() => setCalendarMonth(prev => addMonths(prev, 1))} aria-label="Next month">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="m9 18 6-6-6-6" />
-                </svg>
-              </button>
-            </div>
-
-            <div className="sf-date-weekdays">
-              {WEEK_DAYS.map(day => (
-                <span key={day}>{day}</span>
-              ))}
-            </div>
-
-            <div className="sf-date-grid">
-              {calendarDays.map(day => {
-                const isCurrentMonth = isSameMonth(day, calendarMonth)
-                const isSelectedDay = selectedDate ? isSameDay(day, selectedDate) : false
-
-                return (
-                  <button
-                    key={day.toISOString()}
-                    type="button"
-                    className={`sf-date-cell${isSelectedDay ? ' selected' : ''}${isCurrentMonth ? '' : ' muted'}`}
-                    onClick={() => handleDateSelect(day)}
-                  >
-                    {format(day, 'd')}
-                  </button>
-                )
-              })}
-            </div>
-          </div>
+          <DateDropdown
+            selectedDate={selectedDate}
+            calendarMonth={calendarMonth}
+            onDateSelect={handleDateSelect}
+            onMonthChange={(month) => setCalendarMonth(prev => setMonth(prev, month))}
+            onYearChange={(year) => setCalendarMonth(prev => setYear(prev, year))}
+            onPreviousMonth={() => setCalendarMonth(prev => subMonths(prev, 1))}
+            onNextMonth={() => setCalendarMonth(prev => addMonths(prev, 1))}
+            onActiveDateMenuChange={setActiveDateMenu}
+            activeDateMenu={activeDateMenu}
+          />
         )}
       </div>
 
@@ -453,7 +311,7 @@ export default function RoomSearchFilters({
 
       <button
         type="button"
-        className="dashboard-btn-cari"
+        className="sf-search-btn"
         onClick={handleSearch}
         disabled={isLocationSelectionPending}
       >

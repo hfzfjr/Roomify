@@ -391,7 +391,7 @@ export async function POST(request: Request) {
       type: type.trim(),
       region_id: region_id.trim(),
       is_available: true,
-      status: 'active',
+      status: 'aktif',
       created_at: now,
     })
 

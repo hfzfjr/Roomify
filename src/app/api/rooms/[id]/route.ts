@@ -165,16 +165,34 @@ export async function PUT(
     }
 
     if (Array.isArray(facilities) && facilities.length > 0) {
-      // Generate UUID for amenity_id and insert with amenity name
+      // Generate amenity_id in format a-[i] with minimum 2 digits
+      // Get the starting number once
+      const { data: amenities, error: amenityError } = await supabase
+        .from('room_amenity')
+        .select('amenity_id')
+        .like('amenity_id', 'a-%')
+        .order('amenity_id', { ascending: false })
+        .limit(1)
+
+      let nextNumber = 1
+      if (!amenityError && amenities && amenities.length > 0) {
+        const lastId = amenities[0].amenity_id
+        const match = lastId.match(/a-(\d+)/)
+        if (match) {
+          nextNumber = parseInt(match[1], 10) + 1
+        }
+      }
+
+      // Generate unique IDs by incrementing locally
+      const amenityInserts = facilities.map((fac: string, index: number) => ({
+        amenity_id: `a-${String(nextNumber + index).padStart(2, '0')}`,
+        room_id: id,
+        amenity: fac
+      }))
+      
       const { error: insertError } = await supabase
         .from('room_amenity')
-        .insert(
-          facilities.map((fac: string) => ({
-            amenity_id: crypto.randomUUID(),
-            room_id: id,
-            amenity: fac
-          }))
-        )
+        .insert(amenityInserts)
 
       if (insertError) {
         return NextResponse.json(

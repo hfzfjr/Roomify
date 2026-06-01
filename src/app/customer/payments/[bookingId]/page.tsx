@@ -4,8 +4,9 @@ import { useEffect, useMemo, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { formatDate, formatTime } from '@/utils/formatDate'
 import { formatRupiah } from '@/utils/formatRupiah'
+import { formatFacilityName } from '@/utils/text-helper'
 import BackButton from '@/components/ui/BackButton'
-import '@/styles/rooms.css'
+import '@/styles/payment.css'
 import Microphone from '@/components/icons/facility/Microphone'
 import Whiteboard from '@/components/icons/facility/Whiteboard'
 import SoundSystem from '@/components/icons/facility/SoundSystem'
@@ -399,7 +400,7 @@ export default function CustomerPaymentDetailPage() {
                     detail?.room?.facilities?.map(facility => (
                       <span key={facility}>
                         <FacilityIcon facility={facility} />
-                        {facility}
+                        {formatFacilityName(facility)}
                       </span>
                     ))
                   ) : (

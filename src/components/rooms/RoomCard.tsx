@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { Room } from '@/types'
 import { formatRupiah } from '@/utils/formatRupiah'
+import { formatFacilityName } from '@/utils/text-helper'
 import '@/styles/rooms.css'
 
 interface Props {
@@ -14,7 +15,7 @@ const PLACEHOLDER = '/images/gambarRuangan.png'
 export default function RoomCard({ room }: Props) {
   const router = useRouter()
   const image = room.images?.[0] ?? PLACEHOLDER
-  const facilitiesPreview = room.facilities?.slice(0, 3).join(', ') ?? '-'
+  const facilitiesPreview = room.facilities?.slice(0, 3).map(f => formatFacilityName(f)).join(', ') ?? '-'
 
   return (
     <div className="room-card">

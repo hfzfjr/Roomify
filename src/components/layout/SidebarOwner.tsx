@@ -3,7 +3,7 @@
 import { useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import styles from './SidebarOwner.module.css';
-import SwitchToCustomerOverlay from '@/components/ui/SwitchToCustomerOverlay';
+import SwitchToCustomerOverlay from '@/components/ui/overlay/SwitchToCustomerOverlay';
 
 interface SessionUser {
   user_id: string;

@@ -1,0 +1,258 @@
+.sf-date-trigger {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: transparent;
+  border: none;
+  border-radius: inherit;
+  appearance: none;
+  font-family: var(--font-family);
+  color: inherit;
+  outline: none;
+  cursor: pointer;
+}
+
+.sf-date-trigger:focus,
+.sf-date-trigger:focus-visible {
+  outline: none;
+}
+
+.sf-date-value {
+  font-family: var(--font-family);
+  font-weight: 400;
+  font-size: 18px;
+  color: rgba(255,255,255,0.85);
+  text-align: center;
+}
+
+.sf-date-value.has-value {
+  color: #ffffff;
+}
+
+.sf-date-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  z-index: 20;
+  width: min(340px, calc(100vw - 32px));
+  padding: 16px 16px 14px;
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 18px 40px rgba(15,23,42,0.16);
+}
+
+.sf-date-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.sf-date-nav {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: #111827;
+  cursor: pointer;
+  border-radius: 999px;
+}
+
+.sf-date-nav:hover {
+  background: rgba(15,23,42,0.06);
+}
+
+.sf-date-selects {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  justify-content: center;
+}
+
+.sf-date-menu-wrap {
+  position: relative;
+}
+
+.sf-date-select-button {
+  min-width: 96px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 12px;
+  height: 38px;
+  background: #dff2fb;
+  border: none;
+  border-radius: 12px;
+  font-family: var(--font-family);
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+  cursor: pointer;
+}
+
+.sf-date-select-button.open {
+  background: #cbeefe;
+}
+
+.sf-date-select-button svg {
+  color: #111827;
+}
+
+.sf-date-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 100%;
+  padding: 6px;
+  background: #ffffff;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 14px;
+  box-shadow: 0 14px 28px rgba(15,23,42,0.12);
+}
+
+.sf-date-menu-years {
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.sf-date-menu-option {
+  width: 100%;
+  border: none;
+  background: transparent;
+  border-radius: 10px;
+  padding: 8px 10px;
+  text-align: left;
+  font-family: var(--font-family);
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
+  cursor: pointer;
+}
+
+.sf-date-menu-option:hover,
+.sf-date-menu-option.selected {
+  background: #dff2fb;
+}
+
+.sf-date-weekdays,
+.sf-date-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.sf-date-weekdays {
+  margin-bottom: 4px;
+}
+
+.sf-date-weekdays span {
+  text-align: center;
+  font-family: var(--font-family);
+  font-size: 12px;
+  font-weight: 700;
+  color: #6b7280;
+  padding: 6px 0;
+}
+
+.sf-date-grid {
+  gap: 4px;
+}
+
+.sf-date-cell {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  font-family: var(--font-family);
+  font-size: 15px;
+  font-weight: 600;
+  color: #111827;
+  cursor: pointer;
+}
+
+.sf-date-cell:hover {
+  background: rgba(15,23,42,0.06);
+}
+
+.sf-date-cell:disabled {
+  color: #d1d5db;
+  cursor: not-allowed;
+  background: transparent;
+}
+
+.sf-date-cell.selected {
+  background: #56c6f0;
+  color: #ffffff;
+}
+
+.sf-date-cell.muted {
+  color: #b8bec7;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .sf-date-dropdown {
+    width: 100%;
+    padding: 20px 18px 18px;
+    border-radius: 22px;
+  }
+  .sf-date-select-button {
+    min-width: 104px;
+    height: 40px;
+    padding: 0 12px;
+    font-size: 15px;
+  }
+  .sf-date-menu-option {
+    font-size: 14px;
+    border-radius: 14px;
+    padding: 8px 10px;
+  }
+  .sf-date-weekdays span {
+    font-size: 14px;
+  }
+  .sf-date-cell {
+    font-size: 16px;
+    border-radius: 14px;
+  }
+}
+
+@media (max-width: 768px) {
+  .sf-date-dropdown {
+    position: fixed;
+    left: 16px;
+    right: 16px;
+    width: calc(100% - 32px);
+    max-width: none;
+    border-radius: 12px;
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .sf-date-menu {
+    padding: 6px;
+    border-radius: 14px;
+  }
+  .sf-date-menu-option {
+    padding: 8px 10px;
+    font-size: 13px;
+    border-radius: 10px;
+  }
+  .sf-date-weekdays span {
+    font-size: 13px;
+  }
+  .sf-date-cell {
+    font-size: 15px;
+    border-radius: 12px;
+  }
+}

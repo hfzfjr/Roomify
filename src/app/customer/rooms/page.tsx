@@ -2,25 +2,14 @@
 
 import { useEffect, useRef, useState, useMemo, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { addMonths, eachDayOfInterval, endOfMonth, endOfWeek, format, getMonth, getYear, isSameDay, isSameMonth, parseISO, setMonth, setYear, startOfMonth, startOfWeek, subMonths } from 'date-fns'
 import { Room } from '@/types'
 import { formatRupiah } from '@/utils/formatRupiah'
+import { formatFacilityName } from '@/utils/text-helper'
 import { getLocationOptionLabel, getLocationOptionSubtitle, getLocationQueryValue, getLocationSearchText, type Location } from '@/utils/locations'
 import BackButton from '@/components/ui/BackButton'
+import RoomSearchFilters from '@/components/rooms/RoomSearchFilters'
 import '@/styles/rooms.css'
 
-const ROOM_TYPES = [
-  { label: 'Semua tipe', value: '' },
-  { label: 'Meeting Room', value: 'meeting_room' },
-  { label: 'Seminar Room', value: 'seminar_room' },
-  { label: 'Studio', value: 'studio' },
-  { label: 'Training Room', value: 'training_room' },
-  { label: 'Coworking Space', value: 'coworking_space' },
-  { label: 'Event Hall', value: 'event_hall' }
-]
-
-const WEEK_DAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
-const MONTH_OPTIONS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
 const RATING_OPTIONS = [
   { label: '5', value: 5 },
@@ -53,20 +42,6 @@ function CustomerRooms() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   
-  // Search states (pending - belum diterapkan)
-  const [locations, setLocations] = useState<Location[]>([])
-  const [loadingLoc, setLoadingLoc] = useState(true)
-  const [pendingLocation, setPendingLocation] = useState<Location | null>(null)
-  const [pendingLocationQuery, setPendingLocationQuery] = useState(urlLocation || '')
-  const [filteredLocations, setFilteredLocations] = useState<Location[]>([])
-  const [showLocationDropdown, setShowLocationDropdown] = useState(false)
-  const [pendingType, setPendingType] = useState(urlType || '')
-  const [pendingDate, setPendingDate] = useState(urlDate || '')
-  const [pendingCapacity, setPendingCapacity] = useState(urlCapacity || '')
-  const [showTypeDropdown, setShowTypeDropdown] = useState(false)
-  const [showDatePicker, setShowDatePicker] = useState(false)
-  const [calendarMonth, setCalendarMonth] = useState(() => new Date())
-  const [activeDateMenu, setActiveDateMenu] = useState<'month' | 'year' | null>(null)
   
   // Applied search states (sudah diterapkan setelah klik cari)
   // Initialize with URL params if provided (mark as already applied)
@@ -86,13 +61,9 @@ function CustomerRooms() {
   // Flag to track if URL params have been applied (only apply once on load)
   const [urlParamsApplied, setUrlParamsApplied] = useState(false)
   
-  // Refs
-  const filterLocationRef = useRef<HTMLInputElement | null>(null)
-  const filterTypeRef = useRef<HTMLButtonElement | null>(null)
-  const typeDropdownRef = useRef<HTMLDivElement | null>(null)
-  const filterDateRef = useRef<HTMLButtonElement | null>(null)
-  const datePickerRef = useRef<HTMLDivElement | null>(null)
-  const filterCapacityRef = useRef<HTMLInputElement | null>(null)
+  // Store location text for text-based filtering
+  const [appliedLocationText, setAppliedLocationText] = useState(urlLocation || '')
+  
   const sortDropdownRef = useRef<HTMLDivElement | null>(null)
   const sortTriggerRef = useRef<HTMLButtonElement | null>(null)
   
@@ -102,21 +73,6 @@ function CustomerRooms() {
   // Show all facilities toggle
   const [showAllFacilities, setShowAllFacilities] = useState(false)
   
-  const normalizedLocationQuery = pendingLocationQuery.trim().toLowerCase()
-  const selectedLocationLabel = pendingLocation ? getLocationOptionLabel(pendingLocation).trim().toLowerCase() : ''
-  const isLocationSelected = Boolean(
-    pendingLocation &&
-    normalizedLocationQuery.length > 0 &&
-    selectedLocationLabel === normalizedLocationQuery
-  )
-  const isLocationSelectionPending = normalizedLocationQuery.length > 0 && !isLocationSelected
-  const selectedDate = pendingDate ? parseISO(pendingDate) : null
-  const selectedTypeLabel = ROOM_TYPES.find(roomType => roomType.value === pendingType)?.label ?? ROOM_TYPES[0].label
-  const calendarDays = eachDayOfInterval({
-    start: startOfWeek(startOfMonth(calendarMonth), { weekStartsOn: 0 }),
-    end: endOfWeek(endOfMonth(calendarMonth), { weekStartsOn: 0 })
-  })
-  const yearOptions = Array.from({ length: 11 }, (_, index) => getYear(new Date()) - 5 + index)
 
   // Dynamic facility options from available rooms
   const dynamicFacilityOptions = useMemo(() => {
@@ -125,7 +81,7 @@ function CustomerRooms() {
       room.facilities?.forEach(f => allFacilities.add(f))
     })
     const facilities = Array.from(allFacilities).sort()
-    return [{ label: 'Semua', value: '' }, ...facilities.map(f => ({ label: f, value: f }))]
+    return [{ label: 'Semua', value: '' }, ...facilities.map(f => ({ label: formatFacilityName(f), value: f }))]
   }, [rooms])
 
   // Load initial data
@@ -139,19 +95,11 @@ function CustomerRooms() {
 
     async function loadData() {
       try {
-        const [locationsRes, roomsRes] = await Promise.all([
-          fetch('/api/locations'),
-          fetch('/api/rooms')
-        ])
-
-        const [locationsJson, roomsJson] = await Promise.all([
-          locationsRes.json(),
-          roomsRes.json()
-        ])
+        const roomsRes = await fetch('/api/rooms')
+        const roomsJson = await roomsRes.json()
 
         if (!isMounted) return
 
-        if (locationsJson.success) setLocations(locationsJson.data ?? [])
         if (roomsJson.success) {
           const roomsData = roomsJson.data ?? []
           setRooms(roomsData)
@@ -167,7 +115,6 @@ function CustomerRooms() {
       } finally {
         if (isMounted) {
           setLoading(false)
-          setLoadingLoc(false)
         }
       }
     }
@@ -212,63 +159,11 @@ function CustomerRooms() {
     }
   }, [router])
 
-  // Handle URL location params after locations are loaded (only once on initial load)
-  useEffect(() => {
-    if (locations.length === 0 || urlParamsApplied) return
-    
-    // Find location based on URL params
-    let matchedLocation: Location | null = null
-    
-    if (urlProvinceId) {
-      matchedLocation = locations.find(loc => 
-        loc.type === 'province' && String(loc.id) === urlProvinceId
-      ) || null
-    } else if (urlRegionId) {
-      matchedLocation = locations.find(loc => 
-        loc.type === 'region' && String(loc.id) === urlRegionId
-      ) || null
-    }
-    
-    if (matchedLocation) {
-      setPendingLocation(matchedLocation)
-      setPendingLocationQuery(getLocationOptionLabel(matchedLocation))
-      setAppliedLocation(matchedLocation)
-    } else if (urlLocation) {
-      // If text location provided but no match found, set as text query
-      setPendingLocationQuery(urlLocation)
-      // Set appliedLocation to null explicitly to trigger text-based filtering
-      setAppliedLocation(null)
-    }
-    
-    // Mark URL params as applied so this effect doesn't run again
-    setUrlParamsApplied(true)
-  }, [locations, urlProvinceId, urlRegionId, urlLocation, urlParamsApplied])
 
-  // Click outside handler
+  // Click outside handler for sort dropdown
   useEffect(() => {
     function handlePointerDown(event: MouseEvent) {
       const target = event.target as Node
-
-      if (
-        showTypeDropdown &&
-        typeDropdownRef.current &&
-        !typeDropdownRef.current.contains(target) &&
-        filterTypeRef.current &&
-        !filterTypeRef.current.contains(target)
-      ) {
-        setShowTypeDropdown(false)
-      }
-
-      if (
-        showDatePicker &&
-        datePickerRef.current &&
-        !datePickerRef.current.contains(target) &&
-        filterDateRef.current &&
-        !filterDateRef.current.contains(target)
-      ) {
-        setShowDatePicker(false)
-        setActiveDateMenu(null)
-      }
       
       if (
         showSortDropdown &&
@@ -283,7 +178,7 @@ function CustomerRooms() {
 
     document.addEventListener('mousedown', handlePointerDown)
     return () => document.removeEventListener('mousedown', handlePointerDown)
-  }, [showDatePicker, showTypeDropdown, showSortDropdown])
+  }, [showSortDropdown])
 
   // Apply filters and sorting (hanya sidebar filters dan sort)
   useEffect(() => {
@@ -309,11 +204,11 @@ function CustomerRooms() {
         const provinceMatch = room.province?.toLowerCase().includes(locationQuery) || false
         return locationMatch || regionMatch || provinceMatch
       })
-    } else if (appliedLocation === null && pendingLocationQuery && pendingLocationQuery.trim()) {
+    } else if (appliedLocation === null && appliedLocationText && appliedLocationText.trim()) {
       // Jika user mengetik tapi tidak memilih dari dropdown, 
       // dan sudah klik Cari (appliedLocation === null secara eksplisit)
       // Filter berdasarkan text query di location, region, dan province
-      const query = pendingLocationQuery.toLowerCase()
+      const query = appliedLocationText.toLowerCase()
       result = result.filter(room => {
         const locationMatch = room.location.toLowerCase().includes(query)
         const regionMatch = room.region?.toLowerCase().includes(query) || false
@@ -361,43 +256,8 @@ function CustomerRooms() {
     }
 
     setFilteredRooms(result)
-  }, [rooms, appliedType, appliedCapacity, appliedLocation, selectedFacilities, selectedRatings, sortBy, roomRatings])
+  }, [rooms, appliedType, appliedCapacity, appliedLocation, appliedLocationText, selectedFacilities, selectedRatings, sortBy, roomRatings])
 
-  function handleLocationSearch(query: string) {
-    setPendingLocationQuery(query)
-    const normalizedQuery = query.trim().toLowerCase()
-
-    if (normalizedQuery.length === 0) {
-      setFilteredLocations([])
-      setPendingLocation(null)
-      setShowLocationDropdown(false)
-      return
-    }
-
-    if (!pendingLocation || selectedLocationLabel !== normalizedQuery) {
-      setPendingLocation(null)
-    }
-
-    const filtered = locations.filter(loc =>
-      getLocationSearchText(loc).includes(normalizedQuery)
-    )
-
-    setFilteredLocations(filtered)
-    setShowLocationDropdown(true)
-  }
-
-  function handleLocationSelect(location: Location) {
-    setPendingLocation(location)
-    setPendingLocationQuery(getLocationOptionLabel(location))
-    setShowLocationDropdown(false)
-  }
-
-  function handleDateSelect(date: Date) {
-    setPendingDate(format(date, 'yyyy-MM-dd'))
-    setCalendarMonth(date)
-    setShowDatePicker(false)
-    setActiveDateMenu(null)
-  }
 
   function handleFacilityToggle(value: string) {
     if (value === '') {
@@ -422,17 +282,13 @@ function CustomerRooms() {
     )
   }
 
-  function handleSearch() {
-    // Apply pending search states
-    setAppliedLocation(pendingLocation)
-    setAppliedType(pendingType)
-    setAppliedDate(pendingDate)
-    setAppliedCapacity(pendingCapacity)
-    
-    // Jika ada text query tapi tidak ada location yang dipilih, biarkan untuk filter fallback
-    if (!pendingLocation && pendingLocationQuery) {
-      // Filter akan diterapkan di useEffect dengan fallback logic
-    }
+  function handleSearch(filters: { location?: Location | null; locationText: string; type: string; date: string; capacity: string }) {
+    // Apply search states from RoomSearchFilters component
+    setAppliedLocation(filters.location ?? null)
+    setAppliedLocationText(filters.locationText)
+    setAppliedType(filters.type)
+    setAppliedDate(filters.date)
+    setAppliedCapacity(filters.capacity)
   }
 
   const renderSearchBar = () => (
@@ -443,266 +299,14 @@ function CustomerRooms() {
           <div className="rooms-sc-circle rooms-sc-c2" />
           <div className="rooms-sc-circle rooms-sc-c3" />
         </div>
-
-        <div className="rooms-search-row">
-          <div className={`sf sf-search-location${isLocationSelectionPending ? ' sf-location-invalid' : ''}`}>
-            <input
-              id="filterLocation"
-              ref={filterLocationRef}
-              type="text"
-              className="sf-location-input"
-              placeholder="Lokasi"
-              value={pendingLocationQuery}
-              disabled={loadingLoc}
-              onChange={e => handleLocationSearch(e.target.value)}
-              onFocus={() => {
-                if (pendingLocationQuery.trim().length > 0 && filteredLocations.length > 0) {
-                  setShowLocationDropdown(true)
-                }
-              }}
-              onBlur={() => setTimeout(() => setShowLocationDropdown(false), 200)}
-              aria-invalid={isLocationSelectionPending}
-            />
-            <svg className="sf-location-icon" width="42" height="42" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path
-                d="M12 21c-3.2-3.2-6-6.49-6-10a6 6 0 1 1 12 0c0 3.51-2.8 6.8-6 10Z"
-                stroke="white"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <circle cx="12" cy="11" r="2.5" stroke="white" strokeWidth="1.8" />
-            </svg>
-            {showLocationDropdown && (
-              <div className="sf-location-dropdown">
-                {filteredLocations.map((loc, idx) => (
-                  <button
-                    type="button"
-                    key={`${loc.city}-${loc.province}-${idx}`}
-                    className={`sf-location-option${pendingLocation?.id === loc.id ? ' selected' : ''}`}
-                    onMouseDown={e => e.preventDefault()}
-                    onClick={() => handleLocationSelect(loc)}
-                    style={{
-                      borderBottom: idx < filteredLocations.length - 1 ? '1px solid rgba(15, 23, 42, 0.08)' : 'none'
-                    }}
-                  >
-                    <span className="sf-location-option-icon" aria-hidden="true">
-                      <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-                        <path
-                          d="M3 21h18M5 21V8.5A1.5 1.5 0 0 1 6.5 7H10v14M10 21V4.5A1.5 1.5 0 0 1 11.5 3h6A1.5 1.5 0 0 1 19 4.5V21"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                        <path d="M8 11h.01M8 15h.01M13 7h.01M13 11h.01M16 7h.01M16 11h.01M13 15h.01M16 15h.01" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
-                      </svg>
-                    </span>
-                    <span className="sf-location-option-copy">
-                      <span className="sf-location-option-title">{getLocationOptionLabel(loc)}</span>
-                      <span className="sf-location-option-subtitle">{getLocationOptionSubtitle(loc)}</span>
-                    </span>
-                  </button>
-                ))}
-                {filteredLocations.length === 0 && (
-                  <div className="sf-location-empty">Provinsi atau kota tidak ditemukan</div>
-                )}
-              </div>
-            )}
-          </div>
-          
-          <div className="sf sf-type-field" ref={typeDropdownRef}>
-            <button
-              id="filterType"
-              ref={filterTypeRef}
-              type="button"
-              className="sf-type-trigger"
-              onClick={() => setShowTypeDropdown(prev => !prev)}
-            >
-              <span className={`sf-type-value${pendingType ? ' has-value' : ''}`}>{selectedTypeLabel}</span>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.4">
-                <path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6" />
-              </svg>
-            </button>
-
-            {showTypeDropdown && (
-              <div className="sf-type-dropdown">
-                {ROOM_TYPES.map((roomType, index) => (
-                  <button
-                    key={roomType.value || 'all'}
-                    type="button"
-                    className={`sf-type-option${pendingType === roomType.value ? ' selected' : ''}`}
-                    onClick={() => {
-                      setPendingType(roomType.value)
-                      setShowTypeDropdown(false)
-                    }}
-                    style={{
-                      borderBottom: index < ROOM_TYPES.length - 1 ? '1px solid rgba(15, 23, 42, 0.08)' : 'none'
-                    }}
-                  >
-                    {roomType.label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="sf sf-date-field" ref={datePickerRef}>
-            <button
-              id="filterDate"
-              ref={filterDateRef}
-              type="button"
-              className="sf-date-trigger"
-              onClick={() => {
-                setCalendarMonth(selectedDate ?? new Date())
-                setActiveDateMenu(null)
-                setShowDatePicker(prev => !prev)
-              }}
-            >
-              <span className={`sf-date-value${pendingDate ? ' has-value' : ''}`}>
-                {selectedDate ? format(selectedDate, 'dd/MM/yyyy') : 'Pilih tanggal'}
-              </span>
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-                <rect x="3" y="4" width="18" height="18" rx="2" />
-                <line x1="16" y1="2" x2="16" y2="6" />
-                <line x1="8" y1="2" x2="8" y2="6" />
-                <line x1="3" y1="10" x2="21" y2="10" />
-              </svg>
-            </button>
-
-            {showDatePicker && (
-              <div className="sf-date-dropdown">
-                <div className="sf-date-toolbar">
-                  <button type="button" className="sf-date-nav" onClick={() => setCalendarMonth(prev => subMonths(prev, 1))} aria-label="Previous month">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="m15 18-6-6 6-6" />
-                    </svg>
-                  </button>
-
-                  <div className="sf-date-selects">
-                    <div className="sf-date-menu-wrap">
-                      <button
-                        type="button"
-                        className={`sf-date-select-button${activeDateMenu === 'month' ? ' open' : ''}`}
-                        onClick={() => setActiveDateMenu(prev => (prev === 'month' ? null : 'month'))}
-                      >
-                        <span>{MONTH_OPTIONS[getMonth(calendarMonth)]}</span>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6" />
-                        </svg>
-                      </button>
-
-                      {activeDateMenu === 'month' && (
-                        <div className="sf-date-menu">
-                          {MONTH_OPTIONS.map((monthLabel, index) => (
-                            <button
-                              key={monthLabel}
-                              type="button"
-                              className={`sf-date-menu-option${getMonth(calendarMonth) === index ? ' selected' : ''}`}
-                              onClick={() => {
-                                setCalendarMonth(prev => setMonth(prev, index))
-                                setActiveDateMenu(null)
-                              }}
-                            >
-                              {monthLabel}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="sf-date-menu-wrap">
-                      <button
-                        type="button"
-                        className={`sf-date-select-button${activeDateMenu === 'year' ? ' open' : ''}`}
-                        onClick={() => setActiveDateMenu(prev => (prev === 'year' ? null : 'year'))}
-                      >
-                        <span>{getYear(calendarMonth)}</span>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6" />
-                        </svg>
-                      </button>
-
-                      {activeDateMenu === 'year' && (
-                        <div className="sf-date-menu sf-date-menu-years">
-                          {yearOptions.map(year => (
-                            <button
-                              key={year}
-                              type="button"
-                              className={`sf-date-menu-option${getYear(calendarMonth) === year ? ' selected' : ''}`}
-                              onClick={() => {
-                                setCalendarMonth(prev => setYear(prev, year))
-                                setActiveDateMenu(null)
-                              }}
-                            >
-                              {year}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <button type="button" className="sf-date-nav" onClick={() => setCalendarMonth(prev => addMonths(prev, 1))} aria-label="Next month">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="m9 18 6-6-6-6" />
-                    </svg>
-                  </button>
-                </div>
-
-                <div className="sf-date-weekdays">
-                  {WEEK_DAYS.map(day => (
-                    <span key={day}>{day}</span>
-                  ))}
-                </div>
-
-                <div className="sf-date-grid">
-                  {calendarDays.map(day => {
-                    const isCurrentMonth = isSameMonth(day, calendarMonth)
-                    const isSelectedDay = selectedDate ? isSameDay(day, selectedDate) : false
-
-                    return (
-                      <button
-                        key={day.toISOString()}
-                        type="button"
-                        className={`sf-date-cell${isSelectedDay ? ' selected' : ''}${isCurrentMonth ? '' : ' muted'}`}
-                        onClick={() => handleDateSelect(day)}
-                      >
-                        {format(day, 'd')}
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
-
-          <label className="sf" htmlFor="filterCapacity" onClick={() => filterCapacityRef.current?.focus()}>
-            <input
-              id="filterCapacity"
-              ref={filterCapacityRef}
-              type="number"
-              min="1"
-              value={pendingCapacity}
-              onChange={e => setPendingCapacity(e.target.value)}
-              placeholder="Kapasitas"
-            />
-            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
-              <circle cx="9" cy="7" r="4" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M23 21v-2a4 4 0 00-3-3.87m-4-12a4 4 0 010 7.75" />
-            </svg>
-          </label>
-
-          <button
-            type="button"
-            className="rooms-btn-cari"
-            onClick={handleSearch}
-            disabled={isLocationSelectionPending}
-          >
-            Cari
-          </button>
-        </div>
+        <RoomSearchFilters
+          initialLocationQuery={urlLocation || ''}
+          initialType={appliedType}
+          initialDate={appliedDate}
+          initialCapacity={appliedCapacity}
+          searchButtonLabel="Cari"
+          onSearch={handleSearch}
+        />
       </div>
     </div>
   )

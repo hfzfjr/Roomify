@@ -22,7 +22,8 @@ import { id as localeId } from 'date-fns/locale'
 import { useRouter } from 'next/navigation'
 import { RoomDetail, User } from '@/types'
 import '@/styles/dashboard.css'
-import BookingOverlay from '@/components/ui/BookingOverlay'
+import BookingOverlay from '@/components/ui/overlay/BookingOverlay'
+import DateDropdown from '@/components/ui/search/DateDropdown'
 
 interface Props {
   room: RoomDetail
@@ -36,8 +37,6 @@ type ActiveBooking = {
   checkOut: Date
 }
 
-const WEEK_DAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
-const MONTH_OPTIONS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 const BOOKING_TIME_STEP_MINUTES = 60
 const MAX_START_TIME = '22:00'
 const MAX_END_TIME = '23:00'
@@ -174,11 +173,6 @@ export default function BookingForm({ room }: Props) {
   const minimumTodayStartTime = formatTimeValue(nextAvailableSlot)
   const minimumStartTime = bookingDate === todayValue ? minimumTodayStartTime : '00:00'
   const minimumEndTime = startTime ? getMinimumEndTime(startTime) : getMinimumEndTime(minimumStartTime)
-  const calendarDays = eachDayOfInterval({
-    start: startOfWeek(startOfMonth(calendarMonth), { weekStartsOn: 0 }),
-    end: endOfWeek(endOfMonth(calendarMonth), { weekStartsOn: 0 })
-  })
-  const yearOptions = Array.from({ length: 11 }, (_, index) => getYear(new Date()) - 5 + index)
 
   const activeBookings = useMemo<ActiveBooking[]>(() => {
     return (room.upcoming_bookings ?? [])
@@ -509,111 +503,17 @@ export default function BookingForm({ room }: Props) {
             </button>
 
             {showDatePicker && (
-              <div className="sf-date-dropdown room-booking-date-dropdown">
-                <div className="sf-date-toolbar">
-                  <button type="button" className="sf-date-nav" onClick={() => setCalendarMonth(prev => subMonths(prev, 1))} aria-label="Previous month">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="m15 18-6-6 6-6" />
-                    </svg>
-                  </button>
-
-                  <div className="sf-date-selects">
-                    <div className="sf-date-menu-wrap">
-                      <button
-                        type="button"
-                        className={`sf-date-select-button${activeDateMenu === 'month' ? ' open' : ''}`}
-                        onClick={() => setActiveDateMenu(prev => (prev === 'month' ? null : 'month'))}
-                      >
-                        <span>{MONTH_OPTIONS[getMonth(calendarMonth)]}</span>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6" />
-                        </svg>
-                      </button>
-
-                      {activeDateMenu === 'month' && (
-                        <div className="sf-date-menu">
-                          {MONTH_OPTIONS.map((monthLabel, index) => (
-                            <button
-                              key={monthLabel}
-                              type="button"
-                              className={`sf-date-menu-option${getMonth(calendarMonth) === index ? ' selected' : ''}`}
-                              onClick={() => {
-                                setCalendarMonth(prev => setMonth(prev, index))
-                                setActiveDateMenu(null)
-                              }}
-                            >
-                              {monthLabel}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="sf-date-menu-wrap">
-                      <button
-                        type="button"
-                        className={`sf-date-select-button${activeDateMenu === 'year' ? ' open' : ''}`}
-                        onClick={() => setActiveDateMenu(prev => (prev === 'year' ? null : 'year'))}
-                      >
-                        <span>{getYear(calendarMonth)}</span>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6" />
-                        </svg>
-                      </button>
-
-                      {activeDateMenu === 'year' && (
-                        <div className="sf-date-menu sf-date-menu-years">
-                          {yearOptions.map(year => (
-                            <button
-                              key={year}
-                              type="button"
-                              className={`sf-date-menu-option${getYear(calendarMonth) === year ? ' selected' : ''}`}
-                              onClick={() => {
-                                setCalendarMonth(prev => setYear(prev, year))
-                                setActiveDateMenu(null)
-                              }}
-                            >
-                              {year}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <button type="button" className="sf-date-nav" onClick={() => setCalendarMonth(prev => addMonths(prev, 1))} aria-label="Next month">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="m9 18 6-6-6-6" />
-                    </svg>
-                  </button>
-                </div>
-
-                <div className="sf-date-weekdays">
-                  {WEEK_DAYS.map(day => (
-                    <span key={day}>{day}</span>
-                  ))}
-                </div>
-
-                <div className="sf-date-grid">
-                  {calendarDays.map(day => {
-                    const isCurrentMonth = isSameMonth(day, calendarMonth)
-                    const isSelectedDay = selectedDate ? isSameDay(day, selectedDate) : false
-                    const isPastDay = day < getStartOfToday()
-
-                    return (
-                      <button
-                        key={day.toISOString()}
-                        type="button"
-                        className={`sf-date-cell${isSelectedDay ? ' selected' : ''}${isCurrentMonth ? '' : ' muted'}`}
-                        onClick={() => handleDateSelect(day)}
-                        disabled={isPastDay}
-                      >
-                        {format(day, 'd')}
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
+              <DateDropdown
+                selectedDate={selectedDate}
+                calendarMonth={calendarMonth}
+                onDateSelect={handleDateSelect}
+                onMonthChange={(month) => setCalendarMonth(prev => setMonth(prev, month))}
+                onYearChange={(year) => setCalendarMonth(prev => setYear(prev, year))}
+                onPreviousMonth={() => setCalendarMonth(prev => subMonths(prev, 1))}
+                onNextMonth={() => setCalendarMonth(prev => addMonths(prev, 1))}
+                onActiveDateMenuChange={setActiveDateMenu}
+                activeDateMenu={activeDateMenu}
+              />
             )}
           </div>
 
