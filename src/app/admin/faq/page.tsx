@@ -1,7 +1,10 @@
 "use client"
 
+import { useState, useRef } from 'react'
 import FaqPage from '@/components/faq/FaqPage'
-import BackButton from '@/components/ui/BackButton'
+import SidebarAdmin from '@/components/layout/SidebarAdmin'
+import { useUser } from '@/hooks/useUser'
+import styles from './page.module.css'
 
 const adminCategories = [
   {
@@ -122,10 +125,48 @@ const adminCategories = [
 ]
 
 export default function AdminFaqPage() {
+  const user = useUser()
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const sidebarRef = useRef<HTMLElement | null>(null)
+
   return (
-    <>
-      <BackButton href="/admin/dashboard" title="FAQ Admin" />
-      <FaqPage categories={adminCategories} />
-    </>
+    <div className={styles.pageLayout}>
+      {/* Sidebar */}
+      <SidebarAdmin
+        user={user}
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+        sidebarRef={sidebarRef}
+      />
+
+      {/* Sidebar overlay for mobile */}
+      {sidebarOpen && (
+        <div className={styles.sidebarOverlay} onClick={() => setSidebarOpen(false)} />
+      )}
+
+      {/* Main area */}
+      <div className={styles.mainArea}>
+        {/* Mobile topbar */}
+        <div className={styles.mobileTopbar}>
+          <button
+            type="button"
+            className={styles.hamburger}
+            onClick={() => setSidebarOpen(true)}
+            aria-label="Buka menu"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+              <line x1="3" y1="6" x2="21" y2="6" strokeLinecap="round" />
+              <line x1="3" y1="12" x2="21" y2="12" strokeLinecap="round" />
+              <line x1="3" y1="18" x2="21" y2="18" strokeLinecap="round" />
+            </svg>
+          </button>
+          <span className={styles.mobileTopbarTitle}>FAQ Admin</span>
+        </div>
+
+        <div className={styles.container}>
+          <FaqPage categories={adminCategories} />
+        </div>
+      </div>
+    </div>
   )
 }

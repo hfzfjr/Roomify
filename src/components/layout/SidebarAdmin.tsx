@@ -33,7 +33,7 @@ export default function SidebarAdmin({ user, sidebarOpen, setSidebarOpen, sideba
   const navItems = useMemo(
     () => [
       { label: 'Dashboard', path: '/admin/dashboard', isActive: pathname === '/admin/dashboard' },
-      { label: 'Lihat Laporan', path: '/admin/reports', isActive: pathname.startsWith('/admin/reports') },
+      { label: 'Laporan Kendala', path: '/admin/reports', isActive: pathname.startsWith('/admin/reports') },
       { label: 'Daftar Owner', path: '/admin/list-owner', isActive: pathname.startsWith('/admin/list-owner') },
       { label: 'Daftar Ruangan', path: '/admin/list-room', isActive: pathname.startsWith('/admin/list-room') },
       { label: 'Bantuan', path: '/admin/faq', isActive: pathname === '/admin/faq' },

@@ -1,0 +1,191 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.overlayContent {
+  background-color: var(--admin-cyan-light, #e8f7f9);
+  border-radius: 16px;
+  max-width: 560px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---- Header ---- */
+.overlayHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 28px;
+  background: white;
+  border-radius: 16px 16px 0 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.overlayTitle {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.closeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  border-radius: 6px;
+  color: #6b7280;
+  transition: background-color 0.2s;
+}
+
+.closeButton:hover {
+  background-color: #f3f4f6;
+  color: #1f2937;
+}
+
+/* ---- Body ---- */
+.overlayBody {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ---- Info Card ---- */
+.infoCard {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border-color, #e5e7eb);
+}
+
+.infoCardHeader {
+  padding: 18px 24px 14px;
+  border-bottom: 1px solid var(--border-color, #e5e7eb);
+}
+
+.infoCardTitle {
+  margin: 0 0 4px 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.infoCardSubtitle {
+  margin: 0;
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+.detailList {
+  padding: 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.detailRow {
+  display: flex;
+  align-items: baseline;
+  gap: 0;
+}
+
+.detailLabel {
+  font-size: 15px;
+  font-weight: 500;
+  color: #111827;
+  min-width: 180px;
+  flex-shrink: 0;
+}
+
+.detailSeparator {
+  font-size: 15px;
+  color: #6b7280;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.detailValue {
+  font-size: 15px;
+  color: #374151;
+  font-weight: 400;
+  flex: 1;
+}
+
+/* ---- Status Badge ---- */
+.statusBadge {
+  padding: 6px 18px;
+  border-radius: 24px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.statusActive {
+  background-color: var(--admin-list-cyan-bg);
+  color: var(--admin-list-cyan);
+  border: 1.5px solid var(--admin-list-cyan);
+}
+
+.statusInactive {
+  background-color: var(--admin-list-red-bg);
+  color: var(--admin-list-red);
+  border: 1.5px solid var(--admin-list-red);
+}
+
+/* ---- Footer ---- */
+.overlayFooter {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  padding: 16px 24px 20px;
+}
+
+.actionButton {
+  padding: 12px 32px;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.15s;
+}
+
+.actionButton:hover {
+  transform: translateY(-1px);
+}
+
+.btnPrimary {
+  background-color: var(--admin-cyan);
+  color: var(--admin-list-white);
+}
+
+.btnPrimary:hover {
+  background-color: var(--admin-cyan-dark);
+}
+
+.btnSecondary {
+  background-color: var(--admin-red);
+  color: var(--admin-list-white);
+}
+
+.btnSecondary:hover {
+  background-color: var(--admin-red-hover);
+}

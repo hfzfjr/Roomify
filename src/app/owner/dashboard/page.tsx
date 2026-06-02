@@ -1,5 +1,703 @@
-import OwnerDashboard from '@/components/dashboard/OwnerDashboard';
+'use client';
+
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import styles from './page.module.css';
+import { useOwnerDashboard, useFacilityRequests } from '@/hooks/useDashboard';
+import SidebarOwner from '@/components/layout/SidebarOwner';
+import EditRoomOverlay from '@/components/ui/overlay/EditRoomOverlay';
+import RequestFacilityOverlay from '@/components/ui/overlay/RequestFacilityOverlay';
+import DeleteRoomOverlay from '@/components/ui/overlay/DeleteRoomOverlay';
+import ConfirmChangeStatusOverlay from '@/components/ui/overlay/ConfirmChangeStatusOverlay';
+
+interface SessionUser {
+  user_id: string;
+  name: string;
+  email: string;
+  role: string;
+}
+
+type ChartPeriod = 'weekly' | 'monthly';
+
+function getStoredUser(): SessionUser | null {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  const userData = localStorage.getItem('user');
+  if (!userData) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(userData) as SessionUser;
+  } catch {
+    return null;
+  }
+}
+
+const chartVisualHeight = 272;
+const chartSkeletonHeights = [84, 156, 112, 178, 136, 98, 164];
 
 export default function OwnerDashboardPage() {
-  return <OwnerDashboard />;
+  const router = useRouter();
+  const pathname = usePathname();
+  const [user, setUser] = useState<SessionUser | null>(null);
+  const [showEditOverlay, setShowEditOverlay] = useState(false);
+  const [editingRoomId, setEditingRoomId] = useState<string | null>(null);
+  const [showRequestOverlay, setShowRequestOverlay] = useState(false);
+  const [acceptingRequestId, setAcceptingRequestId] = useState<string | null>(null);
+  const [showDeleteOverlay, setShowDeleteOverlay] = useState(false);
+  const [deletingRoomId, setDeletingRoomId] = useState<string | null>(null);
+  const [deletingRoomName, setDeletingRoomName] = useState<string | null>(null);
+  const [showStatusOverlay, setShowStatusOverlay] = useState(false);
+  const [togglingRoomId, setTogglingRoomId] = useState<string | null>(null);
+  const [togglingRoomName, setTogglingRoomName] = useState<string | null>(null);
+  const [togglingCurrentStatus, setTogglingCurrentStatus] = useState<string | null>(null);
+  const [togglingNewStatus, setTogglingNewStatus] = useState<string | null>(null);
+
+  useEffect(() => {
+    setUser(getStoredUser());
+  }, []);
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [chartPeriod, setChartPeriod] = useState<ChartPeriod>('weekly');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const sidebarRef = useRef<HTMLElement | null>(null);
+
+  const { data: dashboardData, loading: dashboardLoading, error: dashboardError, refetch } = useOwnerDashboard(user?.user_id || null);
+  const { updateRequestStatus } = useFacilityRequests(user?.user_id || null, { autoFetch: false });
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (sidebarRef.current && !sidebarRef.current.contains(event.target as Node)) {
+        setSidebarOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (sidebarOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [sidebarOpen]);
+
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [pathname]);
+
+  const filteredRooms = (dashboardData?.rooms || []).filter((room) => {
+    const query = searchQuery.toLowerCase();
+    return room.name.toLowerCase().includes(query) || room.room_id.toLowerCase().includes(query);
+  });
+
+  const stats = dashboardData?.stats;
+  const chartData = dashboardData?.chartData || { weekly: [], monthly: [] };
+  const activeChartData = chartPeriod === 'weekly' ? chartData.weekly : chartData.monthly;
+  const pendingRequests = (dashboardData?.facilityRequests || []).filter((req) => req.status === 'pending');
+
+  const chartMaxValue = Math.max(...activeChartData.map((item) => item.value), 0);
+  const chartScaleStep = chartMaxValue > 5 ? Math.max(1, Math.ceil(chartMaxValue / 5)) : 1;
+  const chartCeiling = chartMaxValue > 0 ? (chartMaxValue > 5 ? chartScaleStep * 5 : chartMaxValue) : 1;
+  const yAxisLabels = chartMaxValue > 0
+    ? (chartMaxValue > 5
+      ? Array.from({ length: 6 }, (_, index) => String(chartCeiling - (index * chartScaleStep)))
+      : Array.from({ length: chartCeiling + 1 }, (_, index) => String(chartCeiling - index)))
+    : ['1', '0'];
+
+  const roomRows = useMemo(() => {
+    if (dashboardLoading && filteredRooms.length === 0) {
+      return [];
+    }
+    return filteredRooms;
+  }, [dashboardLoading, filteredRooms]);
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  };
+
+  const formatTopbarDate = () => {
+    const date = new Date();
+    const formatted = date.toLocaleDateString('id-ID', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+    return formatted.charAt(0).toUpperCase() + formatted.slice(1);
+  };
+
+  const formatRequestTime = (dateString: string) => {
+    return new Date(dateString).toLocaleTimeString('id-ID', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    });
+  };
+
+  const handleAcceptRequest = async (requestId: string) => {
+    setAcceptingRequestId(requestId);
+    setShowRequestOverlay(true);
+  };
+
+  const handleRequestOverlayConfirm = async () => {
+    setShowRequestOverlay(false);
+    if (acceptingRequestId) {
+      const success = await updateRequestStatus(acceptingRequestId, 'approved');
+      if (success) {
+        refetch();
+      }
+      setAcceptingRequestId(null);
+    }
+  };
+
+  const handleRequestOverlayCancel = () => {
+    setShowRequestOverlay(false);
+    setAcceptingRequestId(null);
+  };
+
+  const handleDeclineRequest = async (requestId: string) => {
+    const success = await updateRequestStatus(requestId, 'rejected');
+    if (success) {
+      refetch();
+    }
+  };
+
+  const handleEditRoom = (roomId: string) => {
+    setEditingRoomId(roomId);
+    setShowEditOverlay(true);
+  };
+
+  const handleEditOverlayConfirm = () => {
+    setShowEditOverlay(false);
+    if (editingRoomId) {
+      router.push(`/owner/rooms/edit/id?id=${editingRoomId}`);
+    }
+  };
+
+  const handleEditOverlayCancel = () => {
+    setShowEditOverlay(false);
+    setEditingRoomId(null);
+  };
+
+  const handleDeleteRoom = (roomId: string, roomName: string) => {
+    setDeletingRoomId(roomId);
+    setDeletingRoomName(roomName);
+    setShowDeleteOverlay(true);
+  };
+
+  const handleDeleteOverlayConfirm = async () => {
+    if (!deletingRoomId) return;
+
+    try {
+      const response = await fetch(`/api/rooms/${deletingRoomId}`, {
+        method: 'DELETE',
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setShowDeleteOverlay(false);
+        setDeletingRoomId(null);
+        setDeletingRoomName(null);
+        refetch();
+      } else {
+        alert(result.message || 'Gagal menghapus ruangan');
+      }
+    } catch (error) {
+      console.error('Error deleting room:', error);
+      alert('Terjadi kesalahan saat menghapus ruangan');
+    }
+  };
+
+  const handleDeleteOverlayCancel = () => {
+    setShowDeleteOverlay(false);
+    setDeletingRoomId(null);
+    setDeletingRoomName(null);
+  };
+
+  const handleToggleRoomStatus = (roomId: string, roomName: string, currentStatus: string) => {
+    // Determine new status based on current status
+    let newStatus: string
+    if (currentStatus === 'suspend') {
+      // If suspended, can only activate
+      newStatus = 'aktif'
+    } else if (currentStatus === 'aktif') {
+      newStatus = 'nonaktif'
+    } else {
+      // nonaktif -> aktif
+      newStatus = 'aktif'
+    }
+    
+    setTogglingRoomId(roomId);
+    setTogglingRoomName(roomName);
+    setTogglingCurrentStatus(currentStatus);
+    setTogglingNewStatus(newStatus);
+    setShowStatusOverlay(true);
+  };
+
+  const handleConfirmToggleStatus = async () => {
+    if (!togglingRoomId || !togglingNewStatus) return;
+
+    // Prevent confirmation if room is suspended (button should be disabled)
+    if (togglingCurrentStatus === 'suspend') {
+      alert('Ruangan yang suspend hanya dapat diaktifkan oleh admin. Hubungi admin untuk informasi lebih lanjut.');
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/rooms/${togglingRoomId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: togglingNewStatus }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setShowStatusOverlay(false);
+        setTogglingRoomId(null);
+        setTogglingRoomName(null);
+        setTogglingCurrentStatus(null);
+        setTogglingNewStatus(null);
+        refetch();
+      } else {
+        alert(result.message || 'Gagal mengubah status ruangan');
+      }
+    } catch (error) {
+      console.error('Error toggling room status:', error);
+      alert('Terjadi kesalahan saat mengubah status ruangan');
+    }
+  };
+
+  const handleCancelToggleStatus = () => {
+    setShowStatusOverlay(false);
+    setTogglingRoomId(null);
+    setTogglingRoomName(null);
+    setTogglingCurrentStatus(null);
+    setTogglingNewStatus(null);
+  };
+
+  const formatChangeLabel = (value: number | null, fallback: string) => {
+    if (value === null) {
+      return fallback;
+    }
+
+    const percent = Math.abs(Math.round(value));
+    const trend = value >= 0 ? 'Kenaikan dari bulan sebelumnya' : 'Penurunan dari bulan sebelumnya';
+    return `${percent}% ${trend}`;
+  };
+  const getAvailabilityStatus = (status: string | undefined, isAvailable: boolean) => {
+    const normalizedStatus = (status || 'aktif').toLowerCase()
+    
+    if (normalizedStatus === 'aktif') {
+      return {
+        label: isAvailable ? 'Tersedia' : 'Booked',
+        className: isAvailable ? styles.availableBadge : styles.bookedBadge
+      }
+    }
+    
+    // For 'nonaktif' and 'suspend', show 'Disable'
+    return {
+      label: 'Disable',
+      className: styles.disabledBadge
+    }
+  };
+  if (dashboardError) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.errorState}>Error: {dashboardError}</div>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div className={styles.container}>
+      {sidebarOpen && (
+        <div
+          className={styles.sidebarBackdrop}
+          onClick={() => setSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+      <SidebarOwner user={user} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} sidebarRef={sidebarRef} />
+
+      <main className={styles.main}>
+        <div className={styles.topbar}>
+          <div className={styles.topbarLeft}>
+            <button
+              type="button"
+              className={styles.hamburgerBtn}
+              onClick={() => setSidebarOpen(true)}
+              aria-label="Buka menu"
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <line x1="3" y1="12" x2="21" y2="12" strokeLinecap="round" />
+                <line x1="3" y1="6" x2="21" y2="6" strokeLinecap="round" />
+                <line x1="3" y1="18" x2="21" y2="18" strokeLinecap="round" />
+              </svg>
+            </button>
+            <h1>Dashboard Owner</h1>
+          </div>
+          <span className={styles.topbarDate}>{formatTopbarDate()}</span>
+        </div>
+
+        <div className={styles.content}>
+          <div className={styles.statCards}>
+            <div className={`${styles.statCard} ${styles.highlight}`}>
+              <div className={styles.label}>Total Pendapatan:</div>
+              {dashboardLoading && !stats ? (
+                <>
+                  <div className={styles.skeletonValue} />
+                  <div className={styles.skeletonText} />
+                </>
+              ) : (
+                <>
+                  <div className={styles.value}>{formatCurrency(stats?.totalRevenue || 0)}</div>
+                  <div className={styles.revenueTrendContainer}>
+                    <div className={`${styles.statBadge} ${styles.up}`}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
+                        <path d="M12 4v16" strokeLinecap="round" />
+                        <path d="m6.5 9.5 5.5-5.5 5.5 5.5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                      {stats?.revenueMonthChangePercent ?? 0}%
+                    </div>
+                    <span className={styles.trendText}>Kenaikan dari bulan sebelumnya</span>
+                  </div>
+                </>
+              )}
+            </div>
+
+            <div className={styles.statCard}>
+              <div className={styles.label}>Total Penyewaan:</div>
+              {dashboardLoading && !stats ? (
+                <>
+                  <div className={styles.skeletonValue} />
+                  <div className={styles.skeletonText} />
+                </>
+              ) : (
+                <>
+                  <div className={styles.value}>{stats?.totalBookings || 0}</div>
+                  <div className={styles.bookingTrendContainer}>
+                    <div className={`${styles.statBadge} ${styles.upBlue}`}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
+                        <path d="M12 4v16" strokeLinecap="round" />
+                        <path d="m6.5 9.5 5.5-5.5 5.5 5.5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                      5
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M16 11c1.7 0 3-1.3 3-3s-1.3-3-3-3-3 1.3-3 3 1.3 3 3 3Zm-8 0c1.7 0 3-1.3 3-3S9.7 5 8 5 5 6.3 5 8s1.3 3 3 3Zm0 2c-2.7 0-5 1.3-5 3v2h10v-2c0-1.7-2.3-3-5-3Zm8 0c-.3 0-.6 0-.9.1 1.2.8 1.9 1.8 1.9 2.9v2h6v-2c0-1.7-2.3-3-5-3Z" />
+                      </svg>
+                    </div>
+                    <span className={styles.trendText}>Kenaikan dari bulan sebelumnya</span>
+                  </div>
+                </>
+              )}
+            </div>
+
+            <div className={styles.statCard}>
+              <div className={styles.label}>Total Ruangan Tersedia:</div>
+              {dashboardLoading && !stats ? (
+                <>
+                  <div className={styles.skeletonValue} />
+                  <div className={styles.skeletonText} />
+                </>
+              ) : (
+                <>
+                  <div className={styles.value}>
+                    {stats?.availableRooms || 0}
+                    <span className={styles.valueDivider}>/{stats?.totalRooms || 0}</span>
+                  </div>
+                  <div className={styles.valueSub}>{(stats?.totalRooms || 0) - (stats?.availableRooms || 0)} ruangan sedang dalam peminjaman</div>
+                </>
+              )}
+            </div>
+          </div>
+
+          <div className={styles.grid2}>
+            <div className={styles.card}>
+              <div className={styles.cardHeader}>
+                <span className={styles.cardTitle}>Customer Map</span>
+                <div className={styles.toggleGroup}>
+                  <button
+                    type="button"
+                    className={`${styles.toggleBtn} ${chartPeriod === 'weekly' ? styles.active : ''}`}
+                    onClick={() => setChartPeriod('weekly')}
+                  >
+                    Mingguan
+                  </button>
+                  <button
+                    type="button"
+                    className={`${styles.toggleBtn} ${chartPeriod === 'monthly' ? styles.active : ''}`}
+                    onClick={() => setChartPeriod('monthly')}
+                  >
+                    Bulanan
+                  </button>
+                </div>
+              </div>
+
+              <div className={styles.chartContainer}>
+                <div className={styles.chartY}>
+                  {yAxisLabels.map((val) => (
+                    <span key={val}>{val}</span>
+                  ))}
+                </div>
+
+                <div className={styles.chartWrap}>
+                  <div className={styles.chartArea}>
+                    {yAxisLabels.map((_, index) => (
+                      <div
+                        key={index}
+                        className={styles.chartGridLine}
+                        style={{ top: `${(index / (yAxisLabels.length - 1)) * 272}px` }}
+                      />
+                    ))}
+                  </div>
+                  {dashboardLoading && activeChartData.length === 0 ? (
+                    <>
+                      {chartSkeletonHeights.slice(0, chartPeriod === 'weekly' ? 7 : 6).map((height, index) => (
+                        <div key={index} className={styles.chartCol}>
+                          <div className={styles.barWrap}>
+                            <div className={`${styles.bar} ${styles.gray}`} style={{ height: `${height}px`, opacity: 0.45 }} />
+                          </div>
+                          <span className={styles.chartLabel}>-</span>
+                        </div>
+                      ))}
+                    </>
+                  ) : (
+                    activeChartData.map((data, index) => {
+                      const barHeight = chartCeiling > 0 ? Math.round((data.value / chartCeiling) * chartVisualHeight) : 0;
+                      return (
+                        <div key={index} className={styles.chartCol}>
+                          <div className={styles.barWrap}>
+                            <div className={`${styles.bar} ${data.active ? styles.cyan : styles.gray}`} style={{ height: `${barHeight}px` }} />
+                          </div>
+                          <span className={styles.chartLabel}>{data.label}</span>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className={styles.card}>
+              <div className={styles.cardHeader}>
+                <span className={styles.cardTitle}>Request</span>
+                <span className={styles.badgeUnread}>{dashboardLoading ? '...' : `${pendingRequests.length} Pesan belum dibaca`}</span>
+              </div>
+
+              {dashboardLoading && pendingRequests.length === 0 ? (
+                <div className={styles.requestList}>
+                  {[...Array(2)].map((_, i) => (
+                    <div key={i} className={styles.requestItem}>
+                      <div className={styles.requestSkeletonLine} />
+                      <div className={styles.requestSkeletonLineShort} />
+                      <div className={styles.requestSkeletonLineText} />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className={styles.requestList}>
+                  {pendingRequests.map((request) => (
+                    <div key={request.request_id} className={styles.requestItem}>
+                      <div className={styles.requestTop}>
+                        <span className={styles.requestName}>{request.customer_name || request.customer_id || 'Unknown Customer'}</span>
+                        <span className={styles.requestTime}>{formatRequestTime(request.created_at)}</span>
+                      </div>
+                      <div className={styles.roomTag}>{request.room_name || 'Ruang Tanpa Nama'}</div>
+                      <div className={styles.requestMsg}>{request.message || request.details || 'Tidak ada detail request'}</div>
+                      <div className={styles.requestActions}>
+                        <button
+                          type="button"
+                          className={styles.btnAccept}
+                          onClick={() => handleAcceptRequest(request.request_id)}
+                        >
+                          Terima
+                        </button>
+                        <button
+                          type="button"
+                          className={styles.btnDecline}
+                          onClick={() => handleDeclineRequest(request.request_id)}
+                        >
+                          Tolak
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+
+                  {!dashboardLoading && pendingRequests.length === 0 && (
+                    <div className={styles.emptyInCard}>Belum ada request masuk.</div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className={styles.tableCard}>
+            <div className={styles.tableHeader}>
+              <span className={styles.tableTitle}>Daftar Ruangan</span>
+              <div className={styles.searchBox}>
+                <input
+                  type="text"
+                  placeholder="Cari ruangan"
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                />
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                  <circle cx="11" cy="11" r="8" />
+                  <path d="m21 21-4.35-4.35" />
+                </svg>
+              </div>
+            </div>
+
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>ID Ruangan</th>
+                  <th>Nama Ruangan</th>
+                  <th>Kapasitas</th>
+                  <th>Harga per Jam</th>
+                  <th>Status</th>
+                  <th>Ketersediaan</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {dashboardLoading && roomRows.length === 0 ? (
+                  [...Array(6)].map((_, index) => (
+                    <tr key={index}>
+                      <td><div className={styles.tableSkeletonTiny} /></td>
+                      <td><div className={styles.tableSkeletonShort} /></td>
+                      <td><div className={styles.tableSkeletonTiny} /></td>
+                      <td><div className={styles.tableSkeletonShort} /></td>
+                      <td><div className={styles.tableSkeletonTiny} /></td>
+                      <td><div className={styles.tableSkeletonTiny} /></td>
+                      <td><div className={styles.tableSkeletonTiny} /></td>
+                    </tr>
+                  ))
+                ) : (
+                  roomRows.map((room) => (
+                    <tr key={room.room_id}>
+                      <td>{room.room_id}</td>
+                      <td>{room.name}</td>
+                      <td>
+                        <span className={styles.capacityCell}>
+                          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                            <circle cx="9" cy="7" r="4" />
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+                          </svg>
+                          {room.capacity}
+                        </span>
+                      </td>
+                      <td>{formatCurrency(room.price_per_hour)}</td>
+                      <td>
+                        <button
+                          type="button"
+                          className={`${styles.statusBadge} ${(room.status || 'aktif') === 'aktif' ? styles.statusActive : (room.status || 'aktif') === 'nonaktif' ? styles.statusInactive : styles.statusSuspend}`}
+                          onClick={() => handleToggleRoomStatus(room.room_id, room.name, room.status || 'aktif')}
+                        >
+                          {room.status ? room.status.charAt(0).toUpperCase() + room.status.slice(1) : 'Aktif'}
+                        </button>
+                      </td>
+                      <td>
+                        <span className={`${styles.availabilityBadge} ${getAvailabilityStatus(room.status, room.is_available).className}`}>
+                          {getAvailabilityStatus(room.status, room.is_available).label}
+                        </span>
+                      </td>
+                      <td>
+                        <div className={styles.rowActions}>
+                          <button
+                            type="button"
+                            className={`${styles.iconBtn} ${styles.edit}`}
+                            onClick={() => handleEditRoom(room.room_id)}
+                            aria-label="Edit ruangan"
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                              <path d="M12 20h9" />
+                              <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" />
+                            </svg>
+                          </button>
+                          <button
+                            type="button"
+                            className={`${styles.iconBtn} ${styles.delete}`}
+                            onClick={() => handleDeleteRoom(room.room_id, room.name)}
+                            aria-label="Hapus ruangan"
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                              <path d="M3 6h18" />
+                              <path d="M8 6V4h8v2" />
+                              <path d="M19 6l-1 14H6L5 6" />
+                              <path d="M10 11v6M14 11v6" />
+                            </svg>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+
+            {!dashboardLoading && roomRows.length === 0 && (
+              <div className={styles.emptyTable}>{searchQuery ? 'Ruangan tidak ditemukan.' : 'Belum ada ruangan.'}</div>
+            )}
+          </div>
+        </div>
+      </main>
+    </div>
+
+    {showEditOverlay && (
+      <EditRoomOverlay
+        onConfirm={handleEditOverlayConfirm}
+        onCancel={handleEditOverlayCancel}
+      />
+    )}
+
+    {showRequestOverlay && (
+      <RequestFacilityOverlay
+        onConfirm={handleRequestOverlayConfirm}
+        onCancel={handleRequestOverlayCancel}
+      />
+    )}
+
+    {showDeleteOverlay && (
+      <DeleteRoomOverlay
+        roomName={deletingRoomName || ''}
+        onConfirm={handleDeleteOverlayConfirm}
+        onCancel={handleDeleteOverlayCancel}
+      />
+    )}
+
+    {showStatusOverlay && (
+      <ConfirmChangeStatusOverlay
+        roomName={togglingRoomName || ''}
+        roomId={togglingRoomId || ''}
+        currentStatus={togglingCurrentStatus || 'aktif'}
+        newStatus={togglingNewStatus || 'nonaktif'}
+        onConfirm={handleConfirmToggleStatus}
+        onCancel={handleCancelToggleStatus}
+      />
+    )}
+    </>
+  );
 }

@@ -31,8 +31,8 @@
   --background-cyan: #ddf7ff;
   --background-light-blue: #effbff;
   --cancel-button-bg: #f8cccc;
-  --cancel-button-text: #db0000;
-  --cancel-button-hover: #b31b1b;
+  --cancel-button-text: #ff1111;
+  --cancel-button-hover: #db0000;
   --cancel-button-text-gray: #959597;
   --cancel-button-bg-gray: #e8e8e8;
   --cancel-button-hover-gray: #ced3d8;
@@ -72,8 +72,8 @@
   --owner-gray: #9ca3af;
   --owner-gray-text: #4b5563;
   --owner-gray-light: #64748b;
-  --owner-red-decline: #db0000;
-  --owner-red-decline-hover: #b31b1b;
+  --owner-red-decline: #ff1111;
+  --owner-red-decline-hover: #db0000;
   --owner-red-delete: #ff1111;
   --owner-red-delete-bg: #ffd9d9;
   --owner-red-error: #dc2626;
@@ -98,9 +98,10 @@
 
   /* Admin Dashboard Colors */
   --admin-cyan: #00D4FF;
-  --admin-cyan-dark: #00B8D9;
-  --admin-cyan-light: #E0F9FF;
-  --admin-red: #f10f0f;
+  --admin-cyan-dark: #00bde8;
+  --admin-cyan-light: #effbff;
+  --admin-red: #ff1111;
+  --admin-red-hover: #db0000;
   --admin-gray-50: #F9FAFB;
   --admin-gray-100: #F3F4F6;
   --admin-gray-200: #E5E7EB;
@@ -114,20 +115,19 @@
   --admin-list-text-dark: #0f172a;
   --admin-list-text-gray: #64748b;
   --admin-list-text-medium: #334155;
-  --admin-list-cyan: #0891b2;
+  --admin-list-cyan: #54d2f9;
+  --admin-list-cyan-bg: #ddf7ff;
   --admin-list-cyan-light: #06b6d4;
-  --admin-list-cyan-bg: #e0f7fa;
   --admin-list-bg-light: #f8fafc;
   --admin-list-text-light: #94a3b8;
   --admin-list-border-light: #f1f5f9;
   --admin-list-text-darker: #1e293b;
   --admin-list-text-muted: #475569;
   --admin-list-border-gray: #cbd5e1;
-  --admin-list-red: #ef4444;
-  --admin-list-red-dark: #dc2626;
-  --admin-list-yellow-bg: #fef3c7;
-  --admin-list-yellow: #f59e0b;
-  --admin-list-yellow-dark: #d97706;
+  --admin-list-red: #ff1111;
+  --admin-list-red-bg: #ffe8e8;
+  --admin-list-yellow: #F59E0B;
+  --admin-list-yellow-bg: #fdecce;
   
   /* Font */
   --font-family: 'Plus Jakarta Sans', sans-serif;

@@ -1,15 +1,51 @@
+/* =============================================
+   PAGE LAYOUT — sidebar + main area
+   ============================================= */
+
+.pageLayout {
+  display: flex;
+  min-height: 100vh;
+  background: var(--background-light-blue);
+}
+
+/* Main area sits to the right of the 300px sidebar */
+.mainArea {
+  flex: 1;
+  min-width: 0;
+  margin-left: 300px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Mobile topbar (hidden on desktop) */
+.mobileTopbar {
+  display: none;
+}
+
+/* Sidebar overlay (mobile) */
+.sidebarOverlay {
+  display: none;
+}
+
+/* =============================================
+   SCROLLABLE CONTENT AREA
+   ============================================= */
+
 .container {
-  min-height: calc(100vh - 80px);
+  flex: 1;
   background: var(--background-light-blue);
 }
 
 .content {
-  padding: 24px;
+  padding: 24px 40px;
   max-width: 1400px;
   margin: 0 auto;
 }
 
-/* Header Card */
+/* =============================================
+   HEADER CARD
+   ============================================= */
+
 .headerCard {
   background: var(--admin-list-white);
   border: 1px solid var(--admin-list-border);
@@ -33,7 +69,10 @@
   font-family: var(--font-family, 'Inter', sans-serif);
 }
 
-/* Stats Grid */
+/* =============================================
+   STATS GRID
+   ============================================= */
+
 .statsGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -48,10 +87,11 @@
   padding: 28px 32px;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: 2px;
 }
 
-/* label di atas */
 .statTitle {
   font-size: 15px;
   font-weight: 500;
@@ -60,17 +100,15 @@
   font-family: var(--font-family, 'Inter', sans-serif);
 }
 
-/* angka besar di tengah */
 .statNumber {
-  font-size: 64px;
-  font-weight: 700;
+  font-size: 48px;
+  font-weight: 800;
   color: var(--admin-list-text-dark);
   line-height: 1;
   font-family: var(--font-family, 'Inter', sans-serif);
   margin-bottom: 6px;
 }
 
-/* "Laporan" di bawah angka */
 .statLabel {
   font-size: 14px;
   color: var(--admin-list-text-gray);
@@ -78,7 +116,10 @@
   font-family: var(--font-family, 'Inter', sans-serif);
 }
 
-/* Filter Row */
+/* =============================================
+   FILTER ROW
+   ============================================= */
+
 .filterRow {
   display: flex;
   align-items: center;
@@ -110,26 +151,26 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: var(--admin-list-white);
-  border: 1.5px solid var(--admin-list-cyan-light);
+  background: var(--background-cyan);
+  border: 1px solid var(--border-text-cyan);
   border-radius: 24px;
   padding: 8px 16px;
   font-size: 14px;
   font-weight: 600;
-  color: var(--admin-list-cyan);
+  color: var(--border-text-cyan);
   cursor: pointer;
   font-family: var(--font-family, 'Inter', sans-serif);
   transition: border-color 0.2s ease;
 }
 
 .sortButton:hover {
-  border-color: var(--admin-list-cyan);
+  border-color: var(--border-text-cyan);
 }
 
 .sortArrow {
   font-size: 14px;
   font-weight: 700;
-  color: var(--admin-list-cyan);
+  color: var(--border-text-cyan);
 }
 
 .dropdownMenu {
@@ -171,7 +212,6 @@
 /* Filter Pills */
 .filterPill {
   display: inline-flex;
-  align-items: center;
   gap: 6px;
   background: var(--admin-list-white);
   border: 1.5px solid var(--admin-list-border);
@@ -186,7 +226,8 @@
 }
 
 .filterPillActive {
-  border-color: var(--admin-list-cyan-light);
+  background: var(--admin-list-cyan-bg);
+  border-color: var(--admin-list-cyan);
   color: var(--admin-list-cyan);
 }
 
@@ -197,7 +238,10 @@
   color: var(--admin-list-cyan);
 }
 
-/* Table Card */
+/* =============================================
+   TABLE CARD
+   ============================================= */
+
 .tableCard {
   background: var(--admin-list-white);
   border: 1px solid var(--admin-list-border);
@@ -274,7 +318,7 @@
 
 .table th {
   padding: 14px 20px;
-  text-align: left;
+  text-align: center;
   font-size: 13px;
   font-weight: 500;
   color: var(--admin-list-text-light);
@@ -286,6 +330,7 @@
 .table tbody tr {
   border-bottom: 1px solid var(--admin-list-border-light);
   transition: background-color 0.15s ease;
+  text-align: center;
 }
 
 .table tbody tr:hover {
@@ -337,20 +382,20 @@
 }
 
 .statusPending {
-  background: var(--admin-list-white);
+  background: var(--admin-list-yellow-bg);
   border-color: var(--admin-list-yellow);
-  color: var(--admin-list-yellow-dark);
+  color: var(--admin-list-yellow);
 }
 
 .statusActionNeeded {
-  background: var(--admin-list-white);
+  background: var(--admin-list-red-bg);
   border-color: var(--admin-list-red);
-  color: var(--admin-list-red-dark);
+  color: var(--admin-list-red);
 }
 
 .statusSolved {
-  background: var(--admin-list-white);
-  border-color: var(--admin-list-cyan-light);
+  background: var(--admin-list-cyan-bg);
+  border-color: var(--admin-list-cyan);
   color: var(--admin-list-cyan);
 }
 
@@ -364,12 +409,12 @@
   cursor: pointer;
   font-family: var(--font-family, 'Inter', sans-serif);
   transition: background-color 0.2s ease, transform 0.15s ease;
-  background: var(--admin-list-cyan-light);
+  background: var(--admin-cyan);
   color: var(--admin-list-white);
 }
 
 .btnView:hover {
-  background: var(--admin-list-cyan);
+  background: var(--admin-cyan-dark);
   transform: translateY(-1px);
 }
 
@@ -382,7 +427,61 @@
   font-family: var(--font-family, 'Inter', sans-serif);
 }
 
-/* Responsive */
+/* =============================================
+   RESPONSIVE
+   ============================================= */
+
+/* Sidebar collapses at 1200px (matches SidebarAdmin breakpoint) */
+@media (max-width: 1200px) {
+  .mainArea {
+    margin-left: 0;
+  }
+
+  .mobileTopbar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 20px;
+    background: var(--admin-list-white);
+    border-bottom: 1px solid var(--admin-list-border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .hamburger {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--admin-list-text-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    border-radius: 8px;
+    transition: background 0.2s;
+  }
+
+  .hamburger:hover {
+    background: var(--admin-list-bg-light);
+  }
+
+  .mobileTopbarTitle {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--admin-list-text-dark);
+    font-family: var(--font-family, 'Inter', sans-serif);
+  }
+
+  .sidebarOverlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 190;
+  }
+}
+
 @media (max-width: 768px) {
   .content {
     padding: 16px;
@@ -413,5 +512,12 @@
 
   .table {
     min-width: 700px;
+  }
+}
+
+/* Sidebar width adjustment at 1600px (matches SidebarAdmin) */
+@media (max-width: 1600px) and (min-width: 1201px) {
+  .mainArea {
+    margin-left: 284px;
   }
 }

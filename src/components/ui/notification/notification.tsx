@@ -89,15 +89,14 @@ export default function Notification({ isOpen, onClose, userId }: NotificationPr
       let groupLabel: string
 
       if (createdDate >= today) {
-        groupLabel = 'Hari Ini'
+        groupLabel = 'Hari ini'
       } else if (createdDate >= yesterday) {
         groupLabel = 'Kemarin'
       } else if (createdDate >= lastWeekStart) {
-        groupLabel = 'Minggu Lalu'
+        groupLabel = 'Minggu lalu'
       } else if (createdDate >= lastMonthStart) {
-        groupLabel = 'Bulan Lalu'
+        groupLabel = 'Bulan lalu'
       } else {
-        // Format as "April 2026", "Mei 2026", etc.
         const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
         groupLabel = `${monthNames[createdDate.getMonth()]} ${createdDate.getFullYear()}`
       }
@@ -108,21 +107,16 @@ export default function Notification({ isOpen, onClose, userId }: NotificationPr
       groups[groupLabel].push(item)
     })
 
-    // Sort groups by date (newest first)
     const sortedGroups = Object.entries(groups)
       .sort(([labelA], [labelB]) => {
-        // Custom sort order
-        const order = ['Hari Ini', 'Kemarin', 'Minggu Lalu', 'Bulan Lalu']
+        const order = ['Hari ini', 'Kemarin', 'Minggu lalu', 'Bulan lalu']
         const indexA = order.indexOf(labelA)
         const indexB = order.indexOf(labelB)
 
-        if (indexA !== -1 && indexB !== -1) {
-          return indexA - indexB
-        }
+        if (indexA !== -1 && indexB !== -1) return indexA - indexB
         if (indexA !== -1) return -1
         if (indexB !== -1) return 1
 
-        // For month/year labels, sort by date descending
         const dateA = parseMonthYear(labelA)
         const dateB = parseMonthYear(labelB)
         return dateB.getTime() - dateA.getTime()
@@ -221,9 +215,11 @@ export default function Notification({ isOpen, onClose, userId }: NotificationPr
                       {getIcon(item.type, item.status)}
                     </div>
                     <div className="notification-item-content">
-                      <div className="notification-item-title">{item.title}</div>
+                      <div className="notification-item-title-row">
+                        <div className="notification-item-title">{item.title}</div>
+                        <div className="notification-item-timestamp">{item.timestamp}</div>
+                      </div>
                       <div className="notification-item-description">{item.description}</div>
-                      <div className="notification-item-timestamp">{item.timestamp}</div>
                     </div>
                   </div>
                 ))}
