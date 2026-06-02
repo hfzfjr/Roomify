@@ -1,0 +1,112 @@
+/* =============================================
+   PAGE LAYOUT — sidebar + main area
+   ============================================= */
+
+.pageLayout {
+  display: flex;
+  min-height: 100vh;
+  background: var(--background-light-blue);
+}
+
+/* Main area sits to the right of the 300px sidebar */
+.mainArea {
+  flex: 1;
+  min-width: 0;
+  margin-left: 300px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Mobile topbar (hidden on desktop) */
+.mobileTopbar {
+  display: none;
+}
+
+/* Sidebar overlay (mobile) */
+.sidebarOverlay {
+  display: none;
+}
+
+/* =============================================
+   SCROLLABLE CONTENT AREA
+   ============================================= */
+
+.container {
+  flex: 1;
+  background: var(--background-light-blue);
+  padding: 24px 40px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* =============================================
+   RESPONSIVE
+   ============================================= */
+
+/* Sidebar collapses at 1200px (matches SidebarAdmin breakpoint) */
+@media (max-width: 1200px) {
+  .mainArea {
+    margin-left: 0;
+  }
+
+  .mobileTopbar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 20px;
+    background: var(--admin-list-white);
+    border-bottom: 1px solid var(--admin-list-border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .hamburger {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--admin-list-text-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    border-radius: 8px;
+    transition: background 0.2s;
+  }
+
+  .hamburger:hover {
+    background: var(--admin-list-bg-light);
+  }
+
+  .mobileTopbarTitle {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--admin-list-text-dark);
+    font-family: var(--font-family, 'Inter', sans-serif);
+  }
+
+  .sidebarOverlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 190;
+  }
+
+  .container {
+    padding: 24px 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 16px;
+  }
+}
+
+/* Sidebar width adjustment at 1600px (matches SidebarAdmin) */
+@media (max-width: 1600px) and (min-width: 1201px) {
+  .mainArea {
+    margin-left: 284px;
+  }
+}

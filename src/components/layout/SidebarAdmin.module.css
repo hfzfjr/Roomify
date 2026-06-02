@@ -12,8 +12,7 @@
 }
 
 .sidebarLogo {
-  height: 118px;
-  border-bottom: 1.5px solid var(--owner-white-55);
+  height: 90px;
   display: flex;
   align-items: center;
   padding: 22px 32px;
@@ -27,8 +26,9 @@
 
 .accountMenu {
   position: relative;
-  padding: 16px;
-  border-bottom: 1px solid var(--owner-white-20);
+  padding: 18px 16px;
+  border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .sidebarUserButton {
@@ -165,10 +165,6 @@
   color: var(--owner-red-error);
 }
 
-.sidebarNav {
-  padding: 4px 0;
-}
-
 .navItem {
   width: 100%;
   border: none;
@@ -177,23 +173,22 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 18px;
+  padding: 16px 32px;
   color: var(--owner-white-90);
   font-size: 18px;
   font-weight: 700;
   cursor: pointer;
   transition: background 0.18s;
-  border-left: 3px solid transparent;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .navItem:hover {
-  background: var(--owner-white-15);
+  background: rgba(255,255,255,0.25);
 }
 
 .navItem.active {
-  background: var(--owner-white-22);
+  background: rgba(255,255,255,0.5);
   color: var(--owner-white);
-  border-left-color: var(--owner-white);
 }
 
 .sidebarCloseBtn {

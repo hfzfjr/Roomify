@@ -58,9 +58,8 @@
   justify-content: space-between;
   color: #ffffff;
   transition: transform 0.18s ease, opacity 0.2s ease;
-  border-top: 1px solid #e8e8e8;
-  border-bottom: 1px solid #e8e8e8;
-  margin-bottom: 10px;
+  border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .sb-profile-button:hover,
@@ -215,7 +214,7 @@
 
 .sb-item:hover { background: rgba(255,255,255,0.25); }
 
-.sb-item.active { background: rgba(255,255,255,0.5); border-bottom: none; }
+.sb-item.active { background: rgba(255,255,255,0.5); }
 
 /* Responsive */
 @media (max-width: 900px) {

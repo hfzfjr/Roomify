@@ -1,10 +1,43 @@
-.container {
-  min-height: calc(100vh - 80px);
+/* =============================================
+   PAGE LAYOUT — sidebar + main area
+   ============================================= */
+
+.pageLayout {
+  display: flex;
+  min-height: 100vh;
   background: var(--background-light-blue);
 }
 
-.mainContent {
-  padding: 24px;
+/* Main area sits to the right of the 300px sidebar */
+.mainArea {
+  flex: 1;
+  min-width: 0;
+  margin-left: 300px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Mobile topbar (hidden on desktop) */
+.mobileTopbar {
+  display: none;
+}
+
+/* Sidebar overlay (mobile) */
+.sidebarOverlay {
+  display: none;
+}
+
+/* =============================================
+   SCROLLABLE CONTENT AREA
+   ============================================= */
+
+.container {
+  flex: 1;
+  background: var(--background-light-blue);
+}
+
+.content {
+  padding: 24px 40px;
   max-width: 1400px;
   margin: 0 auto;
 }
@@ -164,7 +197,7 @@
 
 .table th {
   padding: 14px 20px;
-  text-align: left;
+  text-align: center;
   font-size: 13px;
   font-weight: 500;
   color: var(--admin-list-text-light);
@@ -176,6 +209,7 @@
 .table tbody tr {
   border-bottom: 1px solid var(--admin-list-border-light);
   transition: background-color 0.15s ease;
+  text-align: center;
 }
 
 .table tbody tr:hover {
@@ -219,27 +253,21 @@
 }
 
 .statusActive {
-  background: var(--admin-list-white);
-  border-color: var(--admin-list-cyan-light);
+  background: var(--admin-list-cyan-bg);
+  border-color: var(--admin-list-cyan);
   color: var(--admin-list-cyan);
 }
 
 .statusInactive {
-  background: var(--admin-list-white);
+  background: var(--admin-list-red-bg);
   border-color: var(--admin-list-red);
-  color: var(--admin-list-red-dark);
-}
-
-.statusPending {
-  background: var(--admin-list-yellow-bg);
-  border-color: var(--admin-list-yellow);
-  color: var(--admin-list-yellow-dark);
+  color: var(--admin-list-red);
 }
 
 /* Action Buttons */
 .actionButtons {
   display: flex;
-  gap: 8px;
+  gap: 16px;
   align-items: center;
 }
 
@@ -256,22 +284,22 @@
 }
 
 .btnView {
-  background: var(--admin-list-cyan-light);
+  background: var(--admin-cyan);
   color: var(--admin-list-white);
 }
 
 .btnView:hover {
-  background: var(--admin-list-cyan);
+  background: var(--admin-cyan-dark);
   transform: translateY(-1px);
 }
 
 .btnDelete {
-  background: var(--admin-list-red);
+  background: var(--admin-red);
   color: var(--admin-list-white);
 }
 
 .btnDelete:hover {
-  background: var(--admin-list-red-dark);
+  background: var(--admin-red-hover);
   transform: translateY(-1px);
 }
 
@@ -285,8 +313,59 @@
 }
 
 /* Responsive */
+/* Sidebar collapses at 1200px (matches SidebarAdmin breakpoint) */
+@media (max-width: 1200px) {
+  .mainArea {
+    margin-left: 0;
+  }
+
+  .mobileTopbar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 20px;
+    background: var(--admin-list-white);
+    border-bottom: 1px solid var(--admin-list-border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .hamburger {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--admin-list-text-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    border-radius: 8px;
+    transition: background 0.2s;
+  }
+
+  .hamburger:hover {
+    background: var(--admin-list-bg-light);
+  }
+
+  .mobileTopbarTitle {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--admin-list-text-dark);
+    font-family: var(--font-family, 'Inter', sans-serif);
+  }
+
+  .sidebarOverlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 190;
+  }
+}
+
 @media (max-width: 768px) {
-  .mainContent {
+  .content {
     padding: 16px;
   }
 
@@ -316,5 +395,12 @@
   .btnDelete {
     width: 100%;
     text-align: center;
+  }
+}
+
+/* Sidebar width adjustment at 1600px (matches SidebarAdmin) */
+@media (max-width: 1600px) and (min-width: 1201px) {
+  .mainArea {
+    margin-left: 284px;
   }
 }
