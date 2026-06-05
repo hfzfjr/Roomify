@@ -1,0 +1,244 @@
+/* === Popover Container === */
+.customer-room-schedule-popover {
+  position: fixed;
+  z-index: 300;
+  width: 385px;
+  max-height: 400px;
+  display: flex;
+  flex-direction: column;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+/* === Arrow pointing right toward the button === */
+.customer-room-schedule-popover::after {
+  content: '';
+  position: absolute;
+  top: 28px;
+  right: -8px;
+  width: 14px;
+  height: 14px;
+  background: #ffffff;
+  border-right: 1px solid #e8e9eb;
+  border-top: 1px solid #e8e9eb;
+  transform: rotate(45deg);
+  border-radius: 2px;
+  box-shadow: 2px -2px 4px rgba(0, 0, 0, 0.04);
+}
+
+/* === Header === */
+.customer-room-schedule-head {
+  padding: 20px 22px 16px;
+  border-bottom: 1px solid #eaebec;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.customer-room-schedule-head h3 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  color: #0f1113;
+  letter-spacing: -0.3px;
+}
+
+.customer-room-schedule-head p {
+  margin: 4px 0 0;
+  color: #6b7280;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+/* === Scrollable list === */
+.customer-room-schedule-list {
+  padding: 14px 22px 18px;
+  display: grid;
+  gap: 8px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* Custom scrollbar */
+.customer-room-schedule-list::-webkit-scrollbar {
+  width: 4px;
+}
+.customer-room-schedule-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+.customer-room-schedule-list::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 99px;
+}
+
+/* === Row === */
+.customer-room-schedule-row {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+}
+
+.customer-room-schedule-row span {
+  color: #4b5563;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.customer-room-schedule-row strong {
+  height: 40px;
+  border-radius: 10px;
+  border: 2px solid #06c0e3;
+  background: rgba(6, 192, 227, 0.12);
+  color: #06aecf;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  width: 100%;
+}
+
+.customer-room-schedule-row strong.booked {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+}
+
+/* === Close button === */
+.customer-room-schedule-close {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+  color: #6b7280;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  flex-shrink: 0;
+}
+
+.customer-room-schedule-close:hover {
+  background: rgba(0, 0, 0, 0.1);
+  color: #111827;
+}
+
+/* === Empty state === */
+.customer-room-schedule-empty {
+  text-align: center;
+  font-size: 13px;
+  color: #9ca3af;
+  padding: 16px 0;
+}
+
+/* =============================================
+   RESPONSIVE
+   ============================================= */
+
+/* Tablet / medium screens — popover jadi sedikit lebih kecil */
+@media (max-width: 900px) {
+  .customer-room-schedule-popover {
+    width: 340px;
+    max-height: 440px;
+  }
+
+  .customer-room-schedule-head h3 {
+    font-size: 19px;
+  }
+
+  .customer-room-schedule-row {
+    grid-template-columns: 110px minmax(0, 1fr);
+  }
+
+  .customer-room-schedule-row strong {
+    height: 38px;
+    font-size: 13px;
+  }
+
+  .customer-room-schedule-row span {
+    font-size: 13px;
+  }
+}
+
+/* Mobile — tampil sebagai bottom sheet */
+@media (max-width: 600px) {
+  .customer-room-schedule-popover {
+    /* Reset posisi fixed dari JS, override ke bottom sheet */
+    position: fixed !important;
+    top: auto !important;
+    left: 70px !important;
+    right: 70px !important;
+    bottom: 0 !important;
+    display: flex;
+    justify-content: center;
+    width: calc(100% - 140px);
+    max-height: 75vh;
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -4px 32px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Sembunyikan arrow di mobile */
+  .customer-room-schedule-popover::after {
+    display: none;
+  }
+
+  /* Drag handle visual */
+  .customer-room-schedule-popover::before {
+    content: '';
+    display: block;
+    width: 36px;
+    height: 4px;
+    background: #d1d5db;
+    border-radius: 99px;
+    margin: 10px auto 0;
+    flex-shrink: 0;
+  }
+
+  .customer-room-schedule-head {
+    padding: 14px 20px 14px;
+  }
+
+  .customer-room-schedule-head h3 {
+    font-size: 18px;
+  }
+
+  .customer-room-schedule-head p {
+    font-size: 12px;
+  }
+
+  .customer-room-schedule-list {
+    padding: 12px 20px 24px;
+    gap: 8px;
+  }
+
+  .customer-room-schedule-row {
+    grid-template-columns: 110px minmax(0, 1fr);
+  }
+
+  .customer-room-schedule-row strong {
+    height: 38px;
+    font-size: 13px;
+  }
+
+  .customer-room-schedule-row span {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 600px) {
+  .customer-room-schedule-popover {
+    left: 30px !important;
+    right: 30px !important;
+    width: calc(100% - 60px);
+    max-height: 75vh;
+  }
+}
