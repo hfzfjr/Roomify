@@ -4,6 +4,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Navbar from '@/components/layout/Navbar'
 import ReceiptModal from '@/components/booking/ReceiptModal'
+import ReportRoomOverlay from '@/components/ui/overlay/customer/ReportRoomOverlay'
+import ReviewRoomOverlay from '@/components/ui/overlay/customer/ReviewRoomOverlay'
+import CancelPaymentOverlay from '@/components/ui/overlay/customer/CancelPaymentOverlay'
 import { Booking, User } from '@/types'
 import { formatPaymentCountdown, getRemainingPaymentMs } from '@/utils/booking'
 import { formatDate, formatTime, formatDateLong } from '@/utils/formatDate'
@@ -44,6 +47,12 @@ export default function CustomerBookings() {
   const [searchQuery, setSearchQuery] = useState('')
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false)
   const [selectedReceiptBookingId, setSelectedReceiptBookingId] = useState('')
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false)
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false)
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false)
+  const [selectedBookingForReport, setSelectedBookingForReport] = useState<Booking | null>(null)
+  const [selectedBookingForReview, setSelectedBookingForReview] = useState<Booking | null>(null)
+  const [selectedBookingForCancel, setSelectedBookingForCancel] = useState<Booking | null>(null)
 
   const refreshBookings = useCallback(async () => {
     if (!currentUserId) return
@@ -166,6 +175,53 @@ export default function CustomerBookings() {
   function openReceiptModal(bookingId: string) {
     setSelectedReceiptBookingId(bookingId)
     setIsReceiptModalOpen(true)
+  }
+
+  function openReportModal(booking: Booking) {
+    setSelectedBookingForReport(booking)
+    setIsReportModalOpen(true)
+  }
+
+  function openReviewModal(booking: Booking) {
+    setSelectedBookingForReview(booking)
+    setIsReviewModalOpen(true)
+  }
+
+  function handleRebook(roomId: string) {
+    router.push(`/customer/rooms/${roomId}`)
+  }
+
+  function openCancelModal(booking: Booking) {
+    setSelectedBookingForCancel(booking)
+    setIsCancelModalOpen(true)
+  }
+
+  async function handleCancelConfirm() {
+    if (!selectedBookingForCancel || !currentUserId) return
+
+    setActionLoadingId(selectedBookingForCancel.booking_id)
+    try {
+      const response = await fetch('/api/bookings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          booking_id: selectedBookingForCancel.booking_id,
+          user_id: currentUserId,
+          action: 'cancel'
+        })
+      })
+      const result = await response.json()
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || 'Aksi booking gagal diproses.')
+      }
+      await refreshBookings()
+      setIsCancelModalOpen(false)
+    } catch (actionError) {
+      setError(actionError instanceof Error ? actionError.message : 'Aksi booking gagal diproses.')
+    } finally {
+      setActionLoadingId(null)
+      setSelectedBookingForCancel(null)
+    }
   }
 
   return (
@@ -328,41 +384,59 @@ export default function CustomerBookings() {
                         Nomor Transaksi: <strong>{booking.booking_id}</strong>
                       </span>
                       <div className="customer-booking-card-v2-actions">
-                        {isPendingPayment ? (
+                        {booking.status === 'cancelled' ? (
                           <button
                             type="button"
-                            className="customer-booking-v2-btn primary"
-                            disabled={remainingPaymentMs <= 0}
-                            onClick={() => router.push(`/customer/payments/${booking.booking_id}`)}
+                            className="customer-booking-v2-btn"
+                            style={{ background: '#9ca3af', color: '#ffffff' }}
+                            onClick={() => handleRebook(booking.room.room_id)}
                           >
-                            Bayar sekarang
+                            Pesan Ulang
                           </button>
+                        ) : isPendingPayment ? (
+                          <>
+                            <button
+                              type="button"
+                              className="customer-booking-v2-btn danger"
+                              disabled={isPayingOrCancelling}
+                              onClick={() => openCancelModal(booking)}
+                            >
+                              {isPayingOrCancelling ? 'Memproses...' : 'Batalkan Pesanan'}
+                            </button>
+                            <button
+                              type="button"
+                              className="customer-booking-v2-btn primary"
+                              disabled={remainingPaymentMs <= 0}
+                              onClick={() => router.push(`/customer/payments/${booking.booking_id}`)}
+                            >
+                              Bayar Sekarang
+                            </button>
+                          </>
                         ) : (booking.status === 'confirmed' || booking.status === 'completed') ? (
-                          <button
-                            type="button"
-                            className="customer-booking-v2-btn secondary"
-                            onClick={() => openReceiptModal(booking.booking_id)}
-                          >
-                            Unduh struk
-                          </button>
+                          <>
+                            <button
+                              type="button"
+                              className="customer-booking-v2-btn secondary"
+                              onClick={() => openReportModal(booking)}
+                            >
+                              Laporkan
+                            </button>
+                            <button
+                              type="button"
+                              className="customer-booking-v2-btn secondary"
+                              onClick={() => openReceiptModal(booking.booking_id)}
+                            >
+                              Unduh Struk
+                            </button>
+                            <button
+                              type="button"
+                              className="customer-booking-v2-btn secondary"
+                              onClick={() => openReviewModal(booking)}
+                            >
+                              Review
+                            </button>
+                          </>
                         ) : null}
-                        <button
-                          type="button"
-                          className="customer-booking-v2-btn secondary"
-                          onClick={() => router.push(`/customer/rooms/${booking.room.room_id}?booking_id=${booking.booking_id}`)}
-                        >
-                          Lihat detail
-                        </button>
-                        {isPendingPayment && (
-                          <button
-                            type="button"
-                            className="customer-booking-v2-btn danger"
-                            disabled={isPayingOrCancelling}
-                            onClick={() => handleBookingAction(booking.booking_id, 'cancel')}
-                          >
-                            {isPayingOrCancelling ? 'Memproses...' : 'Batalkan'}
-                          </button>
-                        )}
                       </div>
                     </div>
                   </article>
@@ -379,6 +453,23 @@ export default function CustomerBookings() {
       onClose={() => setIsReceiptModalOpen(false)}
       bookingId={selectedReceiptBookingId}
       userId={currentUserId}
+    />
+    <ReportRoomOverlay
+      isOpen={isReportModalOpen}
+      onClose={() => setIsReportModalOpen(false)}
+      roomName={selectedBookingForReport?.room?.name}
+      bookingId={selectedBookingForReport?.booking_id}
+    />
+    <ReviewRoomOverlay
+      isOpen={isReviewModalOpen}
+      onClose={() => setIsReviewModalOpen(false)}
+      roomName={selectedBookingForReview?.room?.name}
+      bookingId={selectedBookingForReview?.booking_id}
+    />
+    <CancelPaymentOverlay
+      isOpen={isCancelModalOpen}
+      onConfirm={handleCancelConfirm}
+      onCancel={() => setIsCancelModalOpen(false)}
     />
     </>
   )

@@ -6,6 +6,7 @@ import { formatDate, formatTime } from '@/utils/formatDate'
 import { formatRupiah } from '@/utils/formatRupiah'
 import { formatFacilityName } from '@/utils/text-helper'
 import BackButton from '@/components/ui/BackButton'
+import CancelPaymentOverlay from '@/components/ui/overlay/customer/CancelPaymentOverlay'
 import '@/styles/payment.css'
 import Microphone from '@/components/icons/facility/Microphone'
 import Whiteboard from '@/components/icons/facility/Whiteboard'
@@ -474,33 +475,11 @@ export default function CustomerPaymentDetailPage() {
         </div>
       </div>
 
-      {showCancelOverlay && (
-        <div className="customer-payment-overlay" role="presentation" onClick={() => setShowCancelOverlay(false)}>
-          <div className="customer-payment-overlay-card" role="dialog" aria-modal="true" onClick={event => event.stopPropagation()}>
-            <div className="customer-payment-overlay-icon">
-              <svg width="48" height="48" viewBox="5 0 80 80" fill="none">
-                <g stroke="#dc2626" strokeWidth="7" strokeLinecap="round" strokeLinejoin="round" fill="none">
-                  <line x1="40" y1="20" x2="65" y2="20"/>
-                  <line x1="65" y1="20" x2="65" y2="60"/>
-                  <line x1="40" y1="60" x2="65" y2="60"/>
-                  <line x1="40" y1="30" x2="40" y2="20"/>
-                  <line x1="40" y1="60" x2="40" y2="50"/>
-                  <line x1="18" y1="40" x2="50" y2="40"/>
-                  <polyline points="28,30 18,40 28,50"/>
-                </g>
-              </svg>
-            </div>
-            <h3>Batalkan pembayaran?</h3>
-            <p>Semua data yang telah Anda masukkan akan hilang dan pesanan ini akan dibatalkan secara otomatis.</p>
-            <div className="customer-payment-overlay-actions">
-              <button type="button" onClick={() => setShowCancelOverlay(false)}>Tidak</button>
-              <button type="button" className="confirm" disabled={isCancelling} onClick={handleCancelPayment}>
-                {isCancelling ? 'Memproses...' : 'Ya'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <CancelPaymentOverlay
+        isOpen={showCancelOverlay}
+        onConfirm={handleCancelPayment}
+        onCancel={() => setShowCancelOverlay(false)}
+      />
     </div>
   )
 }
