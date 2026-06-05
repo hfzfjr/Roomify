@@ -343,9 +343,10 @@
   transform: translateY(-1px);
 }
 
-/* Print receipt updated (RECEIPT ONLY) */
+/*Now Only print the receipt */
 
 @media print {
+
 
   @page {
     margin: 12mm;
