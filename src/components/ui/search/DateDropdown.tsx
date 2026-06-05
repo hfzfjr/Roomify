@@ -1,6 +1,6 @@
 'use client'
 
-import { addMonths, eachDayOfInterval, endOfMonth, endOfWeek, format, getMonth, getYear, isSameDay, isSameMonth, setMonth, setYear, startOfMonth, startOfWeek, subMonths } from 'date-fns'
+import { addMonths, eachDayOfInterval, endOfMonth, endOfWeek, format, getMonth, getYear, isBefore, isSameDay, isSameMonth, setMonth, setYear, startOfMonth, startOfWeek, subMonths } from 'date-fns'
 import './DateDropdown.css'
 
 const WEEK_DAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
@@ -9,6 +9,7 @@ const MONTH_OPTIONS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', '
 export type DateDropdownProps = {
   selectedDate: Date | null
   calendarMonth: Date
+  minDate?: Date
   onDateSelect: (date: Date) => void
   onMonthChange: (month: number) => void
   onYearChange: (year: number) => void
@@ -21,6 +22,7 @@ export type DateDropdownProps = {
 export default function DateDropdown({
   selectedDate,
   calendarMonth,
+  minDate,
   onDateSelect,
   onMonthChange,
   onYearChange,
@@ -126,13 +128,15 @@ export default function DateDropdown({
         {calendarDays.map(day => {
           const isCurrentMonth = isSameMonth(day, calendarMonth)
           const isSelectedDay = selectedDate ? isSameDay(day, selectedDate) : false
+          const isDisabled = minDate ? isBefore(day, minDate) : false
 
           return (
             <button
               key={day.toISOString()}
               type="button"
-              className={`sf-date-cell${isSelectedDay ? ' selected' : ''}${isCurrentMonth ? '' : ' muted'}`}
-              onClick={() => onDateSelect(day)}
+              className={`sf-date-cell${isSelectedDay ? ' selected' : ''}${isCurrentMonth ? '' : ' muted'}${isDisabled ? ' disabled' : ''}`}
+              onClick={() => !isDisabled && onDateSelect(day)}
+              disabled={isDisabled}
             >
               {format(day, 'd')}
             </button>

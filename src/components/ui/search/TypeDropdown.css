@@ -1,9 +1,11 @@
 .sf-type-dropdown {
   position: absolute;
   top: calc(100% + 10px);
-  left: 0;
-  right: 0;
+  left: 32%;
+  transform: translateX(-50%);
   z-index: 20;
+  min-width: 250px;
+  max-width: max-content;
   overflow: hidden;
   background: #ffffff;
   border-radius: 18px;
@@ -11,8 +13,9 @@
 }
 
 .sf-type-option {
-  width: 100%;
   border: none;
+  display: flex;
+  width: 100%;
   background: #ffffff;
   padding: 14px 18px;
   text-align: left;
@@ -33,13 +36,24 @@
 /* Responsive */
 @media (max-width: 768px) {
   .sf-type-dropdown {
-    position: fixed;
-    left: 16px;
-    right: 16px;
-    width: calc(100% - 32px);
-    max-width: none;
-    border-radius: 12px;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: max-content;
+    min-width: 100%;
+    max-width: 320px;
+    border-radius: 16px;
     max-height: 50vh;
     overflow-y: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .sf-type-dropdown {
+    left: 0;
+    transform: none;
+    width: 100%;
+    max-width: none;
+    border-radius: 14px;
   }
 }
