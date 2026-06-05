@@ -23,7 +23,7 @@ import CameraDSLR from '@/components/icons/facility/CameraDSLR'
 import MixerAudio from '@/components/icons/facility/MixerAudio'
 import SoundProofing from '@/components/icons/facility/SoundProofing'
 import VideoConference from '@/components/icons/facility/VideoConference'
-import SaveChangeOverlay from '@/components/ui/overlay/SaveChangeOverlay'
+import SaveChangeOverlay from '@/components/ui/overlay/owner/SaveChangeOverlay'
 
 interface SessionUser {
   user_id: string

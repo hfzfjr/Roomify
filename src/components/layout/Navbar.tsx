@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { User } from '@/types'
 import SidebarCustomer from '@/components/layout/SidebarCustomer'
-import RegisterOwnerOverlay from '@/components/ui/overlay/RegisterOwnerOverlay'
+import RegisterOwnerOverlay from '@/components/ui/overlay/customer/RegisterOwnerOverlay'
 import Notification from '@/components/ui/notification/notification'
 import NotificationIcon from '@/components/icons/NotificationIcon'
 

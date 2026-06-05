@@ -1,0 +1,175 @@
+.report-room-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.report-room-modal {
+  background: #ffffff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.report-room-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.report-room-header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.report-room-close {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: #6b7280;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.report-room-close:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.report-room-content {
+  padding: 24px;
+}
+
+.report-room-info {
+  background: #f9fafb;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.report-room-info p {
+  margin: 4px 0;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.report-room-info strong {
+  color: #111827;
+}
+
+.report-room-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.report-room-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.report-room-field label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.report-room-field select,
+.report-room-field textarea {
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  color: #111827;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.report-room-field select:focus,
+.report-room-field textarea:focus {
+  border-color: #00d4ff;
+}
+
+.report-room-field textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.report-room-footer {
+  display: flex;
+  gap: 12px;
+  padding: 20px 24px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.report-room-btn {
+  flex: 1;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.report-room-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.report-room-btn-cancel {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.report-room-btn-cancel:hover:not(:disabled) {
+  background: #e5e7eb;
+}
+
+.report-room-btn-submit {
+  background: #00d4ff;
+  color: #ffffff;
+}
+
+.report-room-btn-submit:hover:not(:disabled) {
+  background: #00c4e8;
+}
+
+@media (max-width: 640px) {
+  .report-room-modal {
+    margin: 16px;
+    max-width: none;
+  }
+
+  .report-room-header {
+    padding: 16px 20px;
+  }
+
+  .report-room-content {
+    padding: 20px;
+  }
+
+  .report-room-footer {
+    padding: 16px 20px;
+  }
+}

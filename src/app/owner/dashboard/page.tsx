@@ -5,10 +5,10 @@ import { usePathname, useRouter } from 'next/navigation';
 import styles from './page.module.css';
 import { useOwnerDashboard, useFacilityRequests } from '@/hooks/useDashboard';
 import SidebarOwner from '@/components/layout/SidebarOwner';
-import EditRoomOverlay from '@/components/ui/overlay/EditRoomOverlay';
-import RequestFacilityOverlay from '@/components/ui/overlay/RequestFacilityOverlay';
-import DeleteRoomOverlay from '@/components/ui/overlay/DeleteRoomOverlay';
-import ConfirmChangeStatusOverlay from '@/components/ui/overlay/ConfirmChangeStatusOverlay';
+import EditRoomOverlay from '@/components/ui/overlay/owner/EditRoomOverlay';
+import RequestFacilityOverlay from '@/components/ui/overlay/owner/RequestFacilityOverlay';
+import DeleteRoomOverlay from '@/components/ui/overlay/owner/DeleteRoomOverlay';
+import ConfirmChangeStatusOverlay from '@/components/ui/overlay/owner/ConfirmChangeStatusOverlay';
 
 interface SessionUser {
   user_id: string;

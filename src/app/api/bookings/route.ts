@@ -868,7 +868,6 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    console.log('=== BOOKING API START ===')
     const body = await request.json()
     const {
       user_id,
@@ -888,16 +887,12 @@ export async function POST(request: Request) {
       additional_message?: string
     }
 
-    console.log('Request body:', { user_id, room_id, date, start_time, end_time })
-
     if (!user_id || !room_id || !date || !start_time || !end_time) {
       return NextResponse.json(
         { success: false, message: 'user_id, room_id, date, start_time, dan end_time wajib diisi.' },
         { status: 400 }
       )
     }
-
-    console.log('Validation passed')
 
     const checkInDate = new Date(`${date}T${start_time}:00`)
     const checkOutDate = new Date(`${date}T${end_time}:00`)
@@ -930,17 +925,11 @@ export async function POST(request: Request) {
       )
     }
 
-    console.log('Date validation passed, creating Supabase client')
     const supabase = await createClient()
-    console.log('Supabase client created')
 
-    console.log('Ensuring customer record')
     const customerRecord = await ensureCustomerRecord(user_id)
-    console.log('Customer record:', customerRecord)
 
-    console.log('Expiring pending bookings')
     await expirePendingBookings(supabase)
-    console.log('Pending bookings expired')
 
     const { data: room, error: roomError } = await supabase
       .from('room')

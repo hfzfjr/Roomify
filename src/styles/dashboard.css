@@ -886,24 +886,29 @@
     grid-template-columns: 1fr;
     text-align: center;
   }
-  
+
   .customer-bookings-profile {
     border-right: none;
     border-bottom: 1px solid #f0f0f0;
     padding-right: 0;
     padding-bottom: 20px;
   }
-  
+
   .customer-bookings-filter-list {
     justify-content: center;
   }
-  
+
   .customer-bookings-header {
     top: var(--bookings-navbar-offset);
   }
-  
+
   .customer-booking-card-v2-meta {
     flex-direction: column;
     gap: 8px;
   }
+}
+
+/* Booking Form Date Value - Override has-value to black */
+.room-booking-date-value.has-booking-value {
+  color: #111827 !important;
 }

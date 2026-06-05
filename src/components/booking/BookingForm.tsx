@@ -21,8 +21,8 @@ import {
 import { id as localeId } from 'date-fns/locale'
 import { useRouter } from 'next/navigation'
 import { RoomDetail, User } from '@/types'
-import '@/styles/dashboard.css'
-import BookingOverlay from '@/components/ui/overlay/BookingOverlay'
+import BookingOverlay from '@/components/ui/overlay/customer/BookingOverlay'
+import RoomBookingScheduleOverlay from '@/components/ui/overlay/RoomBookingScheduleOverlay'
 import DateDropdown from '@/components/ui/search/DateDropdown'
 
 interface Props {
@@ -68,16 +68,15 @@ function addMinutes(date: Date, minutes: number) {
 
 function roundUpToBookingSlot(baseDate: Date = new Date()) {
   const rounded = new Date(baseDate)
+  const originalMinutes = rounded.getMinutes()
+
   rounded.setSeconds(0, 0)
-  rounded.setMinutes(0, 0, 0)
+  rounded.setMinutes(0, 0)
 
-  const minutes = rounded.getMinutes()
-
-  if (minutes === 0) {
-    return rounded
+  if (originalMinutes > 0) {
+    rounded.setHours(rounded.getHours() + 1, 0, 0, 0)
   }
 
-  rounded.setHours(rounded.getHours() + 1, 0, 0, 0)
   return rounded
 }
 
@@ -166,6 +165,7 @@ export default function BookingForm({ room }: Props) {
   const [fieldErrors, setFieldErrors] = useState({ date: false, startTime: false, endTime: false })
   const datePickerRef = useRef<HTMLDivElement | null>(null)
   const dateTriggerRef = useRef<HTMLButtonElement | null>(null)
+  const scheduleButtonRef = useRef<HTMLButtonElement | null>(null)
 
   const selectedDate = bookingDate ? parseISO(bookingDate) : null
   const nextAvailableSlot = roundUpToBookingSlot()
@@ -491,7 +491,7 @@ export default function BookingForm({ room }: Props) {
                 setShowDatePicker(prev => !prev)
               }}
             >
-              <span className={`sf-date-value room-booking-date-value${bookingDate ? ' has-value' : ''}`}>
+              <span className={`sf-date-value room-booking-date-value${bookingDate ? ' has-booking-value' : ''}`}>
                 {selectedDate ? format(selectedDate, 'dd/MM/yyyy') : 'dd/mm/yyyy'}
               </span>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -506,6 +506,7 @@ export default function BookingForm({ room }: Props) {
               <DateDropdown
                 selectedDate={selectedDate}
                 calendarMonth={calendarMonth}
+                minDate={getStartOfToday()}
                 onDateSelect={handleDateSelect}
                 onMonthChange={(month) => setCalendarMonth(prev => setMonth(prev, month))}
                 onYearChange={(year) => setCalendarMonth(prev => setYear(prev, year))}
@@ -548,7 +549,7 @@ export default function BookingForm({ room }: Props) {
               </div>
             </div>
 
-            <button type="button" className="customer-room-view-schedule" onClick={openScheduleModal}>
+            <button ref={scheduleButtonRef} type="button" className="customer-room-view-schedule" onClick={openScheduleModal}>
               Lihat jadwal
             </button>
           </div>
@@ -630,30 +631,14 @@ export default function BookingForm({ room }: Props) {
         </button>
       </aside>
 
-      {showScheduleModal && (
-        <div className="customer-room-modal-backdrop" role="presentation" onClick={() => setShowScheduleModal(false)}>
-          <div className="customer-room-schedule-modal" role="dialog" aria-modal="true" onClick={event => event.stopPropagation()}>
-            <div className="customer-room-schedule-head">
-              <h3>Jadwal Ruangan</h3>
-              <p>
-                <strong>{room.name}</strong>
-                <span>&nbsp;• {selectedDate ? format(selectedDate, 'd MMMM yyyy', { locale: localeId }) : '-'}</span>
-              </p>
-            </div>
-
-            <div className="customer-room-schedule-list">
-              {scheduleSlots.map(slot => (
-                <div key={slot.label} className="customer-room-schedule-row">
-                  <span>{slot.label}</span>
-                  <strong className={slot.isBooked ? 'booked' : 'available'}>
-                    {slot.isBooked ? 'Sudah dibook' : 'Tersedia'}
-                  </strong>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+      <RoomBookingScheduleOverlay
+        isOpen={showScheduleModal}
+        roomName={room.name}
+        selectedDate={selectedDate}
+        scheduleSlots={scheduleSlots}
+        anchorRef={scheduleButtonRef}
+        onClose={() => setShowScheduleModal(false)}
+      />
 
       {showConfirmModal && (
         <BookingOverlay
