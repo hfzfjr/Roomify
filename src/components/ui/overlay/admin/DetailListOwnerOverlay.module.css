@@ -29,16 +29,19 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 28px;
+  padding: 18px 24px;
   background: white;
   border-radius: 16px 16px 0 0;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color, #e5e7eb);
+  position: sticky;
+  top: 0;
+  z-index: 2;
 }
 
 .overlayTitle {
   margin: 0;
   font-size: 22px;
-  font-weight: 600;
+  font-weight: 700;
   color: #111827;
 }
 
@@ -52,21 +55,65 @@
   background-color: transparent;
   cursor: pointer;
   border-radius: 6px;
-  color: #6b7280;
+  color: #111827;
   transition: background-color 0.2s;
 }
 
 .closeButton:hover {
   background-color: #f3f4f6;
-  color: #1f2937;
+  color: #000;
 }
 
 /* ---- Body ---- */
 .overlayBody {
-  padding: 20px 24px;
+  padding: 18px;
   display: flex;
   flex-direction: column;
+  gap: 18px;
+}
+
+/* ---- Business Card (header summary) ---- */
+.businessCard {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid var(--border-color, #e5e7eb);
+  padding: 18px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 16px;
+}
+
+.businessInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.businessName {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.businessId {
+  margin: 0;
+  font-size: 14px;
+  color: #9ca3af;
+}
+
+.statusWrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.statusLabel {
+  font-size: 15px;
+  color: #4b5563;
+  font-weight: 500;
 }
 
 /* ---- Info Card ---- */
@@ -78,25 +125,25 @@
 }
 
 .infoCardHeader {
-  padding: 18px 24px 14px;
+  padding: 18px 22px 14px;
   border-bottom: 1px solid var(--border-color, #e5e7eb);
 }
 
 .infoCardTitle {
   margin: 0 0 4px 0;
-  font-size: 17px;
-  font-weight: 600;
+  font-size: 19px;
+  font-weight: 700;
   color: #111827;
 }
 
 .infoCardSubtitle {
   margin: 0;
-  font-size: 13px;
+  font-size: 14px;
   color: #9ca3af;
 }
 
 .detailList {
-  padding: 16px 24px;
+  padding: 18px 22px;
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -109,33 +156,26 @@
 }
 
 .detailLabel {
-  font-size: 15px;
-  font-weight: 500;
+  font-size: 16px;
+  font-weight: 400;
   color: #111827;
-  min-width: 180px;
-  flex-shrink: 0;
-}
-
-.detailSeparator {
-  font-size: 15px;
-  color: #6b7280;
-  margin-right: 12px;
+  min-width: 210px;
   flex-shrink: 0;
 }
 
 .detailValue {
-  font-size: 15px;
-  color: #374151;
+  font-size: 16px;
+  color: #111827;
   font-weight: 400;
   flex: 1;
 }
 
 /* ---- Status Badge ---- */
 .statusBadge {
-  padding: 6px 18px;
+  padding: 6px 22px;
   border-radius: 24px;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
 }
 
 .statusActive {
@@ -159,16 +199,14 @@
 /* ---- Footer ---- */
 .overlayFooter {
   display: flex;
-  gap: 12px;
   justify-content: flex-end;
-  padding: 16px 24px 20px;
+  padding: 4px 4px 8px;
 }
 
 .actionButton {
-  padding: 12px 32px;
   border: none;
   border-radius: 10px;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   cursor: pointer;
   transition: background-color 0.2s, transform 0.15s;
@@ -179,6 +217,7 @@
 }
 
 .deleteButton {
+  padding: 14px 28px;
   background-color: var(--admin-red);
   color: var(--admin-list-white);
 }
@@ -188,6 +227,9 @@
 }
 
 .viewRoomsButton {
+  align-self: flex-start;
+  margin-top: 4px;
+  padding: 14px 28px;
   background-color: var(--admin-cyan);
   color: var(--admin-list-white);
 }
