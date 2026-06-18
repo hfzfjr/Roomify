@@ -343,7 +343,7 @@
    CUSTOMER BOOKINGS - Riwayat Booking
    ============================================= */
 .customer-bookings-container {
-  background: #e8f7fa;
+  background: var(--cyan-light);
   min-height: 100vh;
   min-height: 100dvh;
   --bookings-navbar-offset: 80px;
@@ -735,6 +735,11 @@
   cursor: pointer;
   transition: all 0.2s ease;
   border: 1px solid transparent;
+}
+
+.customer-booking-v2-btn.rebook {
+  color: #959597;
+  border-color: #959597;
 }
 
 /* Tombol Bayar Sekarang - Primary (cyan) */
