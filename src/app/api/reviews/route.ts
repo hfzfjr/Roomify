@@ -1,5 +1,61 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { ensureCustomerRecord } from '@/lib/customer'
+
+export async function POST(request: Request) {
+  try {
+    const supabase = await createClient()
+    const body = await request.json()
+    const { booking_id, room_id, user_id, rating, comment } = body
+
+    if (!booking_id || !room_id || !user_id || !rating) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    }
+
+    // Ensure customer record exists and get customer_id
+    const customerRecord = await ensureCustomerRecord(user_id)
+    const customerId = customerRecord.customer_id
+
+    // Get the current count of reviews to generate review_id
+    const { count, error: countError } = await supabase
+      .from('review')
+      .select('*', { count: 'exact', head: true })
+
+    if (countError) {
+      console.error('Review count error:', countError)
+      return NextResponse.json({ error: countError.message }, { status: 500 })
+    }
+
+    // Generate review_id with format rev-XXX (3-digit number)
+    const nextNumber = (count || 0) + 1
+    const reviewId = `rev-${String(nextNumber).padStart(3, '0')}`
+
+    const { data, error } = await supabase
+      .from('review')
+      .insert({
+        review_id: reviewId,
+        booking_id,
+        room_id,
+        customer_id: customerId,
+        rating,
+        comment: comment || null,
+      })
+      .select()
+
+    if (error) {
+      console.error('Review insert error:', error)
+      return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: data?.[0],
+    })
+  } catch (error) {
+    console.error('Unexpected error:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
 
 export async function GET(request: Request) {
   try {
@@ -7,6 +63,33 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
     const roomId = searchParams.get('room_id')
     const userId = searchParams.get('user_id')
+    const bookingId = searchParams.get('booking_id')
+
+    // Jika booking_id disediakan, fetch review untuk booking tersebut
+    if (bookingId) {
+      const { data: reviewData, error: reviewError } = await supabase
+        .from('review')
+        .select('*')
+        .eq('booking_id', bookingId)
+        .maybeSingle()
+
+      if (reviewError) {
+        console.error('Review fetch error:', reviewError)
+        return NextResponse.json({ error: reviewError.message }, { status: 500 })
+      }
+
+      if (!reviewData) {
+        return NextResponse.json({ success: false, data: null })
+      }
+
+      return NextResponse.json({
+        success: true,
+        data: {
+          rating: reviewData.rating,
+          review: reviewData.comment || '',
+        },
+      })
+    }
 
     // Jika room_id disediakan, fetch reviews untuk room tersebut (public)
     if (roomId) {

@@ -4,7 +4,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Navbar from '@/components/layout/Navbar'
 import ReceiptModal from '@/components/booking/ReceiptModal'
-import ReportRoomOverlay from '@/components/ui/overlay/customer/ReportRoomOverlay'
 import ReviewRoomOverlay from '@/components/ui/overlay/customer/ReviewRoomOverlay'
 import CancelPaymentOverlay from '@/components/ui/overlay/customer/CancelPaymentOverlay'
 import { Booking, User } from '@/types'
@@ -47,10 +46,8 @@ export default function CustomerBookings() {
   const [searchQuery, setSearchQuery] = useState('')
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false)
   const [selectedReceiptBookingId, setSelectedReceiptBookingId] = useState('')
-  const [isReportModalOpen, setIsReportModalOpen] = useState(false)
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false)
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false)
-  const [selectedBookingForReport, setSelectedBookingForReport] = useState<Booking | null>(null)
   const [selectedBookingForReview, setSelectedBookingForReview] = useState<Booking | null>(null)
   const [selectedBookingForCancel, setSelectedBookingForCancel] = useState<Booking | null>(null)
 
@@ -177,10 +174,6 @@ export default function CustomerBookings() {
     setIsReceiptModalOpen(true)
   }
 
-  function openReportModal(booking: Booking) {
-    setSelectedBookingForReport(booking)
-    setIsReportModalOpen(true)
-  }
 
   function openReviewModal(booking: Booking) {
     setSelectedBookingForReview(booking)
@@ -228,249 +221,245 @@ export default function CustomerBookings() {
     <>
       <Navbar />
       <div className="customer-bookings-container" style={{ paddingTop: '80px' }}>
-      <div className="customer-bookings-layout">
-        {/* Sidebar */}
-        <aside className="customer-bookings-sidebar">
-          <div className="customer-bookings-profile">
-            <div className={`customer-bookings-avatar${hasBookingProfileImage ? ' has-image' : ''}`}>
-              {hasBookingProfileImage ? (
-                <img
-                  src={user?.profile_image || ''}
-                  alt={user?.name || 'User avatar'}
-                  className="customer-bookings-avatar-image"
-                  onError={() => setBookingAvatarImageError(true)}
+        <div className="customer-bookings-layout">
+          {/* Sidebar */}
+          <aside className="customer-bookings-sidebar">
+            <div className="customer-bookings-profile">
+              <div className={`customer-bookings-avatar${hasBookingProfileImage ? ' has-image' : ''}`}>
+                {hasBookingProfileImage ? (
+                  <img
+                    src={user?.profile_image || ''}
+                    alt={user?.name || 'User avatar'}
+                    className="customer-bookings-avatar-image"
+                    onError={() => setBookingAvatarImageError(true)}
+                  />
+                ) : (user?.name ? getInitials(user.name) : 'U')}
+              </div>
+              <h3 className="customer-bookings-name">{user?.name || 'User'}</h3>
+              <p className="customer-bookings-email">{user?.email || ''}</p>
+            </div>
+
+            <div className="customer-bookings-filter">
+              <h4>Filter status</h4>
+              <nav className="customer-bookings-filter-list">
+                <button
+                  className={`customer-bookings-filter-item ${filter === 'all' ? 'active' : ''}`}
+                  onClick={() => setFilter('all')}
+                  data-status="all"
+                >
+                  <span>Semua</span>
+                  <span className="customer-bookings-filter-count">{statusCounts.all}</span>
+                </button>
+                <button
+                  className={`customer-bookings-filter-item ${filter === 'confirmed' ? 'active' : ''}`}
+                  onClick={() => setFilter('confirmed')}
+                  data-status="confirmed"
+                >
+                  <span>Lunas</span>
+                  <span className="customer-bookings-filter-count">{statusCounts.confirmed}</span>
+                </button>
+                <button
+                  className={`customer-bookings-filter-item ${filter === 'pending' ? 'active' : ''}`}
+                  onClick={() => setFilter('pending')}
+                  data-status="pending"
+                >
+                  <span>Belum bayar</span>
+                  <span className="customer-bookings-filter-count">{statusCounts.pending}</span>
+                </button>
+                <button
+                  className={`customer-bookings-filter-item ${filter === 'cancelled' ? 'active' : ''}`}
+                  onClick={() => setFilter('cancelled')}
+                  data-status="cancelled"
+                >
+                  <span>Dibatalkan</span>
+                  <span className="customer-bookings-filter-count">{statusCounts.cancelled}</span>
+                </button>
+              </nav>
+            </div>
+          </aside>
+
+          {/* Main Content */}
+          <main className="customer-bookings-main">
+            <div className="customer-bookings-header">
+              <div>
+                <h1 className="customer-bookings-title">Riwayat booking</h1>
+                <p className="customer-bookings-subtitle">Ruangan-ruangan yang pernah anda booking</p>
+              </div>
+              <div className="customer-bookings-search">
+                <input
+                  type="text"
+                  placeholder="Cari ruangan"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                 />
-              ) : (user?.name ? getInitials(user.name) : 'U')}
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="11" cy="11" r="8" />
+                  <path d="m21 21-4.3-4.3" />
+                </svg>
+              </div>
             </div>
-            <h3 className="customer-bookings-name">{user?.name || 'User'}</h3>
-            <p className="customer-bookings-email">{user?.email || ''}</p>
-          </div>
 
-          <div className="customer-bookings-filter">
-            <h4>Filter status</h4>
-            <nav className="customer-bookings-filter-list">
-              <button
-                className={`customer-bookings-filter-item ${filter === 'all' ? 'active' : ''}`}
-                onClick={() => setFilter('all')}
-                data-status="all"
-              >
-                <span>Semua</span>
-                <span className="customer-bookings-filter-count">{statusCounts.all}</span>
-              </button>
-              <button
-                className={`customer-bookings-filter-item ${filter === 'confirmed' ? 'active' : ''}`}
-                onClick={() => setFilter('confirmed')}
-                data-status="confirmed"
-              >
-                <span>Lunas</span>
-                <span className="customer-bookings-filter-count">{statusCounts.confirmed}</span>
-              </button>
-              <button
-                className={`customer-bookings-filter-item ${filter === 'pending' ? 'active' : ''}`}
-                onClick={() => setFilter('pending')}
-                data-status="pending"
-              >
-                <span>Belum bayar</span>
-                <span className="customer-bookings-filter-count">{statusCounts.pending}</span>
-              </button>
-              <button
-                className={`customer-bookings-filter-item ${filter === 'cancelled' ? 'active' : ''}`}
-                onClick={() => setFilter('cancelled')}
-                data-status="cancelled"
-              >
-                <span>Dibatalkan</span>
-                <span className="customer-bookings-filter-count">{statusCounts.cancelled}</span>
-              </button>
-            </nav>
-          </div>
-        </aside>
+            {loading ? (
+              <div className="customer-bookings-list">
+                {Array.from({ length: 3 }).map((_, index) => (
+                  <div key={index} className="customer-booking-card-skeleton" />
+                ))}
+              </div>
+            ) : error ? (
+              <p className="customer-bookings-empty">{error}</p>
+            ) : filteredBookings.length === 0 ? (
+              <p className="customer-bookings-empty">
+                {searchQuery ? 'Tidak ada booking yang sesuai dengan pencarian.' : 'Anda belum memiliki booking.'}
+              </p>
+            ) : (
+              <div className="customer-bookings-list">
+                {filteredBookings.map(booking => {
+                  const image = booking.room?.images?.[0] ?? ROOM_IMAGE_PLACEHOLDER
+                  const isPendingPayment = booking.status === 'pending'
+                  const remainingPaymentMs = isPendingPayment ? getRemainingPaymentMs(booking.booking_date, nowTimestamp) : 0
+                  const isPayingOrCancelling = actionLoadingId === booking.booking_id
+                  const fullAddress = [booking.room?.location, booking.room?.region_name, booking.room?.province_name]
+                    .filter(Boolean)
+                    .join(', ')
 
-        {/* Main Content */}
-        <main className="customer-bookings-main">
-          <div className="customer-bookings-header">
-            <div>
-              <h1 className="customer-bookings-title">Riwayat booking</h1>
-              <p className="customer-bookings-subtitle">Ruangan-ruangan yang pernah anda booking</p>
-            </div>
-            <div className="customer-bookings-search">
-              <input
-                type="text"
-                placeholder="Cari ruangan"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="11" cy="11" r="8" />
-                <path d="m21 21-4.3-4.3" />
-              </svg>
-            </div>
-          </div>
-
-          {loading ? (
-            <div className="customer-bookings-list">
-              {Array.from({ length: 3 }).map((_, index) => (
-                <div key={index} className="customer-booking-card-skeleton" />
-              ))}
-            </div>
-          ) : error ? (
-            <p className="customer-bookings-empty">{error}</p>
-          ) : filteredBookings.length === 0 ? (
-            <p className="customer-bookings-empty">
-              {searchQuery ? 'Tidak ada booking yang sesuai dengan pencarian.' : 'Anda belum memiliki booking.'}
-            </p>
-          ) : (
-            <div className="customer-bookings-list">
-              {filteredBookings.map(booking => {
-                const image = booking.room?.images?.[0] ?? ROOM_IMAGE_PLACEHOLDER
-                const isPendingPayment = booking.status === 'pending'
-                const remainingPaymentMs = isPendingPayment ? getRemainingPaymentMs(booking.booking_date, nowTimestamp) : 0
-                const isPayingOrCancelling = actionLoadingId === booking.booking_id
-                const fullAddress = [booking.room?.location, booking.room?.region_name, booking.room?.province_name]
-                  .filter(Boolean)
-                  .join(', ')
-
-                return (
-                  <article key={booking.booking_id} className="customer-booking-card-v2">
-                    <div className="customer-booking-card-v2-content">
-                      <div className="customer-booking-card-v2-image">
-                        <img
-                          src={image}
-                          alt={booking.room?.name || 'Room image'}
-                          onError={event => {
-                            (event.target as HTMLImageElement).src = ROOM_IMAGE_PLACEHOLDER
-                          }}
-                        />
-                      </div>
-                      <div className="customer-booking-card-v2-header">
-                        <div className="customer-booking-card-v2-info">
-                          <h3 className="customer-booking-card-v2-room">{booking.room?.name || 'Ruangan'}</h3>
-                          <div className="customer-booking-card-v2-meta-vertical">
-                            <div className="customer-booking-card-v2-meta-row">
-                              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M16 11c1.7 0 3-1.3 3-3s-1.3-3-3-3-3 1.3-3 3 1.3 3 3 3Zm-8 0c1.7 0 3-1.3 3-3S9.7 5 8 5 5 6.3 5 8s1.3 3 3 3Zm0 2c-2.7 0-5 1.3-5 3v2h10v-2c0-1.7-2.3-3-5-3Zm8 0c-.3 0-.6 0-.9.1 1.2.8 1.9 1.8 1.9 2.9v2h6v-2c0-1.7-2.3-3-5-3Z" />
-                              </svg>
-                              <span>{booking.room?.capacity || '-'} orang</span>
-                            </div>
-                            <div className="customer-booking-card-v2-meta-row">
-                              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7Zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5Z" />
-                              </svg>
-                              <span>{fullAddress || booking.room?.location || '-'}</span>
-                            </div>
-                            <div className="customer-booking-card-v2-meta-row">
-                              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2Zm0 16H5V9h14v11ZM9 11H7v2h2v-2Zm4 0h-2v2h2v-2Zm4 0h-2v2h2v-2Zm-8 4H7v2h2v-2Zm4 0h-2v2h2v-2Zm4 0h-2v2h2v-2Z" />
-                              </svg>
-                              <span>{formatDateLong(booking.check_in)}</span>
-                            </div>
-                            <div className="customer-booking-card-v2-meta-row">
-                              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2ZM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8Zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67Z" />
-                              </svg>
-                              <span>{formatTime(booking.check_in)} - {formatTime(booking.check_out)}</span>
+                  return (
+                    <article key={booking.booking_id} className="customer-booking-card-v2">
+                      <div className="customer-booking-card-v2-content">
+                        <div className="customer-booking-card-v2-image">
+                          <img
+                            src={image}
+                            alt={booking.room?.name || 'Room image'}
+                            onError={event => {
+                              (event.target as HTMLImageElement).src = ROOM_IMAGE_PLACEHOLDER
+                            }}
+                          />
+                        </div>
+                        <div className="customer-booking-card-v2-header">
+                          <div className="customer-booking-card-v2-info">
+                            <h3 className="customer-booking-card-v2-room">{booking.room?.name || 'Ruangan'}</h3>
+                            <div className="customer-booking-card-v2-meta-vertical">
+                              <div className="customer-booking-card-v2-meta-row">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                  <path d="M16 11c1.7 0 3-1.3 3-3s-1.3-3-3-3-3 1.3-3 3 1.3 3 3 3Zm-8 0c1.7 0 3-1.3 3-3S9.7 5 8 5 5 6.3 5 8s1.3 3 3 3Zm0 2c-2.7 0-5 1.3-5 3v2h10v-2c0-1.7-2.3-3-5-3Zm8 0c-.3 0-.6 0-.9.1 1.2.8 1.9 1.8 1.9 2.9v2h6v-2c0-1.7-2.3-3-5-3Z" />
+                                </svg>
+                                <span>{booking.room?.capacity || '-'} orang</span>
+                              </div>
+                              <div className="customer-booking-card-v2-meta-row">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7Zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5Z" />
+                                </svg>
+                                <span>{fullAddress || booking.room?.location || '-'}</span>
+                              </div>
+                              <div className="customer-booking-card-v2-meta-row">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                  <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2Zm0 16H5V9h14v11ZM9 11H7v2h2v-2Zm4 0h-2v2h2v-2Zm4 0h-2v2h2v-2Zm-8 4H7v2h2v-2Zm4 0h-2v2h2v-2Zm4 0h-2v2h2v-2Z" />
+                                </svg>
+                                <span>{formatDateLong(booking.check_in)}</span>
+                              </div>
+                              <div className="customer-booking-card-v2-meta-row">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                  <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2ZM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8Zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67Z" />
+                                </svg>
+                                <span>{formatTime(booking.check_in)} - {formatTime(booking.check_out)}</span>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                        <div className="customer-booking-card-v2-price-status">
-                          <span className="customer-booking-card-v2-price">{formatRupiah(booking.total_cost)}</span>
-                          <span className={`customer-booking-card-v2-status ${getStatusBadgeClass(booking.status)}`}>
-                            {getBookingStatusLabel(booking.status)}
-                          </span>
+                          <div className="customer-booking-card-v2-price-status">
+                            <span className="customer-booking-card-v2-price">{formatRupiah(booking.total_cost)}</span>
+                            <span className={`customer-booking-card-v2-status ${getStatusBadgeClass(booking.status)}`}>
+                              {getBookingStatusLabel(booking.status)}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="customer-booking-card-v2-footer">
-                      <span className="customer-booking-card-v2-transaction">
-                        Nomor Transaksi: <strong>{booking.booking_id}</strong>
-                      </span>
-                      <div className="customer-booking-card-v2-actions">
-                        {booking.status === 'cancelled' ? (
-                          <button
-                            type="button"
-                            className="customer-booking-v2-btn"
-                            style={{ background: '#9ca3af', color: '#ffffff' }}
-                            onClick={() => handleRebook(booking.room.room_id)}
-                          >
-                            Pesan Ulang
-                          </button>
-                        ) : isPendingPayment ? (
-                          <>
+                      <div className="customer-booking-card-v2-footer">
+                        <span className="customer-booking-card-v2-transaction">
+                          Nomor Transaksi: <strong>{booking.booking_id}</strong>
+                        </span>
+                        <div className="customer-booking-card-v2-actions">
+                          {booking.status === 'cancelled' ? (
                             <button
                               type="button"
-                              className="customer-booking-v2-btn danger"
-                              disabled={isPayingOrCancelling}
-                              onClick={() => openCancelModal(booking)}
+                              className="customer-booking-v2-btn rebook"
+                              onClick={() => handleRebook(booking.room.room_id)}
                             >
-                              {isPayingOrCancelling ? 'Memproses...' : 'Batalkan Pesanan'}
+                              Pesan Ulang
                             </button>
-                            <button
-                              type="button"
-                              className="customer-booking-v2-btn primary"
-                              disabled={remainingPaymentMs <= 0}
-                              onClick={() => router.push(`/customer/payments/${booking.booking_id}`)}
-                            >
-                              Bayar Sekarang
-                            </button>
-                          </>
-                        ) : (booking.status === 'confirmed' || booking.status === 'completed') ? (
-                          <>
-                            <button
-                              type="button"
-                              className="customer-booking-v2-btn secondary"
-                              onClick={() => openReportModal(booking)}
-                            >
-                              Laporkan
-                            </button>
-                            <button
-                              type="button"
-                              className="customer-booking-v2-btn secondary"
-                              onClick={() => openReceiptModal(booking.booking_id)}
-                            >
-                              Unduh Struk
-                            </button>
-                            <button
-                              type="button"
-                              className="customer-booking-v2-btn secondary"
-                              onClick={() => openReviewModal(booking)}
-                            >
-                              Review
-                            </button>
-                          </>
-                        ) : null}
+                          ) : isPendingPayment ? (
+                            <>
+                              <button
+                                type="button"
+                                className="customer-booking-v2-btn danger"
+                                disabled={isPayingOrCancelling}
+                                onClick={() => openCancelModal(booking)}
+                              >
+                                {isPayingOrCancelling ? 'Memproses...' : 'Batalkan Pesanan'}
+                              </button>
+                              <button
+                                type="button"
+                                className="customer-booking-v2-btn primary"
+                                disabled={remainingPaymentMs <= 0}
+                                onClick={() => router.push(`/customer/payments/${booking.booking_id}`)}
+                              >
+                                Bayar Sekarang
+                              </button>
+                            </>
+                          ) : (booking.status === 'confirmed' || booking.status === 'completed') ? (
+                            <>
+                              <button
+                                type="button"
+                                className="customer-booking-v2-btn danger"
+                                onClick={() => router.push(`/customer/reports?booking_id=${booking.booking_id}`)}
+                              >
+                                Laporkan
+                              </button>
+                              <button
+                                type="button"
+                                className="customer-booking-v2-btn secondary"
+                                onClick={() => openReceiptModal(booking.booking_id)}
+                              >
+                                Unduh Struk
+                              </button>
+                              <button
+                                type="button"
+                                className="customer-booking-v2-btn secondary"
+                                onClick={() => openReviewModal(booking)}
+                              >
+                                Review
+                              </button>
+                            </>
+                          ) : null}
+                        </div>
                       </div>
-                    </div>
-                  </article>
-                )
-              })}
-            </div>
-          )}
-        </main>
+                    </article>
+                  )
+                })}
+              </div>
+            )}
+          </main>
+        </div>
       </div>
-    </div>
 
-    <ReceiptModal
-      isOpen={isReceiptModalOpen}
-      onClose={() => setIsReceiptModalOpen(false)}
-      bookingId={selectedReceiptBookingId}
-      userId={currentUserId}
-    />
-    <ReportRoomOverlay
-      isOpen={isReportModalOpen}
-      onClose={() => setIsReportModalOpen(false)}
-      roomName={selectedBookingForReport?.room?.name}
-      bookingId={selectedBookingForReport?.booking_id}
-    />
-    <ReviewRoomOverlay
-      isOpen={isReviewModalOpen}
-      onClose={() => setIsReviewModalOpen(false)}
-      roomName={selectedBookingForReview?.room?.name}
-      bookingId={selectedBookingForReview?.booking_id}
-    />
-    <CancelPaymentOverlay
-      isOpen={isCancelModalOpen}
-      onConfirm={handleCancelConfirm}
-      onCancel={() => setIsCancelModalOpen(false)}
-    />
+      <ReceiptModal
+        isOpen={isReceiptModalOpen}
+        onClose={() => setIsReceiptModalOpen(false)}
+        bookingId={selectedReceiptBookingId}
+        userId={currentUserId}
+      />
+      <ReviewRoomOverlay
+        isOpen={isReviewModalOpen}
+        onClose={() => setIsReviewModalOpen(false)}
+        roomName={selectedBookingForReview?.room?.name}
+        bookingId={selectedBookingForReview?.booking_id}
+        bookingDate={selectedBookingForReview?.booking_date}
+        roomId={selectedBookingForReview?.room?.room_id}
+        userId={currentUserId}
+      />
+      <CancelPaymentOverlay
+        isOpen={isCancelModalOpen}
+        onConfirm={handleCancelConfirm}
+        onCancel={() => setIsCancelModalOpen(false)}
+      />
     </>
   )
 }

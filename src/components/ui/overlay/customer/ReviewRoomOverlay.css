@@ -137,6 +137,13 @@
   border-color: #00d4ff;
 }
 
+.review-room-success-message {
+  margin-top: 8px;
+  font-size: 14px;
+  color: #10b981;
+  font-weight: 500;
+}
+
 .review-room-footer {
   display: flex;
   gap: 12px;

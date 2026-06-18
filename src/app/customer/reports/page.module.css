@@ -1,0 +1,381 @@
+.page {
+    min-height: 100vh;
+    background: var(--cyan-light);
+    padding-bottom: 24px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px 24px;
+}
+
+.section {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.sectionHeader {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.sectionTitle {
+    margin: 0;
+    font-size: 19px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.sectionSubtitle {
+    margin: 4px 0 0 0;
+    font-size: 13px;
+    color: #9ca3af;
+}
+
+.statusWrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.statusLabel {
+    font-size: 14px;
+    color: #374151;
+}
+
+/* Informasi Transaksi */
+.infoGrid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+}
+
+.infoItem {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.infoLabel {
+    font-size: 13px;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.infoValue {
+    font-size: 14px;
+    color: #111827;
+    font-weight: 600;
+}
+
+.statusBadge {
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    width: fit-content;
+    border: 1px solid currentColor;
+}
+
+.statusCompleted {
+    background: #ffffff;
+    color: #06b6d4;
+}
+
+/* Form */
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.label {
+    font-size: 15px;
+    font-weight: 500;
+    color: #1f2937;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.required {
+    font-size: 13px;
+    color: #ef4444;
+    font-weight: 500;
+}
+
+.select,
+.textarea {
+    padding: 14px 16px;
+    border: none;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 14px;
+    color: #111827;
+    outline: none;
+    transition: box-shadow 0.2s;
+    background: #f3f4f6;
+}
+
+.select {
+    appearance: none;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+}
+
+.select:focus,
+.textarea:focus {
+    box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.15);
+}
+
+.textarea {
+    resize: vertical;
+    min-height: 110px;
+}
+
+.textarea::placeholder {
+    color: #9ca3af;
+}
+
+/* Lampiran Bukti Foto - section header inline with Wajib badge */
+.section .sectionHeader:has(.required) {
+    align-items: center;
+}
+
+/* Dropzone */
+.dropzone {
+    position: relative;
+    border: none;
+    border-radius: 12px;
+    padding: 48px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: background 0.2s;
+    background: #f3f4f6;
+}
+
+.dropzone:hover {
+    background: #eef2f6;
+}
+
+.dropzoneContent {
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.uploadIcon {
+    color: #ffffff;
+    background: #ffffff;
+    border-radius: 50%;
+    padding: 10px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.uploadIcon path {
+    stroke: #374151;
+}
+
+.dropzoneText {
+    margin: 0 0 4px 0;
+    font-size: 15px;
+    color: #1f2937;
+    font-weight: 600;
+}
+
+.dropzoneSubtext {
+    margin: 0 0 18px 0;
+    font-size: 13px;
+    color: #9ca3af;
+}
+
+.fileInput {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.selectDeviceBtn {
+    pointer-events: auto;
+    padding: 10px 20px;
+    border: 1px solid #67e8f9;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #06b6d4;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.selectDeviceBtn:hover {
+    background: #ecfeff;
+}
+
+.photoInfo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 16px 0 0 0;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #0891b2;
+    background: #ecfeff;
+    border: 1px solid #a5f3fc;
+    border-radius: 8px;
+    width: fit-content;
+}
+
+.photoGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 14px;
+    margin-top: 16px;
+}
+
+.photoItem {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #f3f4f6;
+}
+
+.photoThumbnail {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.removePhotoBtn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: rgba(255, 255, 255, 0.95);
+    color: #374151;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.2s;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.removePhotoBtn:hover {
+    background: #ffffff;
+}
+
+.mainPhotoBadge {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    background: rgba(0, 0, 0, 0.55);
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 6px;
+}
+
+/* Footer */
+.footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 16px 24px;
+    margin-top: 20px;
+}
+
+.btn {
+    flex: 0 0 auto;
+    min-width: 140px;
+    padding: 12px 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btnCancel {
+    background: #e5e7eb;
+    color: #6b7280;
+}
+
+.btnCancel:hover:not(:disabled) {
+    background: #d1d5db;
+}
+
+.btnSubmit {
+    background: #ef4444;
+    color: #ffffff;
+}
+
+.btnSubmit:hover:not(:disabled) {
+    background: #dc2626;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .container {
+        padding: 16px 12px;
+    }
+
+    .section {
+        padding: 20px 16px;
+    }
+
+    .sectionHeader {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .infoGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .footer {
+        padding: 12px 16px;
+    }
+
+    .btn {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .photoGrid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
