@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import styles from './DetailListOwnerOverlay.module.css'
 
 interface OwnerDetail {
@@ -30,6 +31,8 @@ export default function DetailListOwnerOverlay({
   onDelete,
   onViewRooms,
 }: DetailListOwnerOverlayProps) {
+  const router = useRouter()
+
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden'
@@ -56,17 +59,6 @@ export default function DetailListOwnerOverlay({
     }
   }
 
-  const detailRows: { label: string; value: string }[] = [
-    { label: 'ID Owner', value: owner.id },
-    { label: 'Nama Bisnis', value: owner.businessName },
-    { label: 'Nama Lengkap', value: owner.ownerName },
-    { label: 'Alamat Email', value: owner.email },
-    { label: 'Nomor Telepon', value: owner.phone },
-    { label: 'Bergabung Sejak', value: owner.joinedDate },
-    { label: 'Total Ruangan', value: `${owner.totalRooms} ruangan` },
-    { label: 'Total Laporan', value: `${owner.totalReports} laporan` },
-  ]
-
   return (
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.overlayContent} onClick={(e) => e.stopPropagation()}>
@@ -79,7 +71,7 @@ export default function DetailListOwnerOverlay({
             onClick={onClose}
             aria-label="Tutup"
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <line x1="18" y1="6" x2="6" y2="18" strokeLinecap="round" />
               <line x1="6" y1="6" x2="18" y2="18" strokeLinecap="round" />
             </svg>
@@ -88,40 +80,87 @@ export default function DetailListOwnerOverlay({
 
         {/* Body */}
         <div className={styles.overlayBody}>
-          {/* Info Card */}
-          <div className={styles.infoCard}>
-            <div className={styles.infoCardHeader}>
-              <h3 className={styles.infoCardTitle}>Informasi Owner</h3>
-              <p className={styles.infoCardSubtitle}>Informasi lengkap mengenai owner</p>
-            </div>
-            <div className={styles.detailList}>
-              {detailRows.map((row) => (
-                <div key={row.label} className={styles.detailRow}>
-                  <span className={styles.detailLabel}>{row.label}</span>
-                  <span className={styles.detailSeparator}>:</span>
-                  <span className={styles.detailValue}>{row.value}</span>
-                </div>
-              ))}
-              <div className={styles.detailRow}>
-                <span className={styles.detailLabel}>Status</span>
-                <span className={styles.detailSeparator}>:</span>
+
+          {/* Card 1: Bisnis Info */}
+          <div className={styles.card}>
+            <div className={styles.businessCardContent}>
+              <div className={styles.businessInfo}>
+                <h3 className={styles.cardTitle}>{owner.businessName}</h3>
+                <p className={styles.cardSubtitle}>ID Owner: {owner.id}</p>
+              </div>
+              <div className={styles.statusContainer}>
+                <span className={styles.statusLabel}>Status Owner:</span>
                 <span className={`${styles.statusBadge} ${getStatusClass(owner.status)}`}>
                   {owner.status}
                 </span>
               </div>
             </div>
           </div>
+
+          {/* Card 2: Informasi Penanggung Jawab */}
+          <div className={styles.card}>
+            <div className={styles.cardHeader}>
+              <h3 className={styles.cardTitle}>Informasi Penanggung Jawab</h3>
+              <p className={styles.cardSubtitle}>Informasi singkat mengenai penanggung jawab bisnis</p>
+            </div>
+            <div className={styles.cardBody}>
+              <div className={styles.detailRow}>
+                <span className={styles.detailLabel}>Nama Lengkap</span>
+                <span className={styles.detailSeparator}>:</span>
+                <span className={styles.detailValue}>{owner.ownerName}</span>
+              </div>
+              <div className={styles.detailRow}>
+                <span className={styles.detailLabel}>Alamat Email</span>
+                <span className={styles.detailSeparator}>:</span>
+                <span className={styles.detailValue}>{owner.email}</span>
+              </div>
+              <div className={styles.detailRow}>
+                <span className={styles.detailLabel}>Nomor Telepon</span>
+                <span className={styles.detailSeparator}>:</span>
+                <span className={styles.detailValue}>{owner.phone}</span>
+              </div>
+              <div className={styles.detailRow}>
+                <span className={styles.detailLabel}>Bergabung Sejak</span>
+                <span className={styles.detailSeparator}>:</span>
+                <span className={styles.detailValue}>{owner.joinedDate}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Card 3: Ringkasan Asset */}
+          <div className={styles.card}>
+            <div className={styles.cardHeader}>
+              <h3 className={styles.cardTitle}>Ringkasan Asset</h3>
+              <p className={styles.cardSubtitle}>Informasi singkat mengenai kepemilikan owner terhadap ruangan</p>
+            </div>
+            <div className={styles.cardBody}>
+              <div className={styles.detailRow}>
+                <span className={styles.detailLabel}>Total Ruangan Terdaftar</span>
+                <span className={styles.detailSeparator}>:</span>
+                <span className={styles.detailValue}>{owner.totalRooms} ruangan</span>
+              </div>
+              <div className={styles.detailRow}>
+                <span className={styles.detailLabel}>Total Laporan Customer</span>
+                <span className={styles.detailSeparator}>:</span>
+                <span className={styles.detailValue}>{owner.totalReports} laporan</span>
+              </div>
+              <button
+                type="button"
+                className={`${styles.actionButton} ${styles.viewRoomsButton}`}
+                onClick={() => {
+                  onClose()
+                  router.push(`/admin/list-room?owner_id=${owner.id}`)
+                }}
+              >
+                Lihat daftar ruangan
+              </button>
+            </div>
+          </div>
+
         </div>
 
         {/* Footer */}
         <div className={styles.overlayFooter}>
-          <button
-            type="button"
-            className={`${styles.actionButton} ${styles.viewRoomsButton}`}
-            onClick={onViewRooms}
-          >
-            Lihat Ruangan
-          </button>
           <button
             type="button"
             className={`${styles.actionButton} ${styles.deleteButton}`}

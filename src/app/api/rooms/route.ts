@@ -26,18 +26,21 @@ export async function GET(request: Request) {
     const capacity = searchParams.get('capacity')
     const date = searchParams.get('date')
     const limit = searchParams.get('limit')
+    const ownerId = searchParams.get('owner_id')
 
     const supabase = await createClient()
 
-    // First get rooms - only fetch rooms with 'aktif' status and is_available = true
+    // First get rooms - only fetch rooms with 'aktif' status, is_available = true, and is_deleted = false
     let roomQuery = supabase
       .from('room')
       .select('room_id, name, capacity, price_per_hour, location, region_id, is_available, description, type, status')
       .eq('status', 'aktif')
       .eq('is_available', true)
+      .eq('is_deleted', false)
 
     if (type) roomQuery = roomQuery.eq('type', type)
     if (capacity) roomQuery = roomQuery.gte('capacity', parseInt(capacity))
+    if (ownerId) roomQuery = roomQuery.eq('owner_id', ownerId)
 
     const { data: roomData, error: roomError } = await roomQuery
 
@@ -196,7 +199,7 @@ export async function GET(request: Request) {
 
     // Get unique region_ids from rooms for name lookup
     const roomRegionIds = [...new Set(rooms.map(room => room.region_id).filter(Boolean))]
-    
+
     // Fetch region and province data
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let regionData: any[] = []
@@ -205,20 +208,20 @@ export async function GET(request: Request) {
         .from('region')
         .select('region_id, name, province_id, province(name)')
         .in('region_id', roomRegionIds)
-      
+
       if (regionError) {
         console.warn('Error fetching regions:', regionError.message)
       } else {
         regionData = regions || []
       }
     }
-    
+
     // Create region lookup map
     const regionById = new Map<string, { name: string; province_name: string | null }>()
     regionData.forEach(r => {
       // Try multiple ways to get province name from Supabase foreign key data
       let provinceName: string | null = null
-      
+
       // Method 1: province as array (standard Supabase foreign key)
       if (Array.isArray(r.province) && r.province.length > 0 && r.province[0].name) {
         provinceName = r.province[0].name
@@ -232,25 +235,25 @@ export async function GET(request: Request) {
         // Will try to fetch separately if needed
         provinceName = null
       }
-      
+
       regionById.set(r.region_id, {
         name: r.name,
         province_name: provinceName
       })
     })
-    
+
     // If we have region_ids with missing province names, fetch them directly
     const missingProvinceIds = regionData
       .filter(r => !regionById.get(r.region_id)?.province_name && r.province_id)
       .map(r => r.province_id)
       .filter((id, index, arr) => arr.indexOf(id) === index) // unique
-    
+
     if (missingProvinceIds.length > 0) {
       const { data: provinces } = await supabase
         .from('province')
         .select('province_id, name')
         .in('province_id', missingProvinceIds)
-      
+
       if (provinces) {
         const provinceMap = new Map(provinces.map(p => [p.province_id, p.name]))
         regionData.forEach(r => {
@@ -344,9 +347,10 @@ export async function POST(request: Request) {
       location?: string
       type?: string
       region_id?: string
+      facilities?: string[]
     }
 
-    const { user_id, name, description, capacity, price_per_hour, location, type, region_id } = body
+    const { user_id, name, description, capacity, price_per_hour, location, type, region_id, facilities } = body
 
     // Validation
     if (!user_id || !name || !capacity || !price_per_hour || !location || !type || !region_id) {
@@ -397,6 +401,41 @@ export async function POST(request: Request) {
 
     if (insertError) {
       return NextResponse.json({ success: false, message: insertError.message }, { status: 500 })
+    }
+
+    // Insert facilities into room_amenity table
+    if (Array.isArray(facilities) && facilities.length > 0) {
+      // Generate amenity_id in format a-[i] with minimum 2 digits
+      const { data: amenities, error: amenityError } = await supabase
+        .from('room_amenity')
+        .select('amenity_id')
+        .like('amenity_id', 'a-%')
+        .order('amenity_id', { ascending: false })
+        .limit(1)
+
+      let nextNumber = 1
+      if (!amenityError && amenities && amenities.length > 0) {
+        const lastId = amenities[0].amenity_id
+        const match = lastId.match(/a-(\d+)/)
+        if (match) {
+          nextNumber = parseInt(match[1], 10) + 1
+        }
+      }
+
+      // Generate unique IDs by incrementing locally
+      const amenityInserts = facilities.map((fac: string, index: number) => ({
+        amenity_id: `a-${String(nextNumber + index).padStart(2, '0')}`,
+        room_id: roomId,
+        amenity: fac
+      }))
+
+      const { error: insertError } = await supabase
+        .from('room_amenity')
+        .insert(amenityInserts)
+
+      if (insertError) {
+        console.warn('Warning: Failed to insert amenities:', insertError.message)
+      }
     }
 
     return NextResponse.json({

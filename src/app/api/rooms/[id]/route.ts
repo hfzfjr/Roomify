@@ -10,10 +10,10 @@ export async function DELETE(
     const { id } = await params
     const supabase = await createClient()
 
-    // Check if room exists
+    // Check if room exists and is not already deleted
     const { data: room } = await supabase
       .from('room')
-      .select('room_id')
+      .select('room_id, is_deleted')
       .eq('room_id', id)
       .single()
 
@@ -24,52 +24,17 @@ export async function DELETE(
       )
     }
 
-    // Check if there are any bookings for this room
-    const { data: bookings, error: bookingsError } = await supabase
-      .from('booking')
-      .select('booking_id')
-      .eq('room_id', id)
-      .in('status', ['pending', 'confirmed', 'checked_in'])
-
-    if (bookingsError) {
-      console.error('Error checking bookings:', bookingsError.message)
+    if (room.is_deleted) {
       return NextResponse.json(
-        { success: false, message: 'Terjadi kesalahan saat memeriksa booking ruangan.' },
-        { status: 500 }
-      )
-    }
-
-    if (bookings && bookings.length > 0) {
-      return NextResponse.json(
-        { success: false, message: 'Ruangan tidak dapat dihapus karena masih memiliki booking aktif. Silakan hapus atau batalkan booking terlebih dahulu.' },
+        { success: false, message: 'Ruangan sudah dihapus.' },
         { status: 400 }
       )
     }
 
-    // Delete room amenities
-    const { error: amenitiesError } = await supabase
-      .from('room_amenity')
-      .delete()
-      .eq('room_id', id)
-
-    if (amenitiesError) {
-      console.warn('Warning: Failed to delete room amenities:', amenitiesError.message)
-    }
-
-    // Delete room images
-    const { error: imagesError } = await supabase
-      .from('room_image')
-      .delete()
-      .eq('room_id', id)
-
-    if (imagesError) {
-      console.warn('Warning: Failed to delete room images:', imagesError.message)
-    }
-
-    // Delete the room
+    // Soft delete: set is_deleted to true (no booking check needed for soft delete)
     const { error: roomError } = await supabase
       .from('room')
-      .delete()
+      .update({ is_deleted: true })
       .eq('room_id', id)
 
     if (roomError) {
@@ -189,7 +154,7 @@ export async function PUT(
         room_id: id,
         amenity: fac
       }))
-      
+
       const { error: insertError } = await supabase
         .from('room_amenity')
         .insert(amenityInserts)

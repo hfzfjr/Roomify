@@ -20,15 +20,12 @@ const RATING_OPTIONS = [
 function CustomerRooms() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  
-  // Hide global navbar for this page (same approach as payments page)
+
   useEffect(() => {
-    // document.body.classList.add('hide-global-navbar')
     return () => {
-      // document.body.classList.remove('hide-global-navbar')
     }
   }, [])
-  
+
   // Read URL query params for initial filter state
   const urlProvinceId = searchParams.get('province_id')
   const urlRegionId = searchParams.get('region_id')
@@ -36,43 +33,43 @@ function CustomerRooms() {
   const urlType = searchParams.get('type')
   const urlDate = searchParams.get('date')
   const urlCapacity = searchParams.get('capacity')
-  
+
   const [rooms, setRooms] = useState<Room[]>([])
   const [filteredRooms, setFilteredRooms] = useState<Room[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  
-  
+
+
   // Applied search states (sudah diterapkan setelah klik cari)
   // Initialize with URL params if provided (mark as already applied)
   const [appliedLocation, setAppliedLocation] = useState<Location | null>(null)
   const [appliedType, setAppliedType] = useState(urlType || '')
   const [appliedDate, setAppliedDate] = useState(urlDate || '')
   const [appliedCapacity, setAppliedCapacity] = useState(urlCapacity || '')
-  
+
   // Filter states
   const [selectedFacilities, setSelectedFacilities] = useState<string[]>([''])
   const [selectedRatings, setSelectedRatings] = useState<number[]>([])
   const [sortBy, setSortBy] = useState<'price_asc' | 'price_desc' | 'rating'>('price_asc')
-  
+
   // Room ratings data from database
   const [roomRatings, setRoomRatings] = useState<Record<string, { rating: number; reviewCount: number }>>({})
-  
+
   // Flag to track if URL params have been applied (only apply once on load)
   const [urlParamsApplied, setUrlParamsApplied] = useState(false)
-  
+
   // Store location text for text-based filtering
   const [appliedLocationText, setAppliedLocationText] = useState(urlLocation || '')
-  
+
   const sortDropdownRef = useRef<HTMLDivElement | null>(null)
   const sortTriggerRef = useRef<HTMLButtonElement | null>(null)
-  
+
   // Sort dropdown state
   const [showSortDropdown, setShowSortDropdown] = useState(false)
-  
+
   // Show all facilities toggle
   const [showAllFacilities, setShowAllFacilities] = useState(false)
-  
+
 
   // Dynamic facility options from available rooms
   const dynamicFacilityOptions = useMemo(() => {
@@ -104,7 +101,7 @@ function CustomerRooms() {
           const roomsData = roomsJson.data ?? []
           setRooms(roomsData)
           setFilteredRooms(roomsData)
-          
+
           // Fetch ratings for each room
           await fetchRoomRatings(roomsData)
         }
@@ -122,7 +119,7 @@ function CustomerRooms() {
     async function fetchRoomRatings(roomsData: Room[]) {
       try {
         const ratings: Record<string, { rating: number; reviewCount: number }> = {}
-        
+
         await Promise.all(
           roomsData.map(async (room) => {
             try {
@@ -143,7 +140,7 @@ function CustomerRooms() {
             }
           })
         )
-        
+
         if (isMounted) {
           setRoomRatings(ratings)
         }
@@ -164,7 +161,7 @@ function CustomerRooms() {
   useEffect(() => {
     function handlePointerDown(event: MouseEvent) {
       const target = event.target as Node
-      
+
       if (
         showSortDropdown &&
         sortDropdownRef.current &&
@@ -188,7 +185,7 @@ function CustomerRooms() {
     if (appliedType) {
       result = result.filter(room => room.type === appliedType)
     }
-    
+
     if (appliedCapacity) {
       const capacityNum = parseInt(appliedCapacity)
       result = result.filter(room => room.capacity >= capacityNum)
@@ -221,8 +218,8 @@ function CustomerRooms() {
 
     // Filter by facilities
     if (selectedFacilities.length > 0 && !selectedFacilities.includes('')) {
-      result = result.filter(room => 
-        selectedFacilities.every(facility => 
+      result = result.filter(room =>
+        selectedFacilities.every(facility =>
           room.facilities?.some(f => f.toLowerCase() === facility.toLowerCase())
         )
       )
@@ -264,19 +261,19 @@ function CustomerRooms() {
       setSelectedFacilities([''])
       return
     }
-    
+
     setSelectedFacilities(prev => {
       const newSelection = prev.includes(value)
         ? prev.filter(f => f !== value)
         : [...prev.filter(f => f !== ''), value]
-      
+
       return newSelection.length === 0 ? [''] : newSelection
     })
   }
 
   function handleRatingToggle(value: number) {
-    setSelectedRatings(prev => 
-      prev.includes(value) 
+    setSelectedRatings(prev =>
+      prev.includes(value)
         ? prev.filter(r => r !== value)
         : [...prev, value]
     )
@@ -352,12 +349,12 @@ function CustomerRooms() {
       { label: 'Whiteboard', value: 'Whiteboard' },
       { label: 'HDMI Cable', value: 'HDMI Cable' }
     ]
-    
+
     // Show max 7 facilities initially (including "Semua")
     const INITIAL_FACILITY_COUNT = 7
     const hasMoreFacilities = facilityOptions.length > INITIAL_FACILITY_COUNT
     const displayedFacilities = showAllFacilities ? facilityOptions : facilityOptions.slice(0, INITIAL_FACILITY_COUNT)
-    
+
     return (
       <aside className="rooms-sidebar">
         <div className="rooms-filter-section">
@@ -382,7 +379,7 @@ function CustomerRooms() {
             ))}
           </div>
           {hasMoreFacilities && (
-            <button 
+            <button
               className="rooms-filter-toggle-btn"
               onClick={() => setShowAllFacilities(!showAllFacilities)}
             >
@@ -421,9 +418,9 @@ function CustomerRooms() {
 
   const renderRoomCard = (room: Room) => {
     const image = room.images?.[0] || '/images/gambarRuangan.png'
-    const facilities = room.facilities?.slice(0, 3).join(', ') ?? '-'
+    const facilities = room.facilities?.slice(0, 3).map(f => formatFacilityName(f)).join(', ') ?? '-'
     const displayType = room.type ? room.type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'Meeting Room'
-    
+
     // Get rating data from database
     const ratingData = roomRatings[room.room_id]
     const rating = ratingData?.rating || 0
@@ -433,7 +430,7 @@ function CustomerRooms() {
     return (
       <div key={room.room_id} className="rooms-list-card">
         <div className="rooms-list-card-image">
-          <img src={image} alt={room.name} onError={(e) => { (e.target as HTMLImageElement).src = '/images/gambarRuangan.png' }}/>
+          <img src={image} alt={room.name} onError={(e) => { (e.target as HTMLImageElement).src = '/images/gambarRuangan.png' }} />
         </div>
         <div className="rooms-list-card-content">
           <div className="rooms-list-card-main">
@@ -466,7 +463,7 @@ function CustomerRooms() {
             </div>
             <div className="rooms-list-card-rating">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none">
-                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
               </svg>
               <span>{ratingDisplay}</span>
             </div>
@@ -501,13 +498,13 @@ function CustomerRooms() {
         <div className="rooms-sidebar-wrapper">
           {renderSidebar()}
         </div>
-        
+
         <main className="rooms-main">
           <div className="rooms-sort-bar sticky-sort">
             <span>Urutkan Berdasarkan:</span>
             <div className="rooms-sort-dropdown" ref={sortDropdownRef}>
-              <button 
-                className="rooms-sort-trigger" 
+              <button
+                className="rooms-sort-trigger"
                 ref={sortTriggerRef}
                 onClick={() => setShowSortDropdown(prev => !prev)}
               >

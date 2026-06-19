@@ -25,6 +25,7 @@ type RoomRecord = {
   price_per_hour: number
   description?: string | null
   image_url?: string | null
+  is_deleted?: boolean
 }
 
 type AmenityRecord = {
@@ -116,7 +117,7 @@ export async function GET(
 
     const { data: room, error: roomError } = await supabase
       .from('room')
-      .select('room_id, name, location, capacity, type, price_per_hour, description')
+      .select('room_id, name, location, capacity, type, price_per_hour, description, is_deleted')
       .eq('room_id', booking.room_id)
       .maybeSingle<RoomRecord>()
 
@@ -126,6 +127,10 @@ export async function GET(
 
     if (!room) {
       return NextResponse.json({ success: false, message: 'Ruangan tidak ditemukan.' }, { status: 404 })
+    }
+
+    if (room.is_deleted) {
+      return NextResponse.json({ success: false, message: 'Ruangan tidak tersedia.' }, { status: 404 })
     }
 
     const { data: amenities, error: amenitiesError } = await supabase

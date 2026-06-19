@@ -13,15 +13,20 @@
 }
 
 .overlayContent {
-  background-color: var(--admin-cyan-light, #e8f7f9);
+  background-color: var(--admin-cyan-light, #eaf6f9);
   border-radius: 16px;
-  max-width: 560px;
+  max-width: 700px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
+  scrollbar-width: none;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
+}
+
+.overlayContent::-webkit-scrollbar {
+  display: none;
 }
 
 /* ---- Header ---- */
@@ -32,12 +37,12 @@
   padding: 20px 28px;
   background: white;
   border-radius: 16px 16px 0 0;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .overlayTitle {
   margin: 0;
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 600;
   color: #111827;
 }
@@ -46,62 +51,89 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border: none;
   background-color: transparent;
   cursor: pointer;
-  border-radius: 6px;
-  color: #6b7280;
+  border-radius: 8px;
+  color: #111827;
   transition: background-color 0.2s;
 }
 
 .closeButton:hover {
   background-color: #f3f4f6;
-  color: #1f2937;
 }
 
 /* ---- Body ---- */
 .overlayBody {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ---- Cards General ---- */
+.card {
+  background: white;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+}
+
+.cardHeader {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.cardTitle {
+  margin: 0 0 6px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.cardSubtitle {
+  margin: 0;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.cardBody {
   padding: 20px 24px;
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-/* ---- Info Card ---- */
-.infoCard {
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid var(--border-color, #e5e7eb);
+/* ---- Card 1: Business Specific ---- */
+.businessCardContent {
+  padding: 20px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.infoCardHeader {
-  padding: 18px 24px 14px;
-  border-bottom: 1px solid var(--border-color, #e5e7eb);
+.businessInfo .cardTitle {
+  margin-bottom: 4px;
 }
 
-.infoCardTitle {
-  margin: 0 0 4px 0;
-  font-size: 17px;
-  font-weight: 600;
-  color: #111827;
-}
-
-.infoCardSubtitle {
-  margin: 0;
-  font-size: 13px;
+.businessInfo .cardSubtitle {
   color: #9ca3af;
 }
 
-.detailList {
-  padding: 16px 24px;
+.statusContainer {
   display: flex;
-  flex-direction: column;
-  gap: 14px;
+  align-items: center;
+  gap: 16px;
 }
 
+.statusLabel {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+/* ---- Detail Rows ---- */
 .detailRow {
   display: flex;
   align-items: baseline;
@@ -109,89 +141,89 @@
 }
 
 .detailLabel {
-  font-size: 15px;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: 400;
   color: #111827;
-  min-width: 180px;
+  min-width: 280px;
+  /* Diatur lebar agar titik dua sejajar rapi */
   flex-shrink: 0;
 }
 
 .detailSeparator {
-  font-size: 15px;
-  color: #6b7280;
+  font-size: 14px;
+  color: #111827;
   margin-right: 12px;
   flex-shrink: 0;
 }
 
 .detailValue {
-  font-size: 15px;
-  color: #374151;
+  font-size: 14px;
+  color: #111827;
   font-weight: 400;
   flex: 1;
 }
 
 /* ---- Status Badge ---- */
 .statusBadge {
-  padding: 6px 18px;
-  border-radius: 24px;
-  font-size: 14px;
+  padding: 6px 24px;
+  border-radius: 9999px;
+  /* Membuat bentuk pill */
+  font-size: 13px;
   font-weight: 600;
 }
 
 .statusActive {
-  background-color: var(--admin-list-cyan-bg);
-  color: var(--admin-list-cyan);
-  border: 1.5px solid var(--admin-list-cyan);
+  background-color: #e0fcff;
+  color: #06b6d4;
+  border: 1.5px solid #06b6d4;
 }
 
 .statusInactive {
-  background-color: var(--admin-list-red-bg);
-  color: var(--admin-list-red);
-  border: 1.5px solid var(--admin-list-red);
+  background-color: #fee2e2;
+  color: #ef4444;
+  border: 1.5px solid #ef4444;
 }
 
 .statusPending {
-  background-color: var(--admin-list-yellow-bg);
-  color: var(--admin-list-yellow);
-  border: 1.5px solid var(--admin-list-yellow);
+  background-color: #fef3c7;
+  color: #d97706;
+  border: 1.5px solid #f59e0b;
+}
+
+/* ---- Buttons ---- */
+.actionButton {
+  padding: 14px 28px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.actionButton:hover {
+  opacity: 0.9;
+}
+
+/* Tombol Lihat Ruangan ada di dalam Card */
+.viewRoomsButton {
+  background-color: #00d1f9;
+  color: white;
+  width: fit-content;
+  margin-top: 8px;
 }
 
 /* ---- Footer ---- */
 .overlayFooter {
   display: flex;
-  gap: 12px;
   justify-content: flex-end;
-  padding: 16px 24px 20px;
+  padding: 0 24px 24px;
+  /* Padding selaras dengan body */
 }
 
-.actionButton {
-  padding: 12px 32px;
-  border: none;
-  border-radius: 10px;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background-color 0.2s, transform 0.15s;
-}
-
-.actionButton:hover {
-  transform: translateY(-1px);
-}
-
+/* Tombol Hapus Owner ada di pojok kanan bawah overlay */
 .deleteButton {
-  background-color: var(--admin-red);
-  color: var(--admin-list-white);
-}
-
-.deleteButton:hover {
-  background-color: var(--admin-red-hover);
-}
-
-.viewRoomsButton {
-  background-color: var(--admin-cyan);
-  color: var(--admin-list-white);
-}
-
-.viewRoomsButton:hover {
-  background-color: var(--admin-cyan-dark);
+  background-color: #f10000;
+  color: white;
+  border-radius: 8px;
 }

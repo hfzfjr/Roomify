@@ -22,10 +22,12 @@ export async function GET(request: Request) {
         updated_at,
         customer_id,
         room_id,
+        booking_id,
         room (
           room_id,
           name,
-          owner_id
+          owner_id,
+          type
         )
       `)
       .order('created_at', { ascending: false })
@@ -60,7 +62,7 @@ export async function GET(request: Request) {
 
     // Fetch customer users and owner users separately
     const [customersData, ownersData] = await Promise.all([
-      customerIds.length > 0 
+      customerIds.length > 0
         ? supabase.from('customer').select('customer_id, user_id').in('customer_id', customerIds)
         : Promise.resolve({ data: [], error: null }),
       ownerIds.length > 0
@@ -73,17 +75,18 @@ export async function GET(request: Request) {
 
     // Fetch all user data
     const allUserIds = Array.from(new Set([
-      ...customerMap.values(),
+      ...(customersData.data || []).map(c => c.user_id),
       ...(ownersData.data || []).map(o => o.user_id)
     ])).filter(Boolean)
 
     let userData: any[] = []
     if (allUserIds.length > 0) {
-      const { data: usersData } = await supabase.from('users').select('user_id, name').in('user_id', allUserIds)
+      const { data: usersData } = await supabase.from('users').select('user_id, name, email').in('user_id', allUserIds)
       userData = usersData || []
     }
 
     const userMap = new Map(userData.map(u => [u.user_id, u.name]))
+    const userEmailMap = new Map(userData.map(u => [u.user_id, u.email]))
 
     // Format report data
     const formattedReports = (reports || []).map((report: any) => {
@@ -104,11 +107,16 @@ export async function GET(request: Request) {
       }).replace(/\//g, '/')
 
       return {
-        id: `#REP-${report.report_id.toUpperCase()}`,
+        id: report.report_id,
         date: date,
         roomName: roomData?.name || 'Unknown',
         owner: userMap.get(ownerData?.user_id) || ownerData?.business_name || 'Unknown',
         reporter: userMap.get(customerUserId) || 'Unknown',
+        reporterEmail: userEmailMap.get(customerUserId) || null,
+        businessName: ownerData?.business_name || null,
+        transactionId: report.booking_id || null,
+        roomId: roomData?.room_id || null,
+        roomType: roomData?.type || null,
         status: statusMap[report.status] || 'Pending',
         description: report.description,
         category: report.category,
@@ -120,10 +128,10 @@ export async function GET(request: Request) {
     if (search) {
       const searchLower = search.toLowerCase()
       filteredReports = formattedReports.filter(report =>
-        report.id.toLowerCase().includes(searchLower) ||
-        report.roomName.toLowerCase().includes(searchLower) ||
-        report.owner.toLowerCase().includes(searchLower) ||
-        report.reporter.toLowerCase().includes(searchLower)
+        (report.id?.toLowerCase() || '').includes(searchLower) ||
+        (report.roomName?.toLowerCase() || '').includes(searchLower) ||
+        (report.owner?.toLowerCase() || '').includes(searchLower) ||
+        (report.reporter?.toLowerCase() || '').includes(searchLower)
       )
     }
 

@@ -322,9 +322,9 @@ export default function AddRoomPage() {
 
   const completedSections = [
     !isFieldEmpty(formData.name) &&
-      !isFieldEmpty(formData.description) &&
-      !isFieldEmpty(formData.price_per_hour) &&
-      !isFieldEmpty(formData.capacity),
+    !isFieldEmpty(formData.description) &&
+    !isFieldEmpty(formData.price_per_hour) &&
+    !isFieldEmpty(formData.capacity),
     !isFieldEmpty(formData.type),
     formData.facilities && formData.facilities.length > 0,
     !isFieldEmpty(formData.region_id) && !isFieldEmpty(formData.address),
@@ -386,6 +386,7 @@ export default function AddRoomPage() {
           type: formData.type,
           location: buildLocationString(),
           region_id: formData.region_id,
+          facilities: formData.facilities.map(f => f.toLowerCase().replace(/\s+/g, '_')),
         }),
       });
 
@@ -494,394 +495,394 @@ export default function AddRoomPage() {
             </>
           ) : (
             <>
-          {/* Informasi Dasar */}
-          <div className={styles.sectionCard}>
-            <div className={styles.sectionHeader}>
-              <h2 className={styles.sectionTitle}>Informasi Dasar</h2>
-              <p className={styles.sectionSubtitle}>Nama, deskripsi, dan harga ruangan</p>
-            </div>
-
-            <div className={styles.formGrid}>
-              {/* Nama Ruangan */}
-              <div className={`${styles.formField} ${styles.formFieldFull}`}>
-                <label className={styles.fieldLabel}>
-                  <span>Nama Ruangan</span>
-                  <span className={`${styles.requiredBadge} ${!isFieldValid('name') ? styles.visible : ''}`}>
-                    wajib diisi
-                  </span>
-                </label>
-                <input
-                  type="text"
-                  className={styles.textInput}
-                  placeholder="Masukkan nama ruangan"
-                  value={formData.name}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
-                />
-              </div>
-
-              {/* Deskripsi */}
-              <div className={`${styles.formField} ${styles.formFieldFull}`}>
-                <label className={styles.fieldLabel}>
-                  <span>Deskripsi</span>
-                  <span className={`${styles.requiredBadge} ${!isFieldValid('description') ? styles.visible : ''}`}>
-                    wajib diisi
-                  </span>
-                </label>
-                <textarea
-                  className={styles.textareaInput}
-                  placeholder="Masukkan deskripsi ruangan"
-                  value={formData.description}
-                  onChange={(e) => handleInputChange('description', e.target.value)}
-                  rows={4}
-                />
-              </div>
-
-              {/* Harga per jam */}
-              <div className={styles.formField}>
-                <label className={styles.fieldLabel}>
-                  <span>Harga per jam</span>
-                  <span className={`${styles.requiredBadge} ${!isFieldValid('price_per_hour') ? styles.visible : ''}`}>
-                    wajib diisi
-                  </span>
-                </label>
-                <div className={styles.inputWrapper}>
-                  <span className={styles.inputPrefix}>Rp</span>
-                  <input
-                    type="number"
-                    className={`${styles.textInput} ${styles.withPrefix}`}
-                    placeholder="Masukkan harga sewa"
-                    value={formData.price_per_hour}
-                    onChange={(e) => handleInputChange('price_per_hour', e.target.value)}
-                  />
-                  <span className={styles.inputSuffix}>/jam</span>
+              {/* Informasi Dasar */}
+              <div className={styles.sectionCard}>
+                <div className={styles.sectionHeader}>
+                  <h2 className={styles.sectionTitle}>Informasi Dasar</h2>
+                  <p className={styles.sectionSubtitle}>Nama, deskripsi, dan harga ruangan</p>
                 </div>
-              </div>
 
-              {/* Kapasitas */}
-              <div className={styles.formField}>
-                <label className={styles.fieldLabel}>
-                  <span>Kapasitas</span>
-                  <span className={`${styles.requiredBadge} ${!isFieldValid('capacity') ? styles.visible : ''}`}>
-                    wajib diisi
-                  </span>
-                </label>
-                <div className={styles.inputWrapper}>
-                  <input
-                    type="number"
-                    className={styles.textInput}
-                    placeholder="Masukkan kapasitas"
-                    value={formData.capacity}
-                    onChange={(e) => handleInputChange('capacity', e.target.value)}
-                  />
-                  <span className={styles.inputSuffix}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                      <circle cx="9" cy="7" r="4" />
-                      <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
-                    </svg>
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
+                <div className={styles.formGrid}>
+                  {/* Nama Ruangan */}
+                  <div className={`${styles.formField} ${styles.formFieldFull}`}>
+                    <label className={styles.fieldLabel}>
+                      <span>Nama Ruangan</span>
+                      <span className={`${styles.requiredBadge} ${!isFieldValid('name') ? styles.visible : ''}`}>
+                        wajib diisi
+                      </span>
+                    </label>
+                    <input
+                      type="text"
+                      className={styles.textInput}
+                      placeholder="Masukkan nama ruangan"
+                      value={formData.name}
+                      onChange={(e) => handleInputChange('name', e.target.value)}
+                    />
+                  </div>
 
-          {/* Fasilitas */}
-          <div className={styles.sectionCard}>
-            <div className={styles.sectionHeader}>
-              <h2 className={styles.sectionTitle}>Fasilitas</h2>
-              <p className={styles.sectionSubtitle}>Pilih fasilitas yang tersedia di ruangan</p>
-            </div>
+                  {/* Deskripsi */}
+                  <div className={`${styles.formField} ${styles.formFieldFull}`}>
+                    <label className={styles.fieldLabel}>
+                      <span>Deskripsi</span>
+                      <span className={`${styles.requiredBadge} ${!isFieldValid('description') ? styles.visible : ''}`}>
+                        wajib diisi
+                      </span>
+                    </label>
+                    <textarea
+                      className={styles.textareaInput}
+                      placeholder="Masukkan deskripsi ruangan"
+                      value={formData.description}
+                      onChange={(e) => handleInputChange('description', e.target.value)}
+                      rows={4}
+                    />
+                  </div>
 
-            <div className={styles.facilitiesGrid}>
-              {facilitiesList.map((facility) => {
-                const isSelected = formData.facilities?.includes(facility.id);
-                return (
-                  <button
-                    key={facility.id}
-                    type="button"
-                    className={`${styles.facilityButton} ${isSelected ? styles.selected : ''}`}
-                    onClick={() => handleFacilityToggle(facility.id)}
-                  >
-                    <span className={styles.facilityIcon}>{facility.icon}</span>
-                    <span className={styles.facilityName}>{facility.name}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Tipe Ruangan */}
-          <div className={styles.sectionCard}>
-            <div className={styles.sectionHeader}>
-              <h2 className={styles.sectionTitle}>Tipe Ruangan</h2>
-              <p className={styles.sectionSubtitle}>Pilih kategori paling sesuai</p>
-            </div>
-
-            <div className={styles.formField}>
-              <label className={styles.fieldLabel}>
-                <span>Tipe ruangan</span>
-                <span className={`${styles.requiredBadge} ${!isFieldValid('type') ? styles.visible : ''}`}>
-                  Pilih salah satu
-                </span>
-              </label>
-              <div className={styles.roomTypeGrid}>
-                {roomTypes.map((type) => (
-                  <button
-                    key={type.value}
-                    type="button"
-                    className={`${styles.roomTypeButton} ${formData.type === type.value ? styles.selected : ''}`}
-                    onClick={() => handleInputChange('type', type.value)}
-                  >
-                    {type.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Lokasi */}
-          <div className={styles.sectionCard}>
-            <div className={styles.sectionHeader}>
-              <h2 className={styles.sectionTitle}>Lokasi</h2>
-              <p className={styles.sectionSubtitle}>Provinsi, kota, dan alamat lengkap</p>
-            </div>
-
-            <div className={styles.formGrid}>
-              {/* Provinsi */}
-              <div className={styles.formField} ref={provinceDropdownRef}>
-                <label className={styles.fieldLabel}>
-                  <span>Provinsi</span>
-                  <span className={`${styles.requiredBadge} ${!isFieldValid('province_id') ? styles.visible : ''}`}>
-                    wajib
-                  </span>
-                </label>
-                <div className={styles.selectWrapper}>
-                  <button
-                    type="button"
-                    className={styles.selectTrigger}
-                    onClick={() => setShowProvinceDropdown(!showProvinceDropdown)}
-                  >
-                    <span className={formData.province_name ? styles.selectValue : styles.selectPlaceholder}>
-                      {formData.province_name || 'Masukkan nama provinsi'}
-                    </span>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </button>
-                  {showProvinceDropdown && (
-                    <div className={styles.selectDropdown}>
-                      <div className={styles.searchBox}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <circle cx="11" cy="11" r="8" />
-                          <path d="M21 21l-4.35-4.35" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                        <input
-                          type="text"
-                          placeholder="Cari provinsi..."
-                          value={provinceSearch}
-                          onChange={(e) => setProvinceSearch(e.target.value)}
-                          className={styles.searchInput}
-                          autoFocus
-                        />
-                      </div>
-                      <div className={styles.dropdownList}>
-                        {filteredProvinces.map((province) => (
-                          <button
-                            key={province.province_id}
-                            type="button"
-                            className={styles.selectOption}
-                            onClick={() => handleProvinceSelect(province)}
-                          >
-                            <div className={styles.optionIcon}>
-                              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                                <path d="M3 21h18M5 21V7l8-4 8 4v14M8 21v-9a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v9" strokeLinecap="round" strokeLinejoin="round" />
-                              </svg>
-                            </div>
-                            <div className={styles.optionContent}>
-                              <span className={styles.optionTitle}>Prov. {province.name}</span>
-                              <span className={styles.optionSubtitle}>{province.name}</span>
-                            </div>
-                          </button>
-                        ))}
-                      </div>
+                  {/* Harga per jam */}
+                  <div className={styles.formField}>
+                    <label className={styles.fieldLabel}>
+                      <span>Harga per jam</span>
+                      <span className={`${styles.requiredBadge} ${!isFieldValid('price_per_hour') ? styles.visible : ''}`}>
+                        wajib diisi
+                      </span>
+                    </label>
+                    <div className={styles.inputWrapper}>
+                      <span className={styles.inputPrefix}>Rp</span>
+                      <input
+                        type="number"
+                        className={`${styles.textInput} ${styles.withPrefix}`}
+                        placeholder="Masukkan harga sewa"
+                        value={formData.price_per_hour}
+                        onChange={(e) => handleInputChange('price_per_hour', e.target.value)}
+                      />
+                      <span className={styles.inputSuffix}>/jam</span>
                     </div>
-                  )}
-                </div>
-              </div>
-              
-              {/* Kota/Kabupaten */}
-              <div className={styles.formField} ref={regionDropdownRef}>
-                <label className={styles.fieldLabel}>
-                  <span>Kota/Kabupaten</span>
-                  <span className={`${styles.requiredBadge} ${!isFieldValid('region_id') ? styles.visible : ''}`}>
-                    wajib
-                  </span>
-                </label>
-                <div className={styles.selectWrapper}>
-                  <button
-                    type="button"
-                    className={styles.selectTrigger}
-                    onClick={() => setShowRegionDropdown(!showRegionDropdown)}
-                    disabled={!formData.province_id}
-                  >
-                    <span className={formData.region_name ? styles.selectValue : styles.selectPlaceholder}>
-                      {formData.region_name || (formData.province_id ? 'Masukkan kota/kabupaten' : 'Pilih provinsi terlebih dahulu')}
-                    </span>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </button>
-                  {showRegionDropdown && (
-                    <div className={styles.selectDropdown}>
-                      <div className={styles.searchBox}>
+                  </div>
+
+                  {/* Kapasitas */}
+                  <div className={styles.formField}>
+                    <label className={styles.fieldLabel}>
+                      <span>Kapasitas</span>
+                      <span className={`${styles.requiredBadge} ${!isFieldValid('capacity') ? styles.visible : ''}`}>
+                        wajib diisi
+                      </span>
+                    </label>
+                    <div className={styles.inputWrapper}>
+                      <input
+                        type="number"
+                        className={styles.textInput}
+                        placeholder="Masukkan kapasitas"
+                        value={formData.capacity}
+                        onChange={(e) => handleInputChange('capacity', e.target.value)}
+                      />
+                      <span className={styles.inputSuffix}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <circle cx="11" cy="11" r="8" />
-                          <path d="M21 21l-4.35-4.35" strokeLinecap="round" strokeLinejoin="round" />
+                          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                          <circle cx="9" cy="7" r="4" />
+                          <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
                         </svg>
-                        <input
-                          type="text"
-                          placeholder="Cari kota/kabupaten..."
-                          value={regionSearch}
-                          onChange={(e) => setRegionSearch(e.target.value)}
-                          className={styles.searchInput}
-                          autoFocus
-                        />
-                      </div>
-                      <div className={styles.dropdownList}>
-                        {filteredRegions.map((region) => (
-                          <button
-                            key={region.region_id}
-                            type="button"
-                            className={styles.selectOption}
-                            onClick={() => handleRegionSelect(region)}
-                          >
-                            <div className={styles.optionIcon}>
-                              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                                <path d="M3 21h18M5 21V7l8-4 8 4v14M8 21v-9a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v9" strokeLinecap="round" strokeLinejoin="round" />
-                              </svg>
-                            </div>
-                            <div className={styles.optionContent}>
-                              <span className={styles.optionTitle}>{region.name}</span>
-                              <span className={styles.optionSubtitle}>
-                                {provinces.find((p) => p.province_id === region.province_id)?.name || ''}
-                              </span>
-                            </div>
-                          </button>
-                        ))}
-                      </div>
+                      </span>
                     </div>
-                  )}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Alamat Lengkap */}
-            <div className={`${styles.formField} ${styles.formFieldFull}`} style={{ marginTop: '20px' }}>
-              <label className={styles.fieldLabel}>
-                <span>Alamat Lengkap</span>
-                <span className={`${styles.requiredBadge} ${!isFieldValid('address') ? styles.visible : ''}`}>
-                  wajib
-                </span>
-              </label>
-              <textarea
-                className={styles.textareaInput}
-                placeholder="Masukkan alamat lengkap ruangan"
-                value={formData.address}
-                onChange={(e) => handleInputChange('address', e.target.value)}
-                rows={3}
-              />
-            </div>
-          </div>
+              {/* Fasilitas */}
+              <div className={styles.sectionCard}>
+                <div className={styles.sectionHeader}>
+                  <h2 className={styles.sectionTitle}>Fasilitas</h2>
+                  <p className={styles.sectionSubtitle}>Pilih fasilitas yang tersedia di ruangan</p>
+                </div>
 
-          {/* Foto Ruangan */}
-          <div className={styles.sectionCard}>
-            <div className={styles.sectionHeader}>
-              <h2 className={styles.sectionTitle}>Foto Ruangan</h2>
-              <div className={styles.sectionSubtitleRow}>
-                <span className={styles.sectionSubtitle}>Unggah minimal 1 foto, maks 8 foto</span>
-                <span className={`${styles.requiredBadge} ${!isPhotoValid() ? styles.visible : ''}`}>
-                  wajib diisi
-                </span>
+                <div className={styles.facilitiesGrid}>
+                  {facilitiesList.map((facility) => {
+                    const isSelected = formData.facilities?.includes(facility.id);
+                    return (
+                      <button
+                        key={facility.id}
+                        type="button"
+                        className={`${styles.facilityButton} ${isSelected ? styles.selected : ''}`}
+                        onClick={() => handleFacilityToggle(facility.id)}
+                      >
+                        <span className={styles.facilityIcon}>{facility.icon}</span>
+                        <span className={styles.facilityName}>{facility.name}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
 
-            {/* Upload Area */}
-            <div
-              className={styles.uploadArea}
-              onDrop={handleDrop}
-              onDragOver={handleUploadAreaDragOver}
-              onClick={() => document.getElementById('photo-input')?.click()}
-            >
-              <input
-                id="photo-input"
-                type="file"
-                accept="image/jpeg,image/png"
-                multiple
-                className={styles.hiddenInput}
-                onChange={handleFileSelect}
-              />
-              <div className={styles.uploadIcon}>
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" strokeLinecap="round" strokeLinejoin="round" />
-                  <polyline points="17,8 12,3 7,8" strokeLinecap="round" strokeLinejoin="round" />
-                  <line x1="12" y1="3" x2="12" y2="15" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+              {/* Tipe Ruangan */}
+              <div className={styles.sectionCard}>
+                <div className={styles.sectionHeader}>
+                  <h2 className={styles.sectionTitle}>Tipe Ruangan</h2>
+                  <p className={styles.sectionSubtitle}>Pilih kategori paling sesuai</p>
+                </div>
+
+                <div className={styles.formField}>
+                  <label className={styles.fieldLabel}>
+                    <span>Tipe ruangan</span>
+                    <span className={`${styles.requiredBadge} ${!isFieldValid('type') ? styles.visible : ''}`}>
+                      Pilih salah satu
+                    </span>
+                  </label>
+                  <div className={styles.roomTypeGrid}>
+                    {roomTypes.map((type) => (
+                      <button
+                        key={type.value}
+                        type="button"
+                        className={`${styles.roomTypeButton} ${formData.type === type.value ? styles.selected : ''}`}
+                        onClick={() => handleInputChange('type', type.value)}
+                      >
+                        {type.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
-              <p className={styles.uploadText}>Seret foto ke sini atau klik untuk pilih</p>
-              <p className={styles.uploadSubtext}>Format JPG, PNG · Maks. 5 MB per foto</p>
-              <button type="button" className={styles.uploadButton} onClick={(e) => { e.stopPropagation(); document.getElementById('photo-input')?.click(); }}>
-                Pilih dari perangkat
-              </button>
-            </div>
 
-            {showValidation && !isPhotoValid() && (
-              <div className={styles.validationMessage} style={{ marginBottom: '16px' }}>
-                Silakan unggah minimal 1 foto ruangan.
-              </div>
-            )}
+              {/* Lokasi */}
+              <div className={styles.sectionCard}>
+                <div className={styles.sectionHeader}>
+                  <h2 className={styles.sectionTitle}>Lokasi</h2>
+                  <p className={styles.sectionSubtitle}>Provinsi, kota, dan alamat lengkap</p>
+                </div>
 
-            {/* Preview Photos */}
-            {photoUrls.length > 0 && (
-              <div className={styles.photoPreviewSection}>
-                <h4 className={styles.previewTitle}>Preview foto</h4>
-                <div className={styles.photoGrid}>
-                  {photoUrls.map((url, index) => (
-                    <div
-                      key={index}
-                      className={`${styles.photoItem} ${draggedIndex === index ? styles.dragging : ''} ${dragOverIndex === index ? styles.dragOver : ''}`}
-                      draggable
-                      onDragStart={() => handlePhotoDragStart(index)}
-                      onDragOver={(e) => handlePhotoDragOver(e, index)}
-                      onDragLeave={handlePhotoDragLeave}
-                      onDrop={(e) => handlePhotoDrop(e, index)}
-                      onDragEnd={handlePhotoDragEnd}
-                    >
-                      <img src={url} alt={`Preview ${index + 1}`} className={styles.photoThumb} draggable={false} />
+                <div className={styles.formGrid}>
+                  {/* Provinsi */}
+                  <div className={styles.formField} ref={provinceDropdownRef}>
+                    <label className={styles.fieldLabel}>
+                      <span>Provinsi</span>
+                      <span className={`${styles.requiredBadge} ${!isFieldValid('province_id') ? styles.visible : ''}`}>
+                        wajib
+                      </span>
+                    </label>
+                    <div className={styles.selectWrapper}>
                       <button
                         type="button"
-                        className={styles.photoRemove}
-                        onClick={() => handleRemovePhoto(index)}
+                        className={styles.selectTrigger}
+                        onClick={() => setShowProvinceDropdown(!showProvinceDropdown)}
                       >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <line x1="18" y1="6" x2="6" y2="18" strokeLinecap="round" />
-                          <line x1="6" y1="6" x2="18" y2="18" strokeLinecap="round" />
+                        <span className={formData.province_name ? styles.selectValue : styles.selectPlaceholder}>
+                          {formData.province_name || 'Masukkan nama provinsi'}
+                        </span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       </button>
-                      {index === 0 && <span className={styles.mainPhotoBadge}>Utama</span>}
+                      {showProvinceDropdown && (
+                        <div className={styles.selectDropdown}>
+                          <div className={styles.searchBox}>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <circle cx="11" cy="11" r="8" />
+                              <path d="M21 21l-4.35-4.35" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                            <input
+                              type="text"
+                              placeholder="Cari provinsi..."
+                              value={provinceSearch}
+                              onChange={(e) => setProvinceSearch(e.target.value)}
+                              className={styles.searchInput}
+                              autoFocus
+                            />
+                          </div>
+                          <div className={styles.dropdownList}>
+                            {filteredProvinces.map((province) => (
+                              <button
+                                key={province.province_id}
+                                type="button"
+                                className={styles.selectOption}
+                                onClick={() => handleProvinceSelect(province)}
+                              >
+                                <div className={styles.optionIcon}>
+                                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                    <path d="M3 21h18M5 21V7l8-4 8 4v14M8 21v-9a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v9" strokeLinecap="round" strokeLinejoin="round" />
+                                  </svg>
+                                </div>
+                                <div className={styles.optionContent}>
+                                  <span className={styles.optionTitle}>Prov. {province.name}</span>
+                                  <span className={styles.optionSubtitle}>{province.name}</span>
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  ))}
+                  </div>
+
+                  {/* Kota/Kabupaten */}
+                  <div className={styles.formField} ref={regionDropdownRef}>
+                    <label className={styles.fieldLabel}>
+                      <span>Kota/Kabupaten</span>
+                      <span className={`${styles.requiredBadge} ${!isFieldValid('region_id') ? styles.visible : ''}`}>
+                        wajib
+                      </span>
+                    </label>
+                    <div className={styles.selectWrapper}>
+                      <button
+                        type="button"
+                        className={styles.selectTrigger}
+                        onClick={() => setShowRegionDropdown(!showRegionDropdown)}
+                        disabled={!formData.province_id}
+                      >
+                        <span className={formData.region_name ? styles.selectValue : styles.selectPlaceholder}>
+                          {formData.region_name || (formData.province_id ? 'Masukkan kota/kabupaten' : 'Pilih provinsi terlebih dahulu')}
+                        </span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </button>
+                      {showRegionDropdown && (
+                        <div className={styles.selectDropdown}>
+                          <div className={styles.searchBox}>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <circle cx="11" cy="11" r="8" />
+                              <path d="M21 21l-4.35-4.35" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                            <input
+                              type="text"
+                              placeholder="Cari kota/kabupaten..."
+                              value={regionSearch}
+                              onChange={(e) => setRegionSearch(e.target.value)}
+                              className={styles.searchInput}
+                              autoFocus
+                            />
+                          </div>
+                          <div className={styles.dropdownList}>
+                            {filteredRegions.map((region) => (
+                              <button
+                                key={region.region_id}
+                                type="button"
+                                className={styles.selectOption}
+                                onClick={() => handleRegionSelect(region)}
+                              >
+                                <div className={styles.optionIcon}>
+                                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                    <path d="M3 21h18M5 21V7l8-4 8 4v14M8 21v-9a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v9" strokeLinecap="round" strokeLinejoin="round" />
+                                  </svg>
+                                </div>
+                                <div className={styles.optionContent}>
+                                  <span className={styles.optionTitle}>{region.name}</span>
+                                  <span className={styles.optionSubtitle}>
+                                    {provinces.find((p) => p.province_id === region.province_id)?.name || ''}
+                                  </span>
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <div className={styles.photoInfo}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="12" cy="12" r="10" />
-                    <line x1="12" y1="16" x2="12" y2="12" strokeLinecap="round" />
-                    <line x1="12" y1="8" x2="12.01" y2="8" strokeLinecap="round" />
-                  </svg>
-                  <span>Foto pertama akan dijadikan foto utama. Seret untuk mengubah urutan.</span>
+
+                {/* Alamat Lengkap */}
+                <div className={`${styles.formField} ${styles.formFieldFull}`} style={{ marginTop: '20px' }}>
+                  <label className={styles.fieldLabel}>
+                    <span>Alamat Lengkap</span>
+                    <span className={`${styles.requiredBadge} ${!isFieldValid('address') ? styles.visible : ''}`}>
+                      wajib
+                    </span>
+                  </label>
+                  <textarea
+                    className={styles.textareaInput}
+                    placeholder="Masukkan alamat lengkap ruangan"
+                    value={formData.address}
+                    onChange={(e) => handleInputChange('address', e.target.value)}
+                    rows={3}
+                  />
                 </div>
               </div>
-            )}
-          </div>
+
+              {/* Foto Ruangan */}
+              <div className={styles.sectionCard}>
+                <div className={styles.sectionHeader}>
+                  <h2 className={styles.sectionTitle}>Foto Ruangan</h2>
+                  <div className={styles.sectionSubtitleRow}>
+                    <span className={styles.sectionSubtitle}>Unggah minimal 1 foto, maks 8 foto</span>
+                    <span className={`${styles.requiredBadge} ${!isPhotoValid() ? styles.visible : ''}`}>
+                      wajib diisi
+                    </span>
+                  </div>
+                </div>
+
+                {/* Upload Area */}
+                <div
+                  className={styles.uploadArea}
+                  onDrop={handleDrop}
+                  onDragOver={handleUploadAreaDragOver}
+                  onClick={() => document.getElementById('photo-input')?.click()}
+                >
+                  <input
+                    id="photo-input"
+                    type="file"
+                    accept="image/jpeg,image/png"
+                    multiple
+                    className={styles.hiddenInput}
+                    onChange={handleFileSelect}
+                  />
+                  <div className={styles.uploadIcon}>
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" strokeLinecap="round" strokeLinejoin="round" />
+                      <polyline points="17,8 12,3 7,8" strokeLinecap="round" strokeLinejoin="round" />
+                      <line x1="12" y1="3" x2="12" y2="15" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </div>
+                  <p className={styles.uploadText}>Seret foto ke sini atau klik untuk pilih</p>
+                  <p className={styles.uploadSubtext}>Format JPG, PNG · Maks. 5 MB per foto</p>
+                  <button type="button" className={styles.uploadButton} onClick={(e) => { e.stopPropagation(); document.getElementById('photo-input')?.click(); }}>
+                    Pilih dari perangkat
+                  </button>
+                </div>
+
+                {showValidation && !isPhotoValid() && (
+                  <div className={styles.validationMessage} style={{ marginBottom: '16px' }}>
+                    Silakan unggah minimal 1 foto ruangan.
+                  </div>
+                )}
+
+                {/* Preview Photos */}
+                {photoUrls.length > 0 && (
+                  <div className={styles.photoPreviewSection}>
+                    <h4 className={styles.previewTitle}>Preview foto</h4>
+                    <div className={styles.photoGrid}>
+                      {photoUrls.map((url, index) => (
+                        <div
+                          key={index}
+                          className={`${styles.photoItem} ${draggedIndex === index ? styles.dragging : ''} ${dragOverIndex === index ? styles.dragOver : ''}`}
+                          draggable
+                          onDragStart={() => handlePhotoDragStart(index)}
+                          onDragOver={(e) => handlePhotoDragOver(e, index)}
+                          onDragLeave={handlePhotoDragLeave}
+                          onDrop={(e) => handlePhotoDrop(e, index)}
+                          onDragEnd={handlePhotoDragEnd}
+                        >
+                          <img src={url} alt={`Preview ${index + 1}`} className={styles.photoThumb} draggable={false} />
+                          <button
+                            type="button"
+                            className={styles.photoRemove}
+                            onClick={() => handleRemovePhoto(index)}
+                          >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <line x1="18" y1="6" x2="6" y2="18" strokeLinecap="round" />
+                              <line x1="6" y1="6" x2="18" y2="18" strokeLinecap="round" />
+                            </svg>
+                          </button>
+                          {index === 0 && <span className={styles.mainPhotoBadge}>Utama</span>}
+                        </div>
+                      ))}
+                    </div>
+                    <div className={styles.photoInfo}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="12" y1="16" x2="12" y2="12" strokeLinecap="round" />
+                        <line x1="12" y1="8" x2="12.01" y2="8" strokeLinecap="round" />
+                      </svg>
+                      <span>Foto pertama akan dijadikan foto utama. Seret untuk mengubah urutan.</span>
+                    </div>
+                  </div>
+                )}
+              </div>
             </>
           )}
         </div>

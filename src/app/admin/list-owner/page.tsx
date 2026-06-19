@@ -3,6 +3,7 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
 import SidebarAdmin from '@/components/layout/SidebarAdmin'
 import DetailListOwnerOverlay from '@/components/ui/overlay/admin/DetailListOwnerOverlay'
+import DeleteOwnerOverlay from '@/components/ui/overlay/admin/DeleteOwnerOverlay'
 import { useUser } from '@/hooks/useUser'
 import styles from './page.module.css'
 
@@ -30,6 +31,8 @@ export default function ListOwnerPage() {
   const [sortKey, setSortKey] = useState<SortKey>('id')
   const [isOverlayOpen, setIsOverlayOpen] = useState(false)
   const [selectedOwner, setSelectedOwner] = useState<Owner | null>(null)
+  const [isDeleteOverlayOpen, setIsDeleteOverlayOpen] = useState(false)
+  const [ownerToDelete, setOwnerToDelete] = useState<Owner | null>(null)
 
   useEffect(() => {
     fetchOwners()
@@ -40,7 +43,7 @@ export default function ListOwnerPage() {
       setLoading(true)
       const response = await fetch('/api/admin/owners')
       const result = await response.json()
-      
+
       if (result.success) {
         setOwners(result.data)
       } else {
@@ -53,10 +56,38 @@ export default function ListOwnerPage() {
     }
   }
 
-  const handleDelete = (id: string) => {
-    if (confirm('Apakah Anda yakin ingin menghapus pemilik ini?')) {
-      setOwners(owners.filter(owner => owner.id !== id))
-      setIsOverlayOpen(false)
+  const handleDelete = (owner: Owner) => {
+    setOwnerToDelete(owner)
+    setIsDeleteOverlayOpen(true)
+  }
+
+  const handleCloseDeleteOverlay = () => {
+    setIsDeleteOverlayOpen(false)
+    setOwnerToDelete(null)
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!ownerToDelete) return
+
+    try {
+      const response = await fetch(`/api/admin/owners/${ownerToDelete.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_deleted: true })
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        setOwners(prev => prev.filter(o => o.id !== ownerToDelete.id))
+        handleCloseDeleteOverlay()
+        setIsOverlayOpen(false)
+      } else {
+        alert('Gagal menghapus owner: ' + result.message)
+      }
+    } catch (error) {
+      console.error('Error deleting owner:', error)
+      alert('Gagal menghapus owner')
     }
   }
 
@@ -70,7 +101,7 @@ export default function ListOwnerPage() {
 
   const handleOverlayDelete = () => {
     if (selectedOwner) {
-      handleDelete(selectedOwner.id)
+      handleDelete(selectedOwner)
     }
   }
 
@@ -191,7 +222,7 @@ export default function ListOwnerPage() {
                       <th>Nama Bisnis</th>
                       <th>Nama Owner</th>
                       <th>Status</th>
-                      <th></th>
+                      <th>Aksi</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -226,7 +257,7 @@ export default function ListOwnerPage() {
                               <button
                                 type="button"
                                 className={styles.btnDelete}
-                                onClick={() => handleDelete(owner.id)}
+                                onClick={() => handleDelete(owner)}
                               >
                                 Hapus
                               </button>
@@ -252,6 +283,15 @@ export default function ListOwnerPage() {
         onDelete={handleOverlayDelete}
         onViewRooms={handleViewRooms}
       />
+
+      {/* Delete Overlay */}
+      {ownerToDelete && (
+        <DeleteOwnerOverlay
+          ownerName={ownerToDelete.businessName}
+          onConfirm={handleConfirmDelete}
+          onCancel={handleCloseDeleteOverlay}
+        />
+      )}
     </div>
   )
 }

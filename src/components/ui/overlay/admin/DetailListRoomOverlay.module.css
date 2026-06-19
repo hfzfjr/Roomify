@@ -15,13 +15,18 @@
 .overlayContent {
   background-color: var(--admin-cyan-light, #e8f7f9);
   border-radius: 16px;
-  max-width: 560px;
+  max-width: 700px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
+  scrollbar-width: none;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
+}
+
+.overlayContent::-webkit-scrollbar {
+  display: none;
 }
 
 /* ---- Header ---- */
@@ -69,6 +74,83 @@
   gap: 16px;
 }
 
+/* ---- Carousel Card ---- */
+.carouselCard {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border-color, #e5e7eb);
+  padding: 12px;
+}
+
+.carousel {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  background-color: #1f2937;
+  aspect-ratio: 16 / 10;
+}
+
+.carouselImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.carouselArrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background-color: var(--admin-cyan, #22d3ee);
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.carouselArrow:hover {
+  background-color: var(--admin-cyan-dark, #06b6d4);
+}
+
+.carouselArrowLeft {
+  left: 16px;
+}
+
+.carouselArrowRight {
+  right: 16px;
+}
+
+.carouselDots {
+  position: absolute;
+  bottom: 14px;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.carouselDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.6);
+}
+
+.carouselDotActive {
+  width: 22px;
+  border-radius: 4px;
+  background-color: var(--admin-cyan, #22d3ee);
+}
+
 /* ---- Info Card ---- */
 .infoCard {
   background: white;
@@ -78,8 +160,17 @@
 }
 
 .infoCardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
   padding: 18px 24px 14px;
   border-bottom: 1px solid var(--border-color, #e5e7eb);
+}
+
+.infoCardHeaderText {
+  display: flex;
+  flex-direction: column;
 }
 
 .infoCardTitle {
@@ -93,6 +184,19 @@
   margin: 0;
   font-size: 13px;
   color: #9ca3af;
+}
+
+.statusGroup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.statusLabel {
+  font-size: 14px;
+  color: #6b7280;
 }
 
 .detailList {
@@ -128,6 +232,7 @@
   color: #374151;
   font-weight: 400;
   flex: 1;
+  white-space: pre-line;
 }
 
 /* ---- Status Badge ---- */
@@ -148,6 +253,26 @@
   background-color: var(--admin-list-red-bg);
   color: var(--admin-list-red);
   border: 1.5px solid var(--admin-list-red);
+}
+
+/* ---- Facilities ---- */
+.facilitiesList {
+  padding: 18px 24px 22px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.facilityBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: 1.5px solid var(--admin-cyan, #22d3ee);
+  color: var(--admin-cyan-dark, #06b6d4);
+  font-size: 14px;
+  font-weight: 600;
 }
 
 /* ---- Footer ---- */

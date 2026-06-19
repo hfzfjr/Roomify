@@ -478,7 +478,7 @@ function EditRoomForm() {
           description,
           price_per_hour: cleanPrice,
           capacity: Number(capacity),
-          facilities: selectedFacilities,
+          facilities: selectedFacilities.map(f => f.toLowerCase().replace(/\s+/g, '_')),
           type: roomType,
           location: address,
           region_id: regionId,

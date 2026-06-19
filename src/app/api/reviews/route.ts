@@ -12,6 +12,25 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
+    // Check if room exists and is not deleted
+    const { data: room, error: roomError } = await supabase
+      .from('room')
+      .select('room_id, is_deleted')
+      .eq('room_id', room_id)
+      .maybeSingle()
+
+    if (roomError) {
+      return NextResponse.json({ error: roomError.message }, { status: 500 })
+    }
+
+    if (!room) {
+      return NextResponse.json({ error: 'Ruangan tidak ditemukan.' }, { status: 404 })
+    }
+
+    if (room.is_deleted) {
+      return NextResponse.json({ error: 'Ruangan tidak tersedia.' }, { status: 404 })
+    }
+
     // Ensure customer record exists and get customer_id
     const customerRecord = await ensureCustomerRecord(user_id)
     const customerId = customerRecord.customer_id
@@ -154,6 +173,7 @@ export async function GET(request: Request) {
         .select('room_id, name')
         .eq('owner_id', ownerId)
         .eq('is_available', true)
+        .eq('is_deleted', false)
         .in('status', ['approved', 'active'])
 
       if (roomsError) {

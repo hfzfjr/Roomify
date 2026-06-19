@@ -154,7 +154,7 @@ export default function Navbar() {
     ? user.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
     : '?'
   const hasProfileImage = Boolean(user?.profile_image) && !avatarImageError
-  const isOwner = user?.role === 'owner' || ownerApplicationStatus === 'active'
+  const isOwner = user?.role === 'owner'
   const isOwnerPending = ownerApplicationStatus === 'pending'
   const ownerActionLabel = isOwner
     ? 'Kelola Ruangan'

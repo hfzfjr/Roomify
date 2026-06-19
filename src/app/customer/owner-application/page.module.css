@@ -7,7 +7,7 @@
 .wrapper {
   min-height: calc(100vh - 120px);
   padding: 32px 24px 56px;
-  background: #e0f2fe;
+  background: var(--cyan-light);
 }
 
 .card {
@@ -125,7 +125,7 @@
   border-radius: 12px;
   min-width: 180px;
   height: 48px;
-  background: #0ea5e9;
+  background: var(--cyan);
   color: #ffffff;
   font-size: 15px;
   font-weight: 600;
@@ -134,7 +134,7 @@
 }
 
 .primaryButton:hover {
-  background: #0284c7;
+  background: var(--cyan-dark);
 }
 
 .primaryButton:disabled {

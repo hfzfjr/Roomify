@@ -247,7 +247,7 @@ export default function AdminReports() {
                       <th>Owner</th>
                       <th>Pelapor</th>
                       <th>Status</th>
-                      <th></th>
+                      <th>Aksi</th>
                     </tr>
                   </thead>
                   <tbody>

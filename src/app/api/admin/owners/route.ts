@@ -21,6 +21,7 @@ export async function GET(request: Request) {
         applied_at,
         approved_at
       `)
+      .eq('is_deleted', false)
       .order('applied_at', { ascending: false })
 
     // Apply status filter
@@ -41,7 +42,7 @@ export async function GET(request: Request) {
     // Get room counts for each owner
     const ownerIds = Array.from(new Set((owners || []).map(owner => owner.owner_id).filter(Boolean)))
     let roomCounts: { [key: string]: number } = {}
-    
+
     if (ownerIds.length > 0) {
       const { data: roomsData, error: roomsError } = await supabase
         .from('room')
@@ -61,7 +62,7 @@ export async function GET(request: Request) {
     // Fetch user data separately
     const userIds = Array.from(new Set((owners || []).map(owner => owner.user_id).filter(Boolean)))
     let userMap: Map<string, { name: string; email: string; phone_number: string }> = new Map()
-    
+
     if (userIds.length > 0) {
       const { data: usersData, error: usersError } = await supabase
         .from('users')
@@ -82,13 +83,13 @@ export async function GET(request: Request) {
         'rejected': 'Tidak aktif',
         'pending': 'Tidak aktif',
       }
-      
-      const joinedDate = owner.applied_at 
+
+      const joinedDate = owner.applied_at
         ? new Date(owner.applied_at).toLocaleDateString('id-ID', {
-            day: '2-digit',
-            month: 'long',
-            year: 'numeric'
-          })
+          day: '2-digit',
+          month: 'long',
+          year: 'numeric'
+        })
         : '-'
 
       const userData = userMap.get(owner.user_id)

@@ -933,7 +933,7 @@ export async function POST(request: Request) {
 
     const { data: room, error: roomError } = await supabase
       .from('room')
-      .select('room_id, name, price_per_hour, is_available')
+      .select('room_id, name, price_per_hour, is_available, is_deleted')
       .eq('room_id', room_id)
       .maybeSingle()
 
@@ -944,6 +944,13 @@ export async function POST(request: Request) {
     if (!room) {
       return NextResponse.json(
         { success: false, message: 'Ruangan tidak ditemukan.' },
+        { status: 404 }
+      )
+    }
+
+    if (room.is_deleted) {
+      return NextResponse.json(
+        { success: false, message: 'Ruangan tidak tersedia.' },
         { status: 404 }
       )
     }
@@ -1151,7 +1158,7 @@ export async function PATCH(request: Request) {
       const paymentId = getNextPaymentId(paymentIds ?? [])
       const now = formatDateForDatabase()
       const actualPaymentMethod = (payment_method || 'manual_confirmation').toUpperCase()
-      
+
       // Check if payment already exists for this booking
       const { data: existingPayment } = await supabase
         .from('payment')

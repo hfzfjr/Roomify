@@ -1,8 +1,10 @@
 'use client'
 
 import { useState, useMemo, useRef, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import SidebarAdmin from '@/components/layout/SidebarAdmin'
 import DetailListRoomOverlay from '@/components/ui/overlay/admin/DetailListRoomOverlay'
+import DeleteRoomOverlay from '@/components/ui/overlay/admin/DeleteRoomOverlay'
 import { useUser } from '@/hooks/useUser'
 import styles from './page.module.css'
 
@@ -20,10 +22,14 @@ const ROOM_TYPES = ['Meeting Room', 'Studio']
 
 export default function ListRoomPage() {
   const user = useUser()
+  const searchParams = useSearchParams()
+  const ownerId = searchParams.get('owner_id')
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const sidebarRef = useRef<HTMLElement | null>(null)
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null)
   const [isOverlayOpen, setIsOverlayOpen] = useState(false)
+  const [isDeleteOverlayOpen, setIsDeleteOverlayOpen] = useState(false)
+  const [roomToDelete, setRoomToDelete] = useState<Room | null>(null)
   const [sortKey, setSortKey] = useState<SortKey>('id')
   const [showSortDropdown, setShowSortDropdown] = useState(false)
   const [selectedTypes, setSelectedTypes] = useState<string[]>([])
@@ -33,14 +39,15 @@ export default function ListRoomPage() {
 
   useEffect(() => {
     fetchRooms()
-  }, [])
+  }, [ownerId])
 
   const fetchRooms = async () => {
     try {
       setLoading(true)
-      const response = await fetch('/api/admin/rooms')
+      const url = ownerId ? `/api/admin/rooms?owner_id=${ownerId}` : '/api/admin/rooms'
+      const response = await fetch(url)
       const result = await response.json()
-      
+
       if (result.success) {
         setRooms(result.data)
       } else {
@@ -67,6 +74,48 @@ export default function ListRoomPage() {
   const handleCloseOverlay = () => {
     setIsOverlayOpen(false)
     setSelectedRoom(null)
+  }
+
+  const handleDeleteFromOverlay = () => {
+    if (selectedRoom) {
+      setRoomToDelete(selectedRoom)
+      setIsDeleteOverlayOpen(true)
+      setIsOverlayOpen(false)
+    }
+  }
+
+  const handleDelete = (room: Room) => {
+    setRoomToDelete(room)
+    setIsDeleteOverlayOpen(true)
+  }
+
+  const handleCloseDeleteOverlay = () => {
+    setIsDeleteOverlayOpen(false)
+    setRoomToDelete(null)
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!roomToDelete) return
+
+    try {
+      const response = await fetch(`/api/admin/rooms/${roomToDelete.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_deleted: true })
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        setRooms(prev => prev.filter(r => r.id !== roomToDelete.id))
+        handleCloseDeleteOverlay()
+      } else {
+        alert('Gagal menghapus ruangan: ' + result.message)
+      }
+    } catch (error) {
+      console.error('Error deleting room:', error)
+      alert('Gagal menghapus ruangan')
+    }
   }
 
   const sortOptions: { key: SortKey; label: string }[] = [
@@ -217,7 +266,7 @@ export default function ListRoomPage() {
                       <th>Jenis Ruangan</th>
                       <th>Kapasitas</th>
                       <th>Status</th>
-                      <th></th>
+                      <th>Aksi</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -238,8 +287,8 @@ export default function ListRoomPage() {
                           <td className={styles.cellType}>{room.type}</td>
                           <td className={styles.cellCapacity}>
                             <span className={styles.capacityCell}>
-                              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style={{verticalAlign:'middle', marginRight:4}}>
-                                <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style={{ verticalAlign: 'middle', marginRight: 4 }}>
+                                <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
                               </svg>
                               {room.capacity}
                             </span>
@@ -254,7 +303,7 @@ export default function ListRoomPage() {
                               <button type="button" className={styles.btnView} onClick={() => handleViewDetail(room)}>
                                 Lihat detail
                               </button>
-                              <button type="button" className={styles.btnDelete} onClick={() => console.log('delete', room.id)}>
+                              <button type="button" className={styles.btnDelete} onClick={() => handleDelete(room)}>
                                 Hapus
                               </button>
                             </div>
@@ -275,7 +324,17 @@ export default function ListRoomPage() {
         room={selectedRoom}
         isOpen={isOverlayOpen}
         onClose={handleCloseOverlay}
+        onDelete={handleDeleteFromOverlay}
       />
+
+      {/* Delete Overlay */}
+      {roomToDelete && (
+        <DeleteRoomOverlay
+          roomName={roomToDelete.name}
+          onConfirm={handleConfirmDelete}
+          onCancel={handleCloseDeleteOverlay}
+        />
+      )}
     </div>
   )
 }

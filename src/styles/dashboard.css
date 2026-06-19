@@ -1,7 +1,7 @@
 /* â”€â”€ Dashboard â”€â”€ */
 .dashboard {
   padding-bottom: 60px;
-  background: #f4f6f9;
+  background: var(--cyan-light);
 }
 
 .dashboard-hero {

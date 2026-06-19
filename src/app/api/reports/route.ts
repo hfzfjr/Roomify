@@ -216,6 +216,7 @@ export async function GET(request: Request) {
         .from('room')
         .select('room_id, name')
         .eq('owner_id', ownerId)
+        .eq('is_deleted', false)
 
       if (roomsError) {
         return NextResponse.json({ success: false, message: roomsError.message }, { status: 500 })
@@ -368,6 +369,7 @@ export async function GET(request: Request) {
         .from('room')
         .select('room_id, name, capacity, price_per_hour, is_available, status')
         .eq('owner_id', ownerId)
+        .eq('is_deleted', false)
         .order('room_id', { ascending: true })
 
       if (roomsError) {
@@ -598,6 +600,7 @@ export async function GET(request: Request) {
       const { data: rooms, error: roomsError } = await supabase
         .from('room')
         .select('room_id')
+        .eq('is_deleted', false)
 
       if (roomsError) {
         return NextResponse.json({ success: false, message: roomsError.message }, { status: 500 })
@@ -643,12 +646,14 @@ export async function GET(request: Request) {
       const currentRoomsCountResult = await supabase
         .from('room')
         .select('room_id')
+        .eq('is_deleted', false)
         .gte('created_at', currentMonthStart.toISOString())
         .lt('created_at', nextMonthStart.toISOString())
 
       const previousRoomsCountResult = await supabase
         .from('room')
         .select('room_id')
+        .eq('is_deleted', false)
         .gte('created_at', previousMonthStart.toISOString())
         .lt('created_at', previousMonthEnd.toISOString())
 

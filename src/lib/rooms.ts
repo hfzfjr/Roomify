@@ -44,6 +44,7 @@ export async function getRoomDetail(roomId: string): Promise<RoomDetail | null> 
     .from('room')
     .select('room_id, name, description, capacity, price_per_hour, location, region_id, is_available, status, created_at, type')
     .eq('room_id', roomId)
+    .eq('is_deleted', false)
     .maybeSingle<RoomRecord>()
 
   if (roomError) {

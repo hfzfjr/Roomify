@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Room } from '@/types'
 import { formatRupiah } from '@/utils/formatRupiah'
+import { formatFacilityName } from '@/utils/text-helper'
 import { type Location } from '@/utils/locations'
 import Navbar from '@/components/layout/Navbar'
 import RoomSearchFilters from '@/components/rooms/RoomSearchFilters'
@@ -102,7 +103,7 @@ export default function CustomerDashboard() {
 
   function renderRoomCard(room: Room) {
     const image = room.images?.[0]
-    const facilities = room.facilities?.join(', ') ?? '-'
+    const facilities = room.facilities?.map(f => formatFacilityName(f)).join(', ') ?? '-'
 
     return (
       <div key={room.room_id} className="dashboard-room-card">
@@ -151,56 +152,56 @@ export default function CustomerDashboard() {
       <Navbar />
       <div className="dashboard" style={{ paddingTop: '80px' }}>
         <div className="dashboard-hero">
-        <img
-          src="/images/mainDashboard.png"
-          alt="Dashboard main image"
-          className="dashboard-hero-img"
-        />
-        <div className="dashboard-hero-overlay" />
-      </div>
-
-      <div className="dashboard-search-card">
-        <div className="dashboard-search-bg" aria-hidden="true">
-          <div className="dashboard-sc-circle dashboard-sc-c1" />
-          <div className="dashboard-sc-circle dashboard-sc-c2" />
-          <div className="dashboard-sc-circle dashboard-sc-c3" />
+          <img
+            src="/images/mainDashboard.png"
+            alt="Dashboard main image"
+            className="dashboard-hero-img"
+          />
+          <div className="dashboard-hero-overlay" />
         </div>
 
-        <div className="dashboard-sc-text">
-          <h2>Temukan ruangan yang tepat</h2>
-          <p>Booking mudah, cepat, dan terpercaya</p>
+        <div className="dashboard-search-card">
+          <div className="dashboard-search-bg" aria-hidden="true">
+            <div className="dashboard-sc-circle dashboard-sc-c1" />
+            <div className="dashboard-sc-circle dashboard-sc-c2" />
+            <div className="dashboard-sc-circle dashboard-sc-c3" />
+          </div>
+
+          <div className="dashboard-sc-text">
+            <h2>Temukan ruangan yang tepat</h2>
+            <p>Booking mudah, cepat, dan terpercaya</p>
+          </div>
+
+          <RoomSearchFilters onSearch={handleSearch} />
         </div>
 
-        <RoomSearchFilters onSearch={handleSearch} />
+        <main className="dashboard-main">
+          <section className="dashboard-section">
+            <div className="dashboard-section-row">
+              <span className="dashboard-section-title">Rekomendasi</span>
+              <button className="dashboard-see-all" onClick={() => router.push('/customer/rooms')}>
+                Lihat selengkapnya
+              </button>
+            </div>
+
+            <div className="dashboard-cards-container">
+              {loadingRec ? (
+                <div className="dashboard-cards-grid">
+                  {Array.from({ length: 4 }).map((_, index) => (
+                    <div key={index} className="dashboard-room-card-skeleton" />
+                  ))}
+                </div>
+              ) : recommended.length === 0 ? (
+                <p className="dashboard-empty">Belum ada ruangan tersedia.</p>
+              ) : (
+                <div className="dashboard-cards-grid">
+                  {recommended.map(renderRoomCard)}
+                </div>
+              )}
+            </div>
+          </section>
+        </main>
       </div>
-
-      <main className="dashboard-main">
-        <section className="dashboard-section">
-          <div className="dashboard-section-row">
-            <span className="dashboard-section-title">Rekomendasi</span>
-            <button className="dashboard-see-all" onClick={() => router.push('/customer/rooms')}>
-              Lihat selengkapnya
-            </button>
-          </div>
-
-          <div className="dashboard-cards-container">
-            {loadingRec ? (
-              <div className="dashboard-cards-grid">
-                {Array.from({ length: 4 }).map((_, index) => (
-                  <div key={index} className="dashboard-room-card-skeleton" />
-                ))}
-              </div>
-            ) : recommended.length === 0 ? (
-              <p className="dashboard-empty">Belum ada ruangan tersedia.</p>
-            ) : (
-              <div className="dashboard-cards-grid">
-                {recommended.map(renderRoomCard)}
-              </div>
-            )}
-          </div>
-        </section>
-      </main>
-    </div>
-  </>
+    </>
   )
 }

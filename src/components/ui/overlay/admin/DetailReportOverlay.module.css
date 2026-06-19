@@ -15,13 +15,17 @@
 .overlayContent {
   background-color: var(--admin-cyan-light, #e8f7f9);
   border-radius: 16px;
-  max-width: 560px;
+  max-width: 700px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
+}
+
+.overlayContent::-webkit-scrollbar {
+  display: none;
 }
 
 /* ---- Header ---- */
@@ -32,7 +36,10 @@
   padding: 20px 28px;
   background: white;
   border-radius: 16px 16px 0 0;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color, #e5e7eb);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .overlayTitle {
@@ -63,10 +70,54 @@
 
 /* ---- Body ---- */
 .overlayBody {
-  padding: 20px 24px;
+  padding: 16px 20px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
+}
+
+/* ---- Banner Card (ID + Status) ---- */
+.bannerCard {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid var(--border-color, #e5e7eb);
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.bannerLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bannerId {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.bannerDate {
+  margin: 0;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.bannerRight {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.bannerStatusLabel {
+  font-size: 14px;
+  color: #374151;
+  white-space: nowrap;
 }
 
 /* ---- Info Card ---- */
@@ -78,14 +129,14 @@
 }
 
 .infoCardHeader {
-  padding: 18px 24px 14px;
+  padding: 16px 20px 12px;
   border-bottom: 1px solid var(--border-color, #e5e7eb);
 }
 
 .infoCardTitle {
-  margin: 0 0 4px 0;
-  font-size: 17px;
-  font-weight: 600;
+  margin: 0 0 3px 0;
+  font-size: 16px;
+  font-weight: 700;
   color: #111827;
 }
 
@@ -96,20 +147,20 @@
 }
 
 .detailList {
-  padding: 16px 24px;
+  padding: 14px 20px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 
 .detailRow {
   display: flex;
-  align-items: baseline;
+  align-items: flex-start;
   gap: 0;
 }
 
 .detailLabel {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 500;
   color: #111827;
   min-width: 180px;
@@ -117,25 +168,27 @@
 }
 
 .detailSeparator {
-  font-size: 15px;
+  font-size: 14px;
   color: #6b7280;
-  margin-right: 12px;
+  margin-right: 10px;
   flex-shrink: 0;
 }
 
 .detailValue {
-  font-size: 15px;
+  font-size: 14px;
   color: #374151;
   font-weight: 400;
   flex: 1;
+  line-height: 1.5;
 }
 
 /* ---- Status Badge ---- */
 .statusBadge {
-  padding: 6px 18px;
+  padding: 5px 16px;
   border-radius: 24px;
   font-size: 14px;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .statusPending {
@@ -145,9 +198,9 @@
 }
 
 .statusActionNeeded {
-  background-color: var(--admin-list-red-bg);
-  color: var(--admin-list-red);
-  border: 1.5px solid var(--admin-list-red);
+  background-color: var(--admin-list-red-bg, #fff1f0);
+  color: var(--admin-list-red, #ef4444);
+  border: 1.5px solid var(--admin-list-red, #ef4444);
 }
 
 .statusSolved {
@@ -156,79 +209,87 @@
   border: 1.5px solid var(--admin-list-cyan);
 }
 
-/* ---- Description Section ---- */
-.descriptionSection {
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid var(--border-color, #e5e7eb);
+/* ---- Attachments ---- */
+.attachmentsSection {
+  padding: 0 20px 16px;
 }
 
-.descriptionHeader {
-  padding: 18px 24px 14px;
-  border-bottom: 1px solid var(--border-color, #e5e7eb);
-}
-
-.descriptionTitle {
-  margin: 0 0 4px 0;
-  font-size: 17px;
-  font-weight: 600;
+.attachmentsLabel {
+  margin: 0 0 10px 0;
+  font-size: 14px;
+  font-weight: 500;
   color: #111827;
 }
 
-.descriptionSubtitle {
-  margin: 0;
-  font-size: 13px;
-  color: #9ca3af;
+.attachmentsGrid {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
-.descriptionContent {
-  padding: 16px 24px;
-}
-
-.description {
-  margin: 0;
-  color: #374151;
-  font-size: 15px;
-  line-height: 1.6;
+.attachmentThumb {
+  width: 100px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--border-color, #e5e7eb);
 }
 
 /* ---- Footer ---- */
 .overlayFooter {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   justify-content: flex-end;
-  padding: 16px 24px 20px;
+  padding: 14px 20px 18px;
+  flex-wrap: wrap;
 }
 
 .actionButton {
-  padding: 12px 32px;
+  padding: 11px 20px;
   border: none;
   border-radius: 10px;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
   cursor: pointer;
   transition: background-color 0.2s, transform 0.15s;
+  width: fit-content;
+  text-align: center;
 }
 
 .actionButton:hover {
   transform: translateY(-1px);
 }
 
-.btnPrimary {
-  background-color: var(--admin-cyan);
-  color: var(--admin-list-white);
-}
-
-.btnPrimary:hover {
-  background-color: var(--admin-cyan-dark);
-}
-
+/* Tolak Laporan — outlined grey */
 .btnSecondary {
-  background-color: var(--admin-red);
-  color: var(--admin-list-white);
+  background-color: var(--cancel-button-bg-gray);
+  color: var(--cancel-button-text-gray);
+  font-weight: 600;
+  border: 1.5px solid var(--cancel-button-text-gray);
 }
 
 .btnSecondary:hover {
-  background-color: var(--admin-red-hover);
+  background-color: var(--cancel-button-hover-gray);
+}
+
+/* Kirim Teguran ke Owner — outlined yellow/orange */
+.btnWarning {
+  background-color: var(--admin-list-yellow-bg);
+  color: var(--admin-list-yellow, #d97706);
+  border: 1.5px solid var(--admin-list-yellow, #d97706);
+}
+
+.btnWarning:hover {
+  background-color: #fef3c7;
+}
+
+/* Suspend Ruangan — solid red */
+.btnDanger {
+  background-color: var(--admin-red, #ef4444);
+  color: white;
+  border: none;
+}
+
+.btnDanger:hover {
+  background-color: var(--admin-red-hover, #dc2626);
 }
