@@ -1,5 +1,7 @@
-# Load variabel dari .env.local
-export $(grep -v '^#' .env.local | xargs)
+# Load variabel dari .env.local (lebih aman, support value dengan karakter spesial)
+set -a
+source .env.local
+set +a
 
 git pull origin main
 
@@ -7,6 +9,7 @@ git pull origin main
 docker build \
   --build-arg NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL \
   --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY \
+  --build-arg QRIS_MERCHANT_PAYLOAD=$QRIS_MERCHANT_PAYLOAD \
   -t roomify-app .
 
 docker rm -f roomify-server
