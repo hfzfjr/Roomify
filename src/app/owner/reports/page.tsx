@@ -3,13 +3,18 @@
 import { useState, useEffect } from 'react'
 import styles from './page.module.css'
 import BackButton from '@/components/ui/BackButton'
+import DetailsTransactionReportOverlay from '@/components/ui/overlay/owner/DetailsTransactionReportOverlay'
 
 type Transaction = {
   id: string
   date: string
   roomName: string
   renter: string
-  status: 'lunas' | 'batal' | 'pending'
+  payment: {
+    amount: number
+    payment_method?: string
+    status?: string
+  }
 }
 
 type Room = {
@@ -42,6 +47,8 @@ export default function OwnerReports() {
   const [rooms, setRooms] = useState<Room[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isOverlayOpen, setIsOverlayOpen] = useState(false)
+  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null)
 
   const fetchReportsData = async () => {
     try {
@@ -108,8 +115,8 @@ export default function OwnerReports() {
 
   const getStatusClass = (status: string) => {
     switch (status) {
-      case 'lunas': return styles.statusLunas
-      case 'batal': return styles.statusBatal
+      case 'success': return styles.statusLunas
+      case 'failed': return styles.statusBatal
       case 'pending': return styles.statusPending
       default: return ''
     }
@@ -117,8 +124,8 @@ export default function OwnerReports() {
 
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case 'lunas': return 'Lunas'
-      case 'batal': return 'Batal'
+      case 'success': return 'Lunas'
+      case 'failed': return 'Gagal'
       case 'pending': return 'Pending'
       default: return status
     }
@@ -188,11 +195,15 @@ export default function OwnerReports() {
                       <th><div className={styles.skeletonLineShort} /></th>
                       <th><div className={styles.skeletonLineShort} /></th>
                       <th><div className={styles.skeletonLineShort} /></th>
+                      <th><div className={styles.skeletonLineShort} /></th>
+                      <th><div className={styles.skeletonLineShort} /></th>
                     </tr>
                   </thead>
                   <tbody>
                     {[...Array(5)].map((_, index) => (
                       <tr key={index}>
+                        <td><div className={styles.skeletonLineShort} /></td>
+                        <td><div className={styles.skeletonLineShort} /></td>
                         <td><div className={styles.skeletonLineShort} /></td>
                         <td><div className={styles.skeletonLineShort} /></td>
                         <td><div className={styles.skeletonLineShort} /></td>
@@ -335,6 +346,8 @@ export default function OwnerReports() {
                       <th>Nama Ruangan</th>
                       <th>Penyewa</th>
                       <th>Status</th>
+                      <th>Total Bayar</th>
+                      <th>Aksi</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -345,9 +358,22 @@ export default function OwnerReports() {
                         <td>{transaction.roomName}</td>
                         <td>{transaction.renter}</td>
                         <td>
-                          <span className={`${styles.status} ${getStatusClass(transaction.status)}`}>
-                            {getStatusLabel(transaction.status)}
+                          <span className={`${styles.status} ${getStatusClass(transaction.payment.status || 'pending')}`}>
+                            {getStatusLabel(transaction.payment.status || 'pending')}
                           </span>
+                        </td>
+                        <td>{formatCurrency(transaction.payment.amount)}</td>
+                        <td>
+                          <button
+                            type="button"
+                            className={styles.btnView}
+                            onClick={() => {
+                              setSelectedTransaction(transaction)
+                              setIsOverlayOpen(true)
+                            }}
+                          >
+                            Lihat detail
+                          </button>
                         </td>
                       </tr>
                     ))}
@@ -358,6 +384,16 @@ export default function OwnerReports() {
           </div>
         )}
       </div>
+
+      {/* Detail Transaction Overlay */}
+      <DetailsTransactionReportOverlay
+        isOpen={isOverlayOpen}
+        onClose={() => {
+          setIsOverlayOpen(false)
+          setSelectedTransaction(null)
+        }}
+        transaction={selectedTransaction}
+      />
     </div>
   )
 }

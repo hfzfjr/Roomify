@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { ensureCustomerRecord } from '@/lib/customer'
 import { createClient } from '@/lib/supabase/server'
 import { formatDateForDatabase } from '@/utils/formatDate'
+import { createNotification } from '@/lib/notifications'
 
 type CustomerRecord = {
   customer_id: string
@@ -335,6 +336,33 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, message: error.message }, { status: 500 })
     }
 
+    // Notify owner about new facility request
+    const { data: roomData } = await supabase
+      .from('room')
+      .select('name, owner_id')
+      .eq('room_id', room_id)
+      .maybeSingle()
+
+    if (roomData?.owner_id) {
+      const { data: ownerUser } = await supabase
+        .from('owner')
+        .select('user_id')
+        .eq('owner_id', roomData.owner_id)
+        .maybeSingle()
+
+      if (ownerUser?.user_id) {
+        await createNotification({
+          user_id: ownerUser.user_id,
+          title: 'Ada Permintaan Fasilitas Baru',
+          description: `Customer mengirim permintaan fasilitas untuk booking ${booking_id}.`,
+          type: 'facility',
+          priority: 'medium',
+          related_id: nextRequestId,
+          related_type: 'facility_request'
+        })
+      }
+    }
+
     return NextResponse.json({ success: true, data })
   } catch {
     return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 })
@@ -359,6 +387,13 @@ export async function PATCH(request: Request) {
 
     const supabase = await createClient()
 
+    // Get the facility request details before updating
+    const { data: existingRequest } = await supabase
+      .from('facility_request')
+      .select('request_id, customer_id, booking_id, status')
+      .eq('request_id', request_id)
+      .maybeSingle()
+
     const { data, error } = await supabase
       .from('facility_request')
       .update({ status })
@@ -368,6 +403,35 @@ export async function PATCH(request: Request) {
 
     if (error) {
       return NextResponse.json({ success: false, message: error.message }, { status: 500 })
+    }
+
+    // Notify customer about facility request status change
+    if (existingRequest && (status === 'approved' || status === 'rejected')) {
+      const { data: customerUser } = await supabase
+        .from('customer')
+        .select('user_id')
+        .eq('customer_id', existingRequest.customer_id)
+        .maybeSingle()
+
+      if (customerUser?.user_id) {
+        const title = status === 'approved'
+          ? 'Request Fasilitas Disetujui'
+          : 'Request Fasilitas Ditolak'
+
+        const description = status === 'approved'
+          ? `Permintaan fasilitas Anda untuk booking ${existingRequest.booking_id} telah disetujui.`
+          : `Permintaan fasilitas Anda untuk booking ${existingRequest.booking_id} telah ditolak.`
+
+        await createNotification({
+          user_id: customerUser.user_id,
+          title,
+          description,
+          type: 'facility',
+          priority: status === 'approved' ? 'medium' : 'low',
+          related_id: request_id,
+          related_type: 'facility_request'
+        })
+      }
     }
 
     return NextResponse.json({ success: true, data })

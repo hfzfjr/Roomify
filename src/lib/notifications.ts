@@ -8,19 +8,22 @@ export interface CreateNotificationParams {
   type: 'payment' | 'booking' | 'facility' | 'reminder' | 'system'
   priority?: 'low' | 'medium' | 'high'
   related_id?: string
-  related_type?: 'booking' | 'payment' | 'facility_request' | 'invoice'
-  action_url?: string
+  related_type?: 'booking' | 'payment' | 'facility_request' | 'invoice' | 'review' | 'report'
 }
 
 export async function createNotification(params: CreateNotificationParams): Promise<{ success: boolean; error?: string; notification_id?: string }> {
   try {
-    const { user_id, title, description, type, priority = 'medium', related_id, related_type, action_url } = params
+    const { user_id, title, description, type, priority = 'medium', related_id, related_type } = params
 
     if (!user_id || !title || !type) {
       return { success: false, error: 'user_id, title, dan type wajib diisi.' }
     }
 
     const adminSupabase = createAdminClient()
+
+    if (!adminSupabase) {
+      return { success: false, error: 'Gagal membuat admin Supabase client.' }
+    }
 
     // Generate unique notification ID
     const { data: lastNotification, error: lastError } = await adminSupabase
@@ -52,7 +55,6 @@ export async function createNotification(params: CreateNotificationParams): Prom
         priority,
         related_id: related_id || null,
         related_type: related_type || null,
-        action_url: action_url || null,
         is_read: false,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),

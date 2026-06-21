@@ -174,7 +174,7 @@ export async function GET(request: Request) {
         .eq('owner_id', ownerId)
         .eq('is_available', true)
         .eq('is_deleted', false)
-        .in('status', ['approved', 'active'])
+        .eq('status', 'aktif')
 
       if (roomsError) {
         console.error('Rooms fetch error:', roomsError)

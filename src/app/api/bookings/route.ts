@@ -7,6 +7,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { ensureCustomerRecord } from '@/lib/customer'
 import { getPaymentDeadline, isPendingPaymentExpired } from '@/utils/booking'
 import { formatDateForDatabase } from '@/utils/formatDate'
+import { createNotification } from '@/lib/notifications'
 
 type BookingRoomRecord = {
   room_id: string
@@ -742,21 +743,50 @@ function normalizeBookingRoom(room: BookingRoomRecord | BookingRoomRecord[] | nu
 async function expirePendingBookings(supabase: Awaited<ReturnType<typeof createClient>>) {
   const { data: pendingBookings, error: pendingBookingsError } = await supabase
     .from('booking')
-    .select('booking_id, booking_date, status')
+    .select('booking_id, booking_date, status, customer_id, room_id')
     .eq('status', 'pending')
 
   if (pendingBookingsError) {
     throw pendingBookingsError
   }
 
-  const expiredBookingIds = (pendingBookings ?? [])
+  const expiredBookings = (pendingBookings ?? [])
     .filter(booking => isPendingPaymentExpired(booking.status, booking.booking_date))
-    .map(booking => booking.booking_id)
 
-  if (expiredBookingIds.length === 0) {
+  if (expiredBookings.length === 0) {
     return
   }
 
+  const expiredBookingIds = expiredBookings.map(b => b.booking_id)
+
+  // Get room details for all expired bookings
+  const roomIds = expiredBookings.map(b => b.room_id).filter(Boolean)
+  const { data: rooms } = await supabase
+    .from('room')
+    .select('room_id, name, owner_id')
+    .in('room_id', roomIds)
+
+  const roomMap = new Map((rooms ?? []).map(r => [r.room_id, r]))
+
+  // Get customer user_ids
+  const customerIds = expiredBookings.map(b => b.customer_id).filter(Boolean)
+  const { data: customers } = await supabase
+    .from('customer')
+    .select('customer_id, user_id')
+    .in('customer_id', customerIds)
+
+  const customerMap = new Map((customers ?? []).map(c => [c.customer_id, c.user_id]))
+
+  // Get owner user_ids
+  const ownerIds = (rooms ?? []).map(r => r.owner_id).filter(Boolean)
+  const { data: owners } = await supabase
+    .from('owner')
+    .select('owner_id, user_id')
+    .in('owner_id', ownerIds)
+
+  const ownerMap = new Map((owners ?? []).map(o => [o.owner_id, o.user_id]))
+
+  // Delete facility requests
   const { error: deleteFacilityRequestError } = await supabase
     .from('facility_request')
     .delete()
@@ -766,6 +796,7 @@ async function expirePendingBookings(supabase: Awaited<ReturnType<typeof createC
     throw deleteFacilityRequestError
   }
 
+  // Update booking status
   const { error: updateBookingError } = await supabase
     .from('booking')
     .update({ status: 'cancelled' })
@@ -773,6 +804,39 @@ async function expirePendingBookings(supabase: Awaited<ReturnType<typeof createC
 
   if (updateBookingError) {
     throw updateBookingError
+  }
+
+  // Send notifications for each expired booking
+  for (const booking of expiredBookings) {
+    const room = roomMap.get(booking.room_id)
+    const customerUserId = customerMap.get(booking.customer_id)
+    const ownerUserId = room ? ownerMap.get(room.owner_id) : undefined
+
+    // Notify customer
+    if (customerUserId) {
+      await createNotification({
+        user_id: customerUserId,
+        title: 'Booking Dibatalkan Otomatis',
+        description: `Booking ${booking.booking_id} telah dibatalkan otomatis karena melewati batas waktu pembayaran.`,
+        type: 'booking',
+        priority: 'high',
+        related_id: booking.booking_id,
+        related_type: 'booking'
+      })
+    }
+
+    // Notify owner
+    if (ownerUserId && room) {
+      await createNotification({
+        user_id: ownerUserId,
+        title: 'Booking Dibatalkan Otomatis',
+        description: `Booking ${booking.booking_id} untuk ${room.name} telah dibatalkan otomatis karena customer tidak menyelesaikan pembayaran.`,
+        type: 'booking',
+        priority: 'medium',
+        related_id: booking.booking_id,
+        related_type: 'booking'
+      })
+    }
   }
 }
 
@@ -933,7 +997,7 @@ export async function POST(request: Request) {
 
     const { data: room, error: roomError } = await supabase
       .from('room')
-      .select('room_id, name, price_per_hour, is_available, is_deleted')
+      .select('room_id, name, price_per_hour, is_available, is_deleted, owner_id')
       .eq('room_id', room_id)
       .maybeSingle()
 
@@ -1044,6 +1108,38 @@ export async function POST(request: Request) {
       }
     }
 
+    // Notify customer about waiting for payment
+    await createNotification({
+      user_id: user_id,
+      title: 'Menunggu Pembayaran',
+      description: `Booking ${insertedBooking?.booking_id} berhasil dibuat. Silakan selesaikan pembayaran dalam 30 menit.`,
+      type: 'payment',
+      priority: 'high',
+      related_id: insertedBooking?.booking_id,
+      related_type: 'payment'
+    })
+
+    // Notify owner about new booking
+    if (room.owner_id && insertedBooking?.booking_id) {
+      const { data: ownerUser } = await supabase
+        .from('owner')
+        .select('user_id')
+        .eq('owner_id', room.owner_id)
+        .maybeSingle()
+
+      if (ownerUser?.user_id) {
+        await createNotification({
+          user_id: ownerUser.user_id,
+          title: 'Ada Booking Baru',
+          description: `Customer telah membuat booking baru untuk ${room.name} pada ${date} jam ${start_time}-${end_time}`,
+          type: 'booking',
+          priority: 'medium',
+          related_id: insertedBooking.booking_id,
+          related_type: 'booking'
+        })
+      }
+    }
+
     return NextResponse.json({
       success: true,
       data: {
@@ -1087,7 +1183,7 @@ export async function PATCH(request: Request) {
 
     const { data: booking, error: bookingError } = await supabase
       .from('booking')
-      .select('booking_id, customer_id, status, booking_date')
+      .select('booking_id, customer_id, status, booking_date, room_id')
       .eq('booking_id', booking_id)
       .maybeSingle()
 
@@ -1147,6 +1243,44 @@ export async function PATCH(request: Request) {
 
       if (updateError) {
         return NextResponse.json({ success: false, message: updateError.message }, { status: 500 })
+      }
+
+      // Notify customer about booking confirmation
+      await createNotification({
+        user_id: user_id,
+        title: 'Pembayaran Berhasil',
+        description: `Pembayaran untuk booking ${booking_id} berhasil dikonfirmasi. Ruangan Anda sudah siap digunakan.`,
+        type: 'payment',
+        priority: 'medium',
+        related_id: booking_id,
+        related_type: 'payment'
+      })
+
+      // Notify owner about payment received
+      const { data: roomForPayment } = await supabase
+        .from('room')
+        .select('name, owner_id')
+        .eq('room_id', bookingDetails.room_id)
+        .maybeSingle()
+
+      if (roomForPayment?.owner_id) {
+        const { data: ownerUserForPayment } = await supabase
+          .from('owner')
+          .select('user_id')
+          .eq('owner_id', roomForPayment.owner_id)
+          .maybeSingle()
+
+        if (ownerUserForPayment?.user_id) {
+          await createNotification({
+            user_id: ownerUserForPayment.user_id,
+            title: `Pembayaran Diterima untuk Booking ${booking_id}`,
+            description: `Customer telah menyelesaikan pembayaran untuk ${roomForPayment.name}.`,
+            type: 'payment',
+            priority: 'medium',
+            related_id: booking_id,
+            related_type: 'booking'
+          })
+        }
       }
 
       // Get existing payment IDs for sequential generation
@@ -1332,6 +1466,44 @@ export async function PATCH(request: Request) {
 
     if (cancelError) {
       return NextResponse.json({ success: false, message: cancelError.message }, { status: 500 })
+    }
+
+    // Notify customer about booking cancellation
+    await createNotification({
+      user_id: user_id,
+      title: 'Booking Dibatalkan',
+      description: `Booking ${booking_id} telah dibatalkan sesuai permintaan Anda.`,
+      type: 'booking',
+      priority: 'medium',
+      related_id: booking_id,
+      related_type: 'booking'
+    })
+
+    // Notify owner about booking cancellation
+    const { data: roomForCancel } = await supabase
+      .from('room')
+      .select('name, owner_id')
+      .eq('room_id', booking.room_id)
+      .maybeSingle()
+
+    if (roomForCancel?.owner_id) {
+      const { data: ownerUserForCancel } = await supabase
+        .from('owner')
+        .select('user_id')
+        .eq('owner_id', roomForCancel.owner_id)
+        .maybeSingle()
+
+      if (ownerUserForCancel?.user_id) {
+        await createNotification({
+          user_id: ownerUserForCancel.user_id,
+          title: 'Booking Dibatalkan Customer',
+          description: `Booking ${booking_id} untuk ${roomForCancel.name} telah dibatalkan oleh customer.`,
+          type: 'booking',
+          priority: 'medium',
+          related_id: booking_id,
+          related_type: 'booking'
+        })
+      }
     }
 
     return NextResponse.json({

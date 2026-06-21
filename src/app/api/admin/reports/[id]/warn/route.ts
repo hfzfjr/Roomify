@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createNotification } from '@/lib/notifications'
 
 export async function PATCH(
   request: Request,
@@ -39,8 +40,32 @@ export async function PATCH(
       return NextResponse.json({ success: false, message: updateError.message }, { status: 500 })
     }
 
-    // TODO: Send notification/email to owner about the warning
-    console.log(`TODO: Send warning notification to owner for room ${report.room_id}`)
+    // Notify owner about warning
+    const { data: room } = await supabase
+      .from('room')
+      .select('owner_id')
+      .eq('room_id', report.room_id)
+      .maybeSingle()
+
+    if (room?.owner_id) {
+      const { data: ownerUser } = await supabase
+        .from('owner')
+        .select('user_id')
+        .eq('owner_id', room.owner_id)
+        .maybeSingle()
+
+      if (ownerUser?.user_id) {
+        await createNotification({
+          user_id: ownerUser.user_id,
+          title: 'Anda Menerima Teguran dari Admin',
+          description: 'Admin telah mengirim teguran terkait laporan yang masuk. Segera perbaiki masalah yang dilaporkan.',
+          type: 'system',
+          priority: 'high',
+          related_id: id,
+          related_type: 'report'
+        })
+      }
+    }
 
     return NextResponse.json({ success: true, message: 'Teguran berhasil dikirim ke owner' })
   } catch (error) {

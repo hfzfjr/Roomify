@@ -231,26 +231,12 @@ export async function GET(request: Request) {
       startDate.setDate(startDate.getDate() - periodDays)
       startDate.setHours(0, 0, 0, 0)
 
-      // Fetch bookings with filters
+      // Fetch bookings first to get booking_ids for the owner's rooms
       let bookingsQuery = supabase
         .from('booking')
-        .select(`
-          booking_id,
-          booking_date,
-          check_in,
-          check_out,
-          total_cost,
-          status,
-          customer_id,
-          room_id,
-          room (
-            room_id,
-            name
-          )
-        `)
+        .select('booking_id, booking_date, room_id')
         .in('room_id', filteredRoomIds)
         .gte('booking_date', startDate.toISOString())
-        .order('booking_date', { ascending: false })
 
       const { data: bookings, error: bookingsError } = await bookingsQuery
 
@@ -258,32 +244,76 @@ export async function GET(request: Request) {
         return NextResponse.json({ success: false, message: bookingsError.message }, { status: 500 })
       }
 
+      const bookingIds = bookings?.map(b => b.booking_id) || []
+
+      // Fetch payments with filters (payment as primary table)
+      let paymentsQuery = supabase
+        .from('payment')
+        .select(`
+          payment_id,
+          amount,
+          payment_method,
+          status,
+          booking_id
+        `)
+        .in('booking_id', bookingIds)
+        .order('payment_id', { ascending: false })
+
+      const { data: payments, error: paymentsError } = await paymentsQuery
+
+      if (paymentsError) {
+        return NextResponse.json({ success: false, message: paymentsError.message }, { status: 500 })
+      }
+
+      // Get booking details for each payment
+      const bookingIdsFromPayments = payments?.map(p => p.booking_id) || []
+      const { data: bookingsDetails, error: bookingsDetailsError } = await supabase
+        .from('booking')
+        .select(`
+          booking_id,
+          booking_date,
+          customer_id,
+          room_id,
+          total_cost,
+          room (
+            room_id,
+            name
+          )
+        `)
+        .in('booking_id', bookingIdsFromPayments)
+
+      if (bookingsDetailsError) {
+        return NextResponse.json({ success: false, message: bookingsDetailsError.message }, { status: 500 })
+      }
+
+      // Create booking map
+      const bookingMap = new Map((bookingsDetails || []).map(b => [b.booking_id, b]))
+
       // Get customer names
-      const customerIds = Array.from(new Set((bookings || []).map(b => b.customer_id).filter(Boolean)))
+      const customerIds = Array.from(new Set((bookingsDetails || []).map(b => b.customer_id).filter((id): id is string => Boolean(id))))
       const customerMap = await getCustomerNameMapSafe(supabase, customerIds)
 
       // Build room map
       const roomMap = new Map((ownerRooms || []).map(room => [room.room_id, room.name]))
 
       // Format transactions
-      const transactions = (bookings || []).map(booking => {
-        const statusMap: Record<string, 'lunas' | 'batal' | 'pending'> = {
-          'completed': 'lunas',
-          'cancelled': 'batal',
-          'pending': 'pending',
-          'confirmed': 'pending'
-        }
+      const transactions = (payments || []).map(payment => {
+        const bookingData = bookingMap.get(payment.booking_id)
 
         return {
-          id: `#${booking.booking_id.toUpperCase()}`,
-          date: new Date(booking.booking_date).toLocaleDateString('id-ID', {
+          id: `${payment.payment_id}`,
+          date: bookingData?.booking_date ? new Date(bookingData.booking_date).toLocaleDateString('id-ID', {
             day: '2-digit',
             month: '2-digit',
             year: 'numeric'
-          }).replace(/\//g, '/'),
-          roomName: roomMap.get(booking.room_id) || 'Unknown',
-          renter: customerMap.get(booking.customer_id) || 'Unknown',
-          status: statusMap[booking.status] || 'pending'
+          }).replace(/\//g, '/') : '-',
+          roomName: bookingData?.room_id ? (roomMap.get(bookingData.room_id) || 'Unknown') : 'Unknown',
+          renter: bookingData?.customer_id ? (customerMap.get(bookingData.customer_id) || 'Unknown') : 'Unknown',
+          payment: {
+            amount: bookingData?.total_cost ?? payment.amount,
+            payment_method: payment.payment_method,
+            status: payment.status
+          }
         }
       })
 
@@ -299,15 +329,12 @@ export async function GET(request: Request) {
       }
 
       // Calculate stats
-      const successfulTransactions = transactions.filter(t => t.status === 'lunas').length
-      const failedTransactions = transactions.filter(t => t.status === 'batal').length
-      const pendingTransactions = transactions.filter(t => t.status === 'pending').length
+      const successfulTransactions = transactions.filter(t => t.payment.status === 'success').length
+      const failedTransactions = transactions.filter(t => t.payment.status === 'failed').length
+      const pendingTransactions = transactions.filter(t => t.payment.status === 'pending').length
       const totalRevenue = transactions
-        .filter(t => t.status === 'lunas')
-        .reduce((sum, t) => {
-          const booking = bookings?.find(b => b.booking_id === t.id.replace('#', ''))
-          return sum + (booking?.total_cost || 0)
-        }, 0)
+        .filter(t => t.payment.status === 'success')
+        .reduce((sum, t) => sum + t.payment.amount, 0)
 
       return NextResponse.json({
         success: true,

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { createNotification } from '@/lib/notifications'
 
 interface ReportSubmission {
   customer_id: string
@@ -141,7 +142,7 @@ export async function POST(request: Request) {
     // Validate that the room exists
     const { data: room, error: roomError } = await supabase
       .from('room')
-      .select('room_id, owner_id')
+      .select('room_id, name, owner_id')
       .eq('room_id', room_id)
       .maybeSingle()
 
@@ -253,6 +254,46 @@ export async function POST(request: Request) {
         { success: false, message: reportError.message },
         { status: 500 }
       )
+    }
+
+    // Notify customer about successful report submission
+    const { data: customerUser } = await supabase
+      .from('customer')
+      .select('user_id')
+      .eq('customer_id', customer.customer_id)
+      .maybeSingle()
+
+    if (customerUser?.user_id) {
+      await createNotification({
+        user_id: customerUser.user_id,
+        title: 'Laporan Berhasil Dikirim',
+        description: 'Laporan Anda telah berhasil dikirim dan sedang dalam proses peninjauan.',
+        type: 'system',
+        priority: 'low',
+        related_id: reportId,
+        related_type: 'report'
+      })
+    }
+
+    // Notify owner about new report
+    if (room.owner_id) {
+      const { data: ownerUser } = await supabase
+        .from('owner')
+        .select('user_id')
+        .eq('owner_id', room.owner_id)
+        .maybeSingle()
+
+      if (ownerUser?.user_id) {
+        await createNotification({
+          user_id: ownerUser.user_id,
+          title: 'Ada Laporan Baru untuk Ruangan Anda',
+          description: `Laporan baru telah dikirim untuk ${room.name}. Segera tinjau untuk tindakan lebih lanjut.`,
+          type: 'system',
+          priority: 'medium',
+          related_id: reportId,
+          related_type: 'report'
+        })
+      }
     }
 
     return NextResponse.json({

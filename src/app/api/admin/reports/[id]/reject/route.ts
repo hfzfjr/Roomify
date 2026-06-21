@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createNotification } from '@/lib/notifications'
 
 export async function PATCH(
   request: Request,
@@ -18,7 +19,7 @@ export async function PATCH(
     // Get current report status
     const { data: report, error: fetchError } = await supabase
       .from('report')
-      .select('status')
+      .select('status, customer_id')
       .eq('report_id', id)
       .single()
 
@@ -44,6 +45,25 @@ export async function PATCH(
     if (updateError) {
       console.error('Reject report error:', updateError)
       return NextResponse.json({ success: false, message: updateError.message }, { status: 500 })
+    }
+
+    // Notify customer about rejection
+    const { data: customerUser } = await supabase
+      .from('customer')
+      .select('user_id')
+      .eq('customer_id', report.customer_id)
+      .maybeSingle()
+
+    if (customerUser?.user_id) {
+      await createNotification({
+        user_id: customerUser.user_id,
+        title: 'Laporan Anda Ditolak',
+        description: `Laporan Anda telah ditolak. Alasan: ${reason}`,
+        type: 'system',
+        priority: 'medium',
+        related_id: id,
+        related_type: 'report'
+      })
     }
 
     return NextResponse.json({ success: true, message: 'Laporan berhasil ditolak' })

@@ -15,7 +15,7 @@
   border-radius: 20px;
   padding: 28px 32px;
   margin-bottom: 24px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 }
 
 .heroTitle {
@@ -43,7 +43,7 @@
   background: #ffffff;
   border-radius: 16px;
   padding: 20px 22px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 }
 
 .highlightCard {
@@ -69,7 +69,7 @@
   width: 70px;
   height: 70px;
   border-radius: 50%;
-  background: rgba(255,255,255,0.08);
+  background: rgba(255, 255, 255, 0.08);
   top: -15px;
   right: 55px;
 }
@@ -82,7 +82,7 @@
 }
 
 .highlightCard .cardLabel {
-  color: rgba(255,255,255,0.85);
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .cardValue {
@@ -102,8 +102,8 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  background: rgba(255,255,255,0.25);
-  border: 1px solid rgba(255,255,255,0.4);
+  background: rgba(255, 255, 255, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: 999px;
   padding: 3px 10px 3px 6px;
   font-size: 12px;
@@ -127,7 +127,7 @@
 .trendIcon {
   width: 16px;
   height: 16px;
-  background: rgba(255,255,255,0.35);
+  background: rgba(255, 255, 255, 0.35);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -190,7 +190,7 @@
 
 .filterPill:focus {
   border-color: #0ea5e9;
-  box-shadow: 0 0 0 3px rgba(14,165,233,0.1);
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
 }
 
 .filterSep {
@@ -204,7 +204,7 @@
   background: #ffffff;
   border-radius: 20px;
   padding: 28px 32px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 }
 
 .tableTopRow {
@@ -236,7 +236,7 @@
 
 .searchBar:focus-within {
   border-color: #0ea5e9;
-  box-shadow: 0 0 0 3px rgba(14,165,233,0.1);
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
 }
 
 .searchBar svg {
@@ -335,6 +335,27 @@
   border-color: var(--admin-list-yellow);
 }
 
+/* ── ACTION BUTTONS ── */
+.btnView {
+  padding: 8px 16px;
+  background: var(--owner-cyan);
+  color: white;
+  border: none;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.btnView:hover {
+  background: var(--owner-cyan-dark);
+}
+
+.btnView:active {
+  transform: scale(0.98);
+}
+
 /* ── RESPONSIVE ── */
 @media (max-width: 1200px) {
   .summaryCards {
@@ -376,6 +397,7 @@
   0% {
     background-position: 220% 0;
   }
+
   100% {
     background-position: -220% 0;
   }
@@ -425,7 +447,7 @@
   background: #ffffff;
   border-radius: 16px;
   padding: 20px 22px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 }
 
 .skeletonHeroCard {
@@ -433,12 +455,12 @@
   border-radius: 20px;
   padding: 28px 32px;
   margin-bottom: 24px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 }
 
 .skeletonTableCard {
   background: #ffffff;
   border-radius: 20px;
   padding: 28px 32px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 }

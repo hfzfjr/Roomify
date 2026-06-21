@@ -19,7 +19,7 @@ export default function Navbar() {
   const [avatarImageError, setAvatarImageError] = useState(false)
   const [showRegisterOverlay, setShowRegisterOverlay] = useState(false)
   const [notificationOpen, setNotificationOpen] = useState(false)
-  const [hasNewNotification, setHasNewNotification] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(0)
   const router = useRouter()
 
   useEffect(() => {
@@ -70,8 +70,8 @@ export default function Navbar() {
           const notificationsResponse = await fetch(`/api/notifications?user_id=${encodeURIComponent(parsedUser.user_id)}`, { cache: 'no-store' })
           const notificationsResult = await notificationsResponse.json()
           if (notificationsResponse.ok && notificationsResult.success && notificationsResult.notifications) {
-            const unreadCount = notificationsResult.notifications.filter((n: any) => !n.is_read).length
-            setHasNewNotification(unreadCount > 0)
+            const count = notificationsResult.notifications.filter((n: any) => !n.is_read).length
+            setUnreadCount(count)
           }
         }
       } catch (error) {
@@ -219,7 +219,7 @@ export default function Navbar() {
             onClick={() => setNotificationOpen(true)}
             aria-label="Buka notifikasi"
           >
-            <NotificationIcon hasNotification={hasNewNotification} />
+            <NotificationIcon hasNotification={unreadCount > 0} unreadCount={unreadCount} />
             <span className="notification-text">Notifikasi</span>
           </button>
           <div className="account-menu">

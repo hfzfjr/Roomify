@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import './notification.css'
 import PaymentPendingIcon from '../../icons/notification/PaymentPendingIcon'
 import PaymentSuccessIcon from '@/components/icons/notification/PaymentSuccessIcon'
@@ -16,8 +17,8 @@ interface NotificationItem {
   description: string
   timestamp: string
   type: 'payment' | 'facility' | 'booking' | 'reminder' | 'system'
-  status?: 'success' | 'pending' | 'approved' | 'rejected' | 'canceled'
   color: 'orange' | 'green' | 'blue' | 'red' | 'gray'
+  is_read: boolean
 }
 
 interface NotificationGroup {
@@ -32,8 +33,10 @@ interface NotificationProps {
 }
 
 export default function Notification({ isOpen, onClose, userId }: NotificationProps) {
+  const router = useRouter()
   const [notificationGroups, setNotificationGroups] = useState<NotificationGroup[]>([])
   const [loading, setLoading] = useState(false)
+  const [markingAllRead, setMarkingAllRead] = useState(false)
 
   useEffect(() => {
     if (!isOpen || !userId) return
@@ -82,8 +85,8 @@ export default function Notification({ isOpen, onClose, userId }: NotificationPr
         description: notif.description || '',
         timestamp: formatTimestamp(notif.created_at),
         type: notif.type,
-        status: notif.status,
-        color: getColorByType(notif.type, notif.status)
+        color: getColorByType(notif.type, notif.title),
+        is_read: notif.is_read || false,
       }
 
       let groupLabel: string
@@ -149,33 +152,40 @@ export default function Notification({ isOpen, onClose, userId }: NotificationPr
     if (diffDays < 7) return `${diffDays} hari yang lalu`
 
     return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) + ', ' +
-           date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB'
+      date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB'
   }
 
-  function getColorByType(type: string, status?: string): NotificationItem['color'] {
+  function getColorByType(type: string, title?: string): NotificationItem['color'] {
+    const titleLower = title?.toLowerCase() || ''
+
     switch (type) {
       case 'payment':
-        if (status === 'success') return 'green'
+        if (titleLower.includes('berhasil') || titleLower.includes('lunas') || titleLower.includes('diterima')) return 'green'
         return 'orange'
       case 'facility':
-        if (status === 'rejected') return 'red'
+        if (titleLower.includes('ditolak')) return 'red'
         return 'green'
-      case 'booking': return 'blue'
+      case 'booking':
+        if (titleLower.includes('dibatalkan')) return 'red'
+        return 'blue'
       case 'reminder': return 'red'
       case 'system': return 'gray'
       default: return 'blue'
     }
   }
 
-  const getIcon = (type: NotificationItem['type'], status?: NotificationItem['status']) => {
+  const getIcon = (type: NotificationItem['type'], title?: string) => {
+    const titleLower = title?.toLowerCase() || ''
+
     switch (type) {
       case 'payment':
-        if (status === 'success') return <PaymentSuccessIcon />
+        if (titleLower.includes('berhasil') || titleLower.includes('lunas') || titleLower.includes('diterima')) return <PaymentSuccessIcon />
         return <PaymentPendingIcon />
       case 'facility':
-        if (status === 'rejected') return <FacilityRejectedIcon />
+        if (titleLower.includes('ditolak')) return <FacilityRejectedIcon />
         return <FacilityApprovedIcon />
       case 'booking':
+        if (titleLower.includes('dibatalkan')) return <OrderCanceledIcon />
         return <OrderCanceledIcon />
       case 'reminder':
         return <ReminderIcon />
@@ -186,17 +196,79 @@ export default function Notification({ isOpen, onClose, userId }: NotificationPr
     }
   }
 
+  const handleNotificationClick = async (item: NotificationItem) => {
+    // Optimistically update local state
+    setNotificationGroups(prevGroups =>
+      prevGroups.map(group => ({
+        ...group,
+        items: group.items.map(i =>
+          i.id === item.id ? { ...i, is_read: true } : i
+        )
+      }))
+    )
+
+    // Mark as read in backend
+    if (!item.is_read && userId) {
+      try {
+        await fetch(`/api/notifications/${item.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id: userId })
+        })
+      } catch (error) {
+        console.error('Error marking notification as read:', error)
+      }
+    }
+  }
+
+  const handleMarkAllAsRead = async () => {
+    if (!userId) return
+
+    setMarkingAllRead(true)
+    try {
+      const response = await fetch('/api/notifications/mark-all-read', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId })
+      })
+
+      if (response.ok) {
+        // Optimistically update local state
+        setNotificationGroups(prevGroups =>
+          prevGroups.map(group => ({
+            ...group,
+            items: group.items.map(i => ({ ...i, is_read: true }))
+          }))
+        )
+      }
+    } catch (error) {
+      console.error('Error marking all as read:', error)
+    } finally {
+      setMarkingAllRead(false)
+    }
+  }
+
   return (
     <div className="notification-overlay" onClick={onClose}>
       <div className="notification-container" onClick={(e) => e.stopPropagation()}>
         <div className="notification-header">
           <h2 className="notification-title">Notifikasi</h2>
-          <button className="notification-close" onClick={onClose} aria-label="Tutup notifikasi">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"/>
-              <line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
-          </button>
+          <div className="notification-header-actions">
+            <button
+              className="notification-mark-all-read"
+              onClick={handleMarkAllAsRead}
+              disabled={markingAllRead}
+              aria-label="Tandai semua dibaca"
+            >
+              {markingAllRead ? 'Memproses...' : 'Tandai semua dibaca'}
+            </button>
+            <button className="notification-close" onClick={onClose} aria-label="Tutup notifikasi">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         <div className="notification-content">
@@ -209,10 +281,14 @@ export default function Notification({ isOpen, onClose, userId }: NotificationPr
               <div key={groupIndex} className="notification-group">
                 <div className="notification-group-label">{group.label}</div>
                 {group.items.map((item) => (
-                  <div key={item.id} className={`notification-item notification-item-${item.color}`}>
+                  <div
+                    key={item.id}
+                    className={`notification-item notification-item-${item.color} ${!item.is_read ? 'notification-item-unread' : ''}`}
+                    onClick={() => handleNotificationClick(item)}
+                  >
                     <div className="notification-item-bar"></div>
                     <div className="notification-item-icon">
-                      {getIcon(item.type, item.status)}
+                      {getIcon(item.type, item.title)}
                     </div>
                     <div className="notification-item-content">
                       <div className="notification-item-title-row">

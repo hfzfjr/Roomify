@@ -42,6 +42,33 @@
   pointer-events: auto;
 }
 
+.notification-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.notification-mark-all-read {
+  padding: 8px 14px;
+  border: none;
+  background: rgba(0, 212, 255, 0.12);
+  color: #0891b2;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.notification-mark-all-read:hover:not(:disabled) {
+  background: rgba(0, 212, 255, 0.2);
+}
+
+.notification-mark-all-read:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .notification-title {
   font-size: 20px;
   font-weight: 600;
@@ -126,8 +153,28 @@
   border: 1px solid var(--border-color);
 }
 
+.notification-item-unread {
+  background: #F0F9FF;
+  border-color: rgba(0, 212, 255, 0.3);
+}
+
+.notification-item-unread::before {
+  content: '';
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 8px;
+  height: 8px;
+  background: #0891b2;
+  border-radius: 50%;
+}
+
 .notification-item:hover {
   background: #F9FAFB;
+}
+
+.notification-item-unread:hover {
+  background: #E0F2FE;
 }
 
 .notification-item-bar {

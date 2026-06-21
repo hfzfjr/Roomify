@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createNotification } from '@/lib/notifications'
 
 export async function PATCH(
   request: Request,
@@ -12,7 +13,7 @@ export async function PATCH(
     // Get current report status and room_id
     const { data: report, error: fetchError } = await supabase
       .from('report')
-      .select('status, room_id')
+      .select('status, room_id, customer_id')
       .eq('report_id', id)
       .single()
 
@@ -54,6 +55,52 @@ export async function PATCH(
         .update({ status: 'aktif' })
         .eq('room_id', report.room_id)
       return NextResponse.json({ success: false, message: reportError.message }, { status: 500 })
+    }
+
+    // Notify customer that report has been resolved (room suspended)
+    const { data: customerUser } = await supabase
+      .from('customer')
+      .select('user_id')
+      .eq('customer_id', report.customer_id)
+      .maybeSingle()
+
+    if (customerUser?.user_id) {
+      await createNotification({
+        user_id: customerUser.user_id,
+        title: 'Laporan Telah Diselesaikan',
+        description: 'Laporan Anda telah diselesaikan. Ruangan terkait telah ditangguhkan sementara.',
+        type: 'system',
+        priority: 'medium',
+        related_id: id,
+        related_type: 'report'
+      })
+    }
+
+    // Notify owner that room has been suspended
+    const { data: room } = await supabase
+      .from('room')
+      .select('owner_id')
+      .eq('room_id', report.room_id)
+      .maybeSingle()
+
+    if (room?.owner_id) {
+      const { data: ownerUser } = await supabase
+        .from('owner')
+        .select('user_id')
+        .eq('owner_id', room.owner_id)
+        .maybeSingle()
+
+      if (ownerUser?.user_id) {
+        await createNotification({
+          user_id: ownerUser.user_id,
+          title: 'Laporan Telah Diselesaikan',
+          description: 'Laporan terkait telah diselesaikan. Ruangan Anda telah ditangguhkan sementara.',
+          type: 'system',
+          priority: 'medium',
+          related_id: id,
+          related_type: 'report'
+        })
+      }
     }
 
     return NextResponse.json({ success: true, message: 'Ruangan berhasil ditangguhkan' })

@@ -449,11 +449,12 @@
 
 .roomTag {
   margin-top: 10px;
+  background: var(--owner-cyan-surface);
   width: fit-content;
   border: 1.5px solid var(--owner-cyan-hover);
   border-radius: 999px;
   padding: 4px 14px;
-  color: var(--owner-cyan-tag);
+  color: var(--owner-cyan);
   font-size: 14px;
 }
 
@@ -768,6 +769,29 @@
   gap: 16px;
 }
 
+.topbarRight {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.notificationButton {
+  background: var(--owner-white-55);
+  border: none;
+  color: #000000;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.notificationButton:hover {
+  background-color: var(--owner-white-40);
+}
+
 .hamburgerBtn {
   display: none;
   background: transparent;
@@ -800,8 +824,13 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @media (max-width: 1600px) {
@@ -849,6 +878,7 @@
 }
 
 @media (max-width: 1510px) {
+
   .revenueTrendContainer,
   .bookingTrendContainer {
     flex-direction: column;
