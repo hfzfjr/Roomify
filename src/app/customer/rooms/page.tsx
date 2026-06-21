@@ -418,7 +418,7 @@ function CustomerRooms() {
 
   const renderRoomCard = (room: Room) => {
     const image = room.images?.[0] || '/images/gambarRuangan.png'
-    const facilities = room.facilities?.slice(0, 3).map(f => formatFacilityName(f)).join(', ') ?? '-'
+    const facilities = room.facilities?.map(f => formatFacilityName(f)).join(', ') ?? '-'
     const displayType = room.type ? room.type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'Meeting Room'
 
     // Get rating data from database
@@ -449,7 +449,7 @@ function CustomerRooms() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z" />
                   <circle cx="12" cy="11" r="3" />
                 </svg>
-                {room.location}, {room.region}, {room.province}
+                <span className="room-card-ellipsis">{room.location}, {room.region}, {room.province}</span>
               </span>
               <span className="rooms-list-card-meta-item">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -458,7 +458,7 @@ function CustomerRooms() {
                   <line x1="12" y1="12" x2="12" y2="16" />
                   <line x1="10" y1="14" x2="14" y2="14" />
                 </svg>
-                {facilities}
+                <span className="room-card-ellipsis">{facilities}</span>
               </span>
             </div>
             <div className="rooms-list-card-rating">

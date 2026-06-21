@@ -130,7 +130,7 @@ export async function PUT(
     }
 
     if (Array.isArray(facilities) && facilities.length > 0) {
-      // Generate amenity_id in format a-[i] with minimum 2 digits
+      // Generate amenity_id in format a-[i] with minimum 3 digits
       // Get the starting number once
       const { data: amenities, error: amenityError } = await supabase
         .from('room_amenity')
@@ -144,16 +144,58 @@ export async function PUT(
         const lastId = amenities[0].amenity_id
         const match = lastId.match(/a-(\d+)/)
         if (match) {
-          nextNumber = parseInt(match[1], 10) + 1
+          let lastNumber = parseInt(match[1], 10)
+          // Ensure we start from at least 100 to use 3-digit format
+          if (lastNumber < 100) {
+            lastNumber = 100
+          }
+          nextNumber = lastNumber + 1
         }
       }
 
-      // Generate unique IDs by incrementing locally
-      const amenityInserts = facilities.map((fac: string, index: number) => ({
-        amenity_id: `a-${String(nextNumber + index).padStart(2, '0')}`,
-        room_id: id,
-        amenity: fac
-      }))
+      // Generate unique IDs with retry logic to avoid duplicates
+      const amenityInserts: Array<{ amenity_id: string; room_id: string; amenity: string }> = []
+      const maxRetries = 10
+
+      for (const fac of facilities) {
+        let amenityId = ''
+        let inserted = false
+        let retryCount = 0
+
+        while (!inserted && retryCount < maxRetries) {
+          amenityId = `a-${String(nextNumber).padStart(3, '0')}`
+
+          // Check if this ID already exists
+          const { data: existingAmenity } = await supabase
+            .from('room_amenity')
+            .select('amenity_id')
+            .eq('amenity_id', amenityId)
+            .maybeSingle()
+
+          if (!existingAmenity) {
+            amenityInserts.push({
+              amenity_id: amenityId,
+              room_id: id,
+              amenity: fac
+            })
+            inserted = true
+            nextNumber++
+          } else {
+            nextNumber++
+            retryCount++
+          }
+        }
+
+        if (!inserted) {
+          // Fallback to timestamp-based ID if all retries fail
+          amenityId = `a-${Date.now()}`
+          amenityInserts.push({
+            amenity_id: amenityId,
+            room_id: id,
+            amenity: fac
+          })
+        }
+      }
 
       const { error: insertError } = await supabase
         .from('room_amenity')
