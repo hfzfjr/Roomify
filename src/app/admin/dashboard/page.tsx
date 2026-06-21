@@ -8,7 +8,7 @@ import type { User } from '@/types';
 import UserIcon from '@/components/icons/UserIcon';
 import OfficeIcon from '@/components/icons/OfficeIcon';
 import SidebarAdmin from '@/components/layout/SidebarAdmin';
-import VerifyRoomsOverlay from '@/components/ui/overlay/admin/VerifyRoomsOverlay';
+import VerifyOwnerOverlay from '@/components/ui/overlay/admin/VerifyOwnerOverlay';
 
 const chartSkeletonHeights = [84, 156, 112, 178, 136, 98, 164];
 
@@ -88,7 +88,7 @@ function getServerUserSnapshot(): User | null {
 
 function subscribeToUserStore(onStoreChange: () => void) {
   if (typeof window === 'undefined') {
-    return () => {};
+    return () => { };
   }
 
   const handleStorage = (event: StorageEvent) => {
@@ -169,6 +169,64 @@ export default function AdminDashboardPage() {
     const trend = value >= 0 ? 'Mengalami kenaikan' : 'Mengalami penurunan';
     return `${percent}% ${trend} dari bulan sebelumnya`;
   };
+
+  const handleApprove = async () => {
+    if (!selectedVerification) return
+
+    try {
+      const ownerId = selectedVerification.owner_id
+
+      const response = await fetch(`/api/admin/owners/${ownerId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'active' })
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        setOverlayOpen(false)
+        setSelectedVerification(null)
+        // Refresh dashboard data
+        window.location.reload()
+      } else {
+        console.error('Failed to approve owner:', result.message)
+        alert('Gagal menyetujui owner: ' + result.message)
+      }
+    } catch (error) {
+      console.error('Error approving owner:', error)
+      alert('Terjadi kesalahan saat menyetujui owner')
+    }
+  }
+
+  const handleReject = async () => {
+    if (!selectedVerification) return
+
+    try {
+      const ownerId = selectedVerification.owner_id
+
+      const response = await fetch(`/api/admin/owners/${ownerId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'suspended' })
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        setOverlayOpen(false)
+        setSelectedVerification(null)
+        // Refresh dashboard data
+        window.location.reload()
+      } else {
+        console.error('Failed to reject owner:', result.message)
+        alert('Gagal menolak owner: ' + result.message)
+      }
+    } catch (error) {
+      console.error('Error rejecting owner:', error)
+      alert('Terjadi kesalahan saat menolak owner')
+    }
+  }
 
   if (dashboardError) {
     return (
@@ -432,7 +490,10 @@ export default function AdminDashboardPage() {
                         setSelectedVerification(verification);
                         setOverlayOpen(true);
                       }}>Lihat detail</button>
-                      <button className={styles.btnClose}>
+                      <button className={styles.btnClose} onClick={() => {
+                        setSelectedVerification(verification);
+                        handleReject();
+                      }}>
                         Tolak
                       </button>
                     </div>
@@ -450,14 +511,16 @@ export default function AdminDashboardPage() {
         </div>
       </main>
 
-      <VerifyRoomsOverlay
+      <VerifyOwnerOverlay
         isOpen={overlayOpen}
         onClose={() => setOverlayOpen(false)}
+        onApprove={handleApprove}
+        onReject={handleReject}
         verificationData={selectedVerification ? {
           name: selectedVerification.name,
           userId: selectedVerification.user_id,
           businessName: selectedVerification.business_name || '-',
-          phone: selectedVerification.phone || '-',
+          phone: selectedVerification.business_phone || '-',
           email: selectedVerification.email || '-',
           accountNumber: selectedVerification.account_number || '-',
           submittedAt: formatDate(selectedVerification.created_at),

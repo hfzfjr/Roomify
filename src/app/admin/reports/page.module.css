@@ -381,7 +381,7 @@
   font-family: var(--font-family, 'Inter', sans-serif);
 }
 
-.statusPending {
+.statusInProgress {
   background: var(--admin-list-yellow-bg);
   border-color: var(--admin-list-yellow);
   color: var(--admin-list-yellow);
@@ -397,6 +397,12 @@
   background: var(--admin-list-cyan-bg);
   border-color: var(--admin-list-cyan);
   color: var(--admin-list-cyan);
+}
+
+.statusRejected {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+  color: #6b7280;
 }
 
 /* Action Button */

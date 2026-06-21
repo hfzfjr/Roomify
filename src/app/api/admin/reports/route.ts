@@ -23,6 +23,11 @@ export async function GET(request: Request) {
         customer_id,
         room_id,
         booking_id,
+        report_image,
+        resolution_image,
+        resolution_description,
+        resolution_submitted_at,
+        rejection_reason,
         room (
           room_id,
           name,
@@ -35,9 +40,10 @@ export async function GET(request: Request) {
     // Apply status filter
     if (status) {
       const statusMap: Record<string, string> = {
-        'Pending': 'pending',
-        'Perlu tindakan': 'in_progress',
+        'Perlu tindakan': 'pending',
+        'Proses': 'in_progress',
         'Selesai': 'resolved',
+        'Ditolak': 'rejected',
       }
       query = query.eq('status', statusMap[status] || status)
     }
@@ -90,10 +96,11 @@ export async function GET(request: Request) {
 
     // Format report data
     const formattedReports = (reports || []).map((report: any) => {
-      const statusMap: Record<string, 'Pending' | 'Perlu tindakan' | 'Selesai'> = {
-        'pending': 'Pending',
-        'in_progress': 'Perlu tindakan',
+      const statusMap: Record<string, string> = {
+        'pending': 'Perlu tindakan',
+        'in_progress': 'Proses',
         'resolved': 'Selesai',
+        'rejected': 'Ditolak',
       }
 
       const roomData = Array.isArray(report.room) ? report.room[0] : report.room
@@ -117,9 +124,14 @@ export async function GET(request: Request) {
         transactionId: report.booking_id || null,
         roomId: roomData?.room_id || null,
         roomType: roomData?.type || null,
-        status: statusMap[report.status] || 'Pending',
+        status: statusMap[report.status] || 'Perlu tindakan',
         description: report.description,
         category: report.category,
+        attachments: report.report_image || [],
+        resolutionImage: report.resolution_image || [],
+        resolutionDescription: report.resolution_description || null,
+        resolutionSubmittedAt: report.resolution_submitted_at || null,
+        rejectionReason: report.rejection_reason || null,
       }
     })
 
@@ -136,8 +148,8 @@ export async function GET(request: Request) {
     }
 
     // Calculate stats
-    const totalNew = formattedReports.filter(r => r.status === 'Pending').length
-    const waitingAction = formattedReports.filter(r => r.status === 'Perlu tindakan').length
+    const totalNew = formattedReports.filter(r => r.status === 'Perlu tindakan').length
+    const waitingAction = formattedReports.filter(r => r.status === 'Proses').length
     const solved = formattedReports.filter(r => r.status === 'Selesai').length
 
     return NextResponse.json({

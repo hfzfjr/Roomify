@@ -124,10 +124,11 @@ export default function ListOwnerPage() {
   const filteredAndSorted = useMemo(() => {
     const q = searchQuery.toLowerCase()
     const filtered = owners.filter(o =>
-      o.id.toLowerCase().includes(q) ||
-      o.businessName.toLowerCase().includes(q) ||
-      o.ownerName.toLowerCase().includes(q) ||
-      o.status.toLowerCase().includes(q)
+      o.status === 'Aktif' &&
+      (o.id.toLowerCase().includes(q) ||
+        o.businessName.toLowerCase().includes(q) ||
+        o.ownerName.toLowerCase().includes(q) ||
+        o.status.toLowerCase().includes(q))
     )
     return [...filtered].sort((a, b) =>
       a[sortKey].localeCompare(b[sortKey])
@@ -203,7 +204,7 @@ export default function ListOwnerPage() {
                   <input
                     type="text"
                     className={styles.searchInput}
-                    placeholder="Cari owner"
+                    placeholder="Cari Owner"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />

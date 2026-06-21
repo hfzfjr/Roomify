@@ -1,0 +1,403 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.overlayContent {
+  background-color: var(--admin-cyan-light);
+  border-radius: 16px;
+  max-width: 700px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+}
+
+.overlayContent::-webkit-scrollbar {
+  display: none;
+}
+
+/* ---- Header ---- */
+.overlayHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  background: white;
+  border-radius: 16px 16px 0 0;
+  border-bottom: 1px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.overlayTitle {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.closeButton {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: #6b7280;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.closeButton:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+/* ---- Body ---- */
+.overlayBody {
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---- Banner ---- */
+.bannerCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: white;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  border: 1px solid #e5e7eb;
+}
+
+.bannerLeft {
+  margin: 4px 0;
+  color: #111827;
+}
+
+.bannerId {
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.bannerDate {
+  font-size: 13px;
+  margin-top: 5px;
+}
+
+.bannerRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bannerStatusLabel {
+  font-size: 13px;
+}
+
+/* ---- Status Badge ---- */
+.statusBadge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1.5px solid;
+}
+
+.statusActionNeeded {
+  background: var(--admin-list-red-bg);
+  border-color: var(--admin-list-red);
+  color: var(--admin-list-red);
+}
+
+.statusInProgress {
+  background: var(--admin-list-yellow-bg);
+  border-color: var(--admin-list-yellow);
+  color: var(--admin-list-yellow);
+}
+
+.statusSolved {
+  background: var(--admin-list-cyan-bg);
+  border-color: var(--admin-list-cyan);
+  color: var(--admin-list-cyan);
+}
+
+.statusRejected {
+  background: var(--cancel-button-bg-gray);
+  border-color: var(--cancel-button-text-gray);
+  color: var(--cancel-button-text-gray);
+}
+
+/* ---- Info Card ---- */
+.infoCard {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.infoCardHeader {
+  padding: 20px;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 12px;
+}
+
+.infoCardTitle {
+  margin: 0 0 4px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.infoCardSubtitle {
+  margin: 0;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.detailList {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detailRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.detailLabel {
+  min-width: 140px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.detailSeparator {
+  color: #9ca3af;
+}
+
+.detailValue {
+  flex: 1;
+  font-size: 14px;
+  color: #111827;
+  word-break: break-word;
+}
+
+/* ---- Attachments ---- */
+.attachmentsSection {
+  padding: 0 20px 20px;
+}
+
+.attachmentsLabel {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: #111827;
+}
+
+.attachmentsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 12px;
+}
+
+.attachmentThumb {
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+/* ---- Form Field ---- */
+.formField {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.required {
+  color: #ef4444;
+  margin-left: 4px;
+}
+
+/* ---- Upload Area ---- */
+.uploadArea {
+  border: 2px dashed #d1d5db;
+  border-radius: 12px;
+  padding: 32px;
+  text-align: center;
+  transition: border-color 0.2s;
+}
+
+.uploadArea:hover {
+  border-color: #00bcd4;
+}
+
+.fileInput {
+  display: none;
+}
+
+.uploadLabel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.uploadLabel svg {
+  color: #9ca3af;
+}
+
+.uploadLabel span:first-of-type {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.uploadHint {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.uploadNotice {
+  margin: 12px 0 8px 0;
+  font-size: 12px;
+  color: #6b7280;
+  font-style: italic;
+}
+
+.previewGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 12px;
+}
+
+.previewItem {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+}
+
+.previewThumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.previewDelete {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.previewItem:hover .previewDelete {
+  opacity: 1;
+}
+
+/* ---- Textarea ---- */
+.textarea {
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  color: #111827;
+  outline: none;
+  transition: border-color 0.2s;
+  resize: vertical;
+  min-height: 120px;
+}
+
+.textarea:focus {
+  border-color: #00bcd4;
+}
+
+.textarea:disabled {
+  background: #f3f4f6;
+  cursor: not-allowed;
+}
+
+/* ---- Footer ---- */
+.overlayFooter {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 24px 24px;
+  gap: 12px;
+}
+
+.actionButton {
+  padding: 14px 28px;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.actionButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btnSecondary {
+  background: var(--cancel-button-bg-gray);
+  color: var(--cancel-button-text-gray);
+}
+
+.btnSecondary:hover:not(:disabled) {
+  background: var(--cancel-button-hover-gray);
+}
+
+.btnPrimary {
+  background: var(--cyan);
+  color: white;
+}
+
+.btnPrimary:hover:not(:disabled) {
+  background: var(--cyan-dark);
+}

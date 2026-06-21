@@ -19,8 +19,8 @@
 }
 
 .heroTitle {
-  font-size: 26px;
-  font-weight: 800;
+  font-size: 24px;
+  font-weight: 700;
   color: #0f172a;
   margin: 0 0 4px 0;
 }
@@ -217,7 +217,7 @@
 
 .sectionTitle {
   font-size: 20px;
-  font-weight: 800;
+  font-weight: 600;
   color: #0f172a;
   margin: 0;
 }
@@ -280,10 +280,6 @@
   white-space: nowrap;
 }
 
-.table th:first-child {
-  text-align: left;
-}
-
 .table td {
   padding: 18px 16px;
   font-size: 14px;
@@ -291,10 +287,6 @@
   border-bottom: 1px solid #f1f5f9;
   text-align: center;
   vertical-align: middle;
-}
-
-.table td:first-child {
-  text-align: left;
 }
 
 .table tbody tr:last-child td {
@@ -326,21 +318,21 @@
 }
 
 .statusLunas {
-  background: var(--owner-cyan-surface);
-  color: var(--border-text-cyan);
-  border-color: var(--border-text-cyan);
+  background: var(--admin-list-cyan-bg);
+  color: var(--admin-list-cyan);
+  border-color: var(--admin-list-cyan);
 }
 
 .statusBatal {
-  background: #fee2e2;
-  color: #ef4444;
-  border-color: #fca5a5;
+  background: var(--admin-list-red-bg);
+  color: var(--admin-list-red);
+  border-color: var(--admin-list-red);
 }
 
 .statusPending {
-  background: #fef3c7;
-  color: #d97706;
-  border-color: #fcd34d;
+  background: var(--admin-list-yellow-bg);
+  color: var(--admin-list-yellow);
+  border-color: var(--admin-list-yellow);
 }
 
 /* ── RESPONSIVE ── */

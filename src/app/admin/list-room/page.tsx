@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import SidebarAdmin from '@/components/layout/SidebarAdmin'
 import DetailListRoomOverlay from '@/components/ui/overlay/admin/DetailListRoomOverlay'
 import DeleteRoomOverlay from '@/components/ui/overlay/admin/DeleteRoomOverlay'
+import ConfirmChangeStatusOverlay from '@/components/ui/overlay/admin/ConfirmChangeStatusOverlay'
 import { useUser } from '@/hooks/useUser'
 import styles from './page.module.css'
 
@@ -14,7 +15,7 @@ type Room = {
   owner: string
   type: string
   capacity: number
-  status: 'Aktif' | 'Tidak aktif'
+  status: 'aktif' | 'nonaktif' | 'suspend'
 }
 
 type SortKey = 'id' | 'name' | 'owner' | 'type' | 'capacity' | 'status'
@@ -30,6 +31,8 @@ export default function ListRoomPage() {
   const [isOverlayOpen, setIsOverlayOpen] = useState(false)
   const [isDeleteOverlayOpen, setIsDeleteOverlayOpen] = useState(false)
   const [roomToDelete, setRoomToDelete] = useState<Room | null>(null)
+  const [isStatusOverlayOpen, setIsStatusOverlayOpen] = useState(false)
+  const [roomToChangeStatus, setRoomToChangeStatus] = useState<Room | null>(null)
   const [sortKey, setSortKey] = useState<SortKey>('id')
   const [showSortDropdown, setShowSortDropdown] = useState(false)
   const [selectedTypes, setSelectedTypes] = useState<string[]>([])
@@ -115,6 +118,44 @@ export default function ListRoomPage() {
     } catch (error) {
       console.error('Error deleting room:', error)
       alert('Gagal menghapus ruangan')
+    }
+  }
+
+  const handleStatusClick = (room: Room) => {
+    setRoomToChangeStatus(room)
+    setIsStatusOverlayOpen(true)
+  }
+
+  const handleCloseStatusOverlay = () => {
+    setIsStatusOverlayOpen(false)
+    setRoomToChangeStatus(null)
+  }
+
+  const handleConfirmStatusChange = async () => {
+    if (!roomToChangeStatus) return
+
+    const newStatus = roomToChangeStatus.status === 'suspend' ? 'aktif' : 'suspend'
+
+    try {
+      const response = await fetch(`/api/admin/rooms/${roomToChangeStatus.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        setRooms(prev => prev.map(r =>
+          r.id === roomToChangeStatus.id ? { ...r, status: newStatus } : r
+        ))
+        handleCloseStatusOverlay()
+      } else {
+        alert('Gagal mengubah status ruangan: ' + result.message)
+      }
+    } catch (error) {
+      console.error('Error changing room status:', error)
+      alert('Gagal mengubah status ruangan')
     }
   }
 
@@ -245,7 +286,7 @@ export default function ListRoomPage() {
                   <input
                     type="text"
                     className={styles.searchInput}
-                    placeholder="Cari owner"
+                    placeholder="Cari Ruangan"
                     value={searchOwner}
                     onChange={e => setSearchOwner(e.target.value)}
                   />
@@ -294,7 +335,14 @@ export default function ListRoomPage() {
                             </span>
                           </td>
                           <td>
-                            <span className={`${styles.statusBadge} ${room.status === 'Aktif' ? styles.statusActive : styles.statusInactive}`}>
+                            <span
+                              className={`${styles.statusBadge} ${room.status === 'aktif' ? styles.statusActive :
+                                room.status === 'suspend' ? styles.statusSuspended :
+                                  styles.statusInactive
+                                }`}
+                              style={{ cursor: 'pointer' }}
+                              onClick={() => handleStatusClick(room)}
+                            >
                               {room.status}
                             </span>
                           </td>
@@ -333,6 +381,18 @@ export default function ListRoomPage() {
           roomName={roomToDelete.name}
           onConfirm={handleConfirmDelete}
           onCancel={handleCloseDeleteOverlay}
+        />
+      )}
+
+      {/* Status Change Overlay */}
+      {roomToChangeStatus && (
+        <ConfirmChangeStatusOverlay
+          roomName={roomToChangeStatus.name}
+          roomId={roomToChangeStatus.id}
+          currentStatus={roomToChangeStatus.status}
+          newStatus={roomToChangeStatus.status === 'suspend' ? 'aktif' : 'suspend'}
+          onConfirm={handleConfirmStatusChange}
+          onCancel={handleCloseStatusOverlay}
         />
       )}
     </div>

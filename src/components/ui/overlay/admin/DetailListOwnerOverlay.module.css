@@ -13,7 +13,7 @@
 }
 
 .overlayContent {
-  background-color: var(--admin-cyan-light, #eaf6f9);
+  background-color: var(--admin-cyan-light);
   border-radius: 16px;
   max-width: 700px;
   width: 100%;

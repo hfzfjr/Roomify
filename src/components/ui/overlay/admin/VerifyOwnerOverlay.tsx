@@ -1,8 +1,8 @@
 'use client';
 
-import styles from './VerifyRoomsOverlay.module.css';
+import styles from './VerifyOwnerOverlay.module.css';
 
-interface VerifyRoomsOverlayProps {
+interface VerifyOwnerOverlayProps {
   isOpen: boolean;
   onClose: () => void;
   onApprove?: () => void;
@@ -19,13 +19,13 @@ interface VerifyRoomsOverlayProps {
   };
 }
 
-export default function VerifyRoomsOverlay({
+export default function VerifyOwnerOverlay({
   isOpen,
   onClose,
   onApprove,
   onReject,
   verificationData,
-}: VerifyRoomsOverlayProps) {
+}: VerifyOwnerOverlayProps) {
   if (!isOpen) return null;
 
   const data = verificationData || {

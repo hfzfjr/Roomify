@@ -150,9 +150,13 @@ interface AdminDashboardData {
     roomsMonthChangePercent: number | null
   }
   pendingVerifications: Array<{
+    owner_id: string
     user_id: string
     name: string
     email: string
+    business_name: string
+    business_phone: string
+    account_number: string
     created_at: string
   }>
   chartData: {

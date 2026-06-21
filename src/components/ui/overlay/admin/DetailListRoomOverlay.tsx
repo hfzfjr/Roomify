@@ -27,7 +27,7 @@ interface Room {
   owner: string
   type: string
   capacity: number
-  status: 'Aktif' | 'Tidak aktif'
+  status: 'aktif' | 'nonaktif' | 'suspend'
   images?: string[]
   pricePerHour?: number
   businessName?: string
@@ -69,8 +69,9 @@ export default function DetailListRoomOverlay({ room, isOpen, onClose, onDelete 
 
   const getStatusClass = (status: string) => {
     switch (status) {
-      case 'Aktif': return styles.statusActive
-      case 'Tidak aktif': return styles.statusInactive
+      case 'aktif': return styles.statusActive
+      case 'suspend': return styles.statusSuspended
+      case 'nonaktif': return styles.statusInactive
       default: return ''
     }
   }

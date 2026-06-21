@@ -131,13 +131,20 @@ export async function GET(request: Request) {
       const ownerData = ownerMap.get(room.owner_id)
       const ownerUserId = ownerData?.user_id
 
+      // Map database status to UI status
+      const statusMap: Record<string, string> = {
+        'aktif': 'aktif',
+        'nonaktif': 'nonaktif',
+        'suspend': 'suspend'
+      }
+
       return {
         id: room.room_id,
         name: room.name,
         owner: (ownerUserId ? userMap.get(ownerUserId) : null) || ownerData?.business_name || 'Unknown',
         type: room.type,
         capacity: room.capacity,
-        status: room.status === 'aktif' ? 'Aktif' : 'Tidak aktif',
+        status: statusMap[room.status] || room.status,
         images: roomImagesMap.get(room.room_id) || [],
         pricePerHour: room.price_per_hour,
         businessName: ownerData?.business_name,

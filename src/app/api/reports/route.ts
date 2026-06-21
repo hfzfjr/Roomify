@@ -678,15 +678,19 @@ export async function GET(request: Request) {
       const roomsMonthChangePercent = calculatePercentChange(currentRoomsCount, previousRoomsCount)
 
       let pendingVerifications: Array<{
+        owner_id: string
         user_id: string
         name: string
         email: string
+        business_name: string
+        business_phone: string
+        account_number: string
         created_at: string
       }> = []
 
       const { data: pendingOwnerApplications, error: verificationsError } = await supabase
         .from('owner')
-        .select('owner_id, user_id, applied_at, status')
+        .select('owner_id, user_id, applied_at, status, business_name, business_phone, account_number')
         .eq('status', 'pending')
         .order('applied_at', { ascending: false })
         .limit(10)
@@ -709,12 +713,16 @@ export async function GET(request: Request) {
               (verificationUsers || []).map((verificationUser: { user_id: string; name: string; email: string }) => [verificationUser.user_id, verificationUser])
             )
 
-            pendingVerifications = (pendingOwnerApplications || []).map((application: { user_id: string; applied_at: string }) => {
+            pendingVerifications = (pendingOwnerApplications || []).map((application: { owner_id: string; user_id: string; applied_at: string; business_name: string; business_phone: string; account_number: string }) => {
               const verificationUser = verificationUserMap.get(application.user_id)
               return {
+                owner_id: application.owner_id,
                 user_id: application.user_id,
                 name: verificationUser?.name || 'Unknown User',
                 email: verificationUser?.email || '-',
+                business_name: application.business_name || '-',
+                business_phone: application.business_phone || '-',
+                account_number: application.account_number || '-',
                 created_at: application.applied_at,
               }
             })

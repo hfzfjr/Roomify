@@ -12,19 +12,24 @@ interface ReportSubmission {
 
 // Helper function to generate report_id with format rpt-XXX
 async function generateReportId(supabase: Awaited<ReturnType<typeof createClient>>): Promise<string> {
-  // Get the highest report_id to generate the next one
-  const { data: lastReport } = await supabase
+  // Get all report_ids and find the highest numeric value
+  const { data: reports, error } = await supabase
     .from('report')
     .select('report_id')
-    .order('report_id', { ascending: false })
-    .limit(1)
-    .maybeSingle()
+
+  if (error) {
+    console.error('Error fetching reports:', error)
+    throw new Error('Failed to fetch reports for ID generation')
+  }
 
   let nextNumber = 1
-  if (lastReport) {
-    const lastNumber = parseInt(lastReport.report_id.replace('rpt-', ''), 10)
-    if (!isNaN(lastNumber)) {
-      nextNumber = lastNumber + 1
+  if (reports && reports.length > 0) {
+    const numbers = reports
+      .map(r => parseInt(r.report_id.replace('rpt-', ''), 10))
+      .filter(n => !isNaN(n))
+
+    if (numbers.length > 0) {
+      nextNumber = Math.max(...numbers) + 1
     }
   }
 
@@ -46,13 +51,14 @@ async function uploadImageToStorage(
 
   const base64Data = imageData.split(',')[1]
   const buffer = Buffer.from(base64Data, 'base64')
-  const fileName = `image_${index + 1}.jpg`
-  const filePath = `${reportId}/${fileName}`
+  const fileExt = imageData.split(';')[0].split('/')[1] || 'jpg'
+  const fileName = `${Date.now()}_${index}.${fileExt}`
+  const filePath = `report/report_image/${reportId}/${fileName}`
 
   const { data, error } = await supabase.storage
-    .from('report_image')
+    .from('report')
     .upload(filePath, buffer, {
-      contentType: 'image/jpeg',
+      contentType: `image/${fileExt}`,
       upsert: true
     })
 
@@ -61,17 +67,51 @@ async function uploadImageToStorage(
     throw new Error(`Failed to upload image: ${error.message}`)
   }
 
-  const { data: publicUrlData } = supabase.storage
-    .from('report_image')
-    .getPublicUrl(filePath)
+  return `https://lvcuenqrzkeclrvvkdfx.supabase.co/storage/v1/object/public/report/${filePath}`
+}
 
-  return publicUrlData.publicUrl
+// GET endpoint to fetch reports by customer_id
+export async function GET(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const customer_id = searchParams.get('customer_id')
+
+    if (!customer_id) {
+      return NextResponse.json({ success: false, message: 'customer_id is required' }, { status: 400 })
+    }
+
+    const supabase = await createClient()
+
+    const { data: reports, error } = await supabase
+      .from('report')
+      .select('*')
+      .eq('customer_id', customer_id)
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      console.error('Error fetching reports:', error)
+      return NextResponse.json({ success: false, message: error.message }, { status: 500 })
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: reports
+    })
+  } catch (error) {
+    console.error('Reports API error:', error)
+    return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 })
+  }
 }
 
 export async function POST(request: Request) {
   try {
-    const body: ReportSubmission = await request.json()
-    const { customer_id, room_id, category, description, report_images } = body
+    const formData = await request.formData()
+    const customer_id = formData.get('customer_id') as string
+    const room_id = formData.get('room_id') as string
+    const booking_id = formData.get('booking_id') as string
+    const category = formData.get('category') as string
+    const description = formData.get('description') as string
+    const images = formData.getAll('images') as File[]
 
     // Validate required fields
     if (!customer_id || !room_id || !category || !description) {
@@ -112,20 +152,80 @@ export async function POST(request: Request) {
       )
     }
 
+    // Validate booking exists and is paid (confirmed or completed)
+    if (booking_id) {
+      const { data: booking, error: bookingError } = await supabase
+        .from('booking')
+        .select('booking_id, status')
+        .eq('booking_id', booking_id)
+        .eq('customer_id', customer_id)
+        .maybeSingle()
+
+      if (bookingError || !booking) {
+        return NextResponse.json(
+          { success: false, message: 'Booking not found' },
+          { status: 404 }
+        )
+      }
+
+      // Check if booking is paid (confirmed or completed)
+      if (booking.status !== 'confirmed' && booking.status !== 'completed') {
+        return NextResponse.json(
+          { success: false, message: 'Laporan hanya dapat dibuat untuk booking yang telah lunas' },
+          { status: 400 }
+        )
+      }
+
+      // Check if report already exists for this booking
+      const { data: existingReport, error: reportCheckError } = await supabase
+        .from('report')
+        .select('report_id')
+        .eq('booking_id', booking_id)
+        .maybeSingle()
+
+      if (reportCheckError) {
+        console.error('Error checking existing report:', reportCheckError)
+        return NextResponse.json(
+          { success: false, message: 'Error checking existing report' },
+          { status: 500 }
+        )
+      }
+
+      if (existingReport) {
+        return NextResponse.json(
+          { success: false, message: 'Anda sudah pernah membuat laporan untuk booking ini' },
+          { status: 400 }
+        )
+      }
+    }
+
     // Generate report ID
     const reportId = await generateReportId(supabase)
 
     // Upload images to storage if provided
     let imageUrls: string[] = []
-    if (report_images && report_images.length > 0) {
-      for (let i = 0; i < report_images.length; i++) {
-        try {
-          const imageUrl = await uploadImageToStorage(adminSupabase, reportId, report_images[i], i)
-          imageUrls.push(imageUrl)
-        } catch (uploadError) {
-          console.error(`Failed to upload image ${i + 1}:`, uploadError)
-          // Continue with other images if one fails
+    if (images && images.length > 0) {
+      // Validate max 7 photos
+      if (images.length > 7) {
+        return NextResponse.json({ success: false, message: 'Maksimal 7 foto yang diizinkan' }, { status: 400 })
+      }
+
+      for (let i = 0; i < images.length; i++) {
+        const file = images[i]
+        const fileExt = file.name.split('.').pop()
+        const fileName = `${Date.now()}_${i}.${fileExt}`
+        const filePath = `report_image/${reportId}/${fileName}`
+
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('report')
+          .upload(filePath, file)
+
+        if (uploadError) {
+          console.error('Upload error:', uploadError)
+          return NextResponse.json({ success: false, message: 'Gagal mengupload foto' }, { status: 500 })
         }
+
+        imageUrls.push(`https://lvcuenqrzkeclrvvkdfx.supabase.co/storage/v1/object/public/report/${filePath}`)
       }
     }
 
@@ -136,9 +236,10 @@ export async function POST(request: Request) {
         report_id: reportId,
         customer_id: customer.customer_id,
         room_id: room_id,
+        booking_id: booking_id || null,
         category,
         description,
-        report_image: imageUrls.length > 0 ? imageUrls[0] : null, // Store first image as main image
+        report_image: imageUrls.length > 0 ? imageUrls : null,
         status: 'pending',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()

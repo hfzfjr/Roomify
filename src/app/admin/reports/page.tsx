@@ -3,10 +3,11 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
 import SidebarAdmin from '@/components/layout/SidebarAdmin'
 import DetailReportOverlay from '@/components/ui/overlay/admin/DetailReportOverlay'
+import RejectionReasonOverlay from '@/components/ui/overlay/admin/RejectionReasonOverlay'
 import { useUser } from '@/hooks/useUser'
 import styles from './page.module.css'
 
-type ReportStatus = 'Pending' | 'Perlu tindakan' | 'Selesai'
+type ReportStatus = 'Perlu tindakan' | 'Proses' | 'Selesai' | 'Ditolak'
 
 export interface Report {
   id: string
@@ -17,6 +18,11 @@ export interface Report {
   status: ReportStatus
   description?: string
   category?: string
+  attachments?: string[]
+  resolutionImage?: string[]
+  resolutionDescription?: string
+  resolutionSubmittedAt?: string
+  rejectionReason?: string
 }
 
 type SortKey = 'id' | 'date' | 'roomName' | 'owner' | 'reporter' | 'status'
@@ -27,10 +33,12 @@ export default function AdminReports() {
   const [sortKey, setSortKey] = useState<SortKey>('date')
   const [showSortDropdown, setShowSortDropdown] = useState(false)
   const [filterNeedAction, setFilterNeedAction] = useState(false)
-  const [selectedCategory, setSelectedCategory] = useState('Kerusakan fasilitas')
+  const [selectedCategory, setSelectedCategory] = useState<string>('')
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [isDetailOverlayOpen, setIsDetailOverlayOpen] = useState(false)
+  const [isRejectionOverlayOpen, setIsRejectionOverlayOpen] = useState(false)
   const [selectedReport, setSelectedReport] = useState<Report | null>(null)
+  const [selectedReportId, setSelectedReportId] = useState<string>('')
   const sidebarRef = useRef<HTMLElement | null>(null)
   const [reports, setReports] = useState<Report[]>([])
   const [loading, setLoading] = useState(true)
@@ -49,7 +57,7 @@ export default function AdminReports() {
       setLoading(true)
       const response = await fetch('/api/admin/reports')
       const result = await response.json()
-      
+
       if (result.success) {
         setReports(result.data.reports)
         setStats(result.data.stats)
@@ -60,6 +68,52 @@ export default function AdminReports() {
       console.error('Error fetching reports:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleWarn = async () => {
+    if (!selectedReport) return
+
+    try {
+      const response = await fetch(`/api/admin/reports/${selectedReport.id}/warn`, {
+        method: 'PATCH',
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        fetchReports()
+        setIsDetailOverlayOpen(false)
+        setSelectedReport(null)
+      } else {
+        alert(result.message || 'Gagal mengirim teguran')
+      }
+    } catch (error) {
+      console.error('Error warning owner:', error)
+      alert('Gagal mengirim teguran')
+    }
+  }
+
+  const handleSuspend = async () => {
+    if (!selectedReport) return
+
+    try {
+      const response = await fetch(`/api/admin/reports/${selectedReport.id}/suspend`, {
+        method: 'PATCH',
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        fetchReports()
+        setIsDetailOverlayOpen(false)
+        setSelectedReport(null)
+      } else {
+        alert(result.message || 'Gagal menangguhkan ruangan')
+      }
+    } catch (error) {
+      console.error('Error suspending room:', error)
+      alert('Gagal menangguhkan ruangan')
     }
   }
 
@@ -79,20 +133,27 @@ export default function AdminReports() {
     return [...reports]
       .filter(r =>
         (!filterNeedAction || r.status === 'Perlu tindakan') &&
+        (selectedCategory === '' || r.category === selectedCategory) &&
         (q === '' ||
           r.id.toLowerCase().includes(q) ||
           r.roomName.toLowerCase().includes(q) ||
           r.owner.toLowerCase().includes(q) ||
           r.reporter.toLowerCase().includes(q))
       )
-      .sort((a, b) => String(a[sortKey]).localeCompare(String(b[sortKey])))
-  }, [searchQuery, sortKey, filterNeedAction, reports])
+      .sort((a, b) => {
+        if (sortKey === 'date') {
+          return new Date(b.date).getTime() - new Date(a.date).getTime()
+        }
+        return String(a[sortKey]).localeCompare(String(b[sortKey]))
+      })
+  }, [searchQuery, sortKey, filterNeedAction, selectedCategory, reports])
 
   const getStatusClass = (status: ReportStatus) => {
     switch (status) {
-      case 'Pending': return styles.statusPending
       case 'Perlu tindakan': return styles.statusActionNeeded
+      case 'Proses': return styles.statusInProgress
       case 'Selesai': return styles.statusSolved
+      case 'Ditolak': return styles.statusRejected
       default: return ''
     }
   }
@@ -207,14 +268,23 @@ export default function AdminReports() {
               {/* Kategori */}
               <div className={styles.filterGroup}>
                 <span className={styles.filterLabel}>Kategori:</span>
-                <button
-                  type="button"
-                  className={`${styles.filterPill} ${selectedCategory ? styles.filterPillActive : ''}`}
-                  onClick={() => setSelectedCategory(selectedCategory ? '' : 'Kerusakan fasilitas')}
+                <select
+                  className={styles.filterPill}
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
                 >
-                  Kerusakan fasilitas
-                  {selectedCategory && <span className={styles.pillX}>×</span>}
-                </button>
+                  <option value="">Semua</option>
+                  <option value="kerusakan_fasilitas">Kerusakan Fasilitas</option>
+                  <option value="tidak_sesuai_deskripsi">Tidak Sesuai Deskripsi</option>
+                  <option value="keamanan">Keamanan</option>
+                  <option value="ac_ventilasi">AC/Ventilasi</option>
+                  <option value="fasilitas">Fasilitas</option>
+                  <option value="kebisingan">Kebisingan</option>
+                  <option value="internet">Internet</option>
+                  <option value="kebersihan">Kebersihan</option>
+                  <option value="pelayanan">Pelayanan</option>
+                  <option value="lainnya">Lainnya</option>
+                </select>
               </div>
             </div>
 
@@ -303,6 +373,20 @@ export default function AdminReports() {
           setIsDetailOverlayOpen(false)
           setSelectedReport(null)
         }}
+        onReject={(reportId) => {
+          setSelectedReportId(reportId)
+          setIsRejectionOverlayOpen(true)
+        }}
+        onWarn={handleWarn}
+        onSuspend={handleSuspend}
+      />
+
+      {/* Rejection Reason Overlay */}
+      <RejectionReasonOverlay
+        isOpen={isRejectionOverlayOpen}
+        onClose={() => setIsRejectionOverlayOpen(false)}
+        reportId={selectedReportId}
+        onRefresh={fetchReports}
       />
     </div>
   )

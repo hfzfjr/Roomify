@@ -351,6 +351,12 @@
 }
 
 .statusInactive {
+  background: var(--admin-gray-100);
+  border-color: var(--admin-gray-400);
+  color: var(--admin-gray-500);
+}
+
+.statusSuspended {
   background: var(--admin-list-red-bg);
   border-color: var(--admin-list-red);
   color: var(--admin-list-red);

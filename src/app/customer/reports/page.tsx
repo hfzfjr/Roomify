@@ -29,15 +29,18 @@ export default function ReportRoomPage() {
     const [reportType, setReportType] = useState('')
     const [description, setDescription] = useState('')
     const [isSubmitting, setIsSubmitting] = useState(false)
-    const [uploadedPhotos, setUploadedPhotos] = useState<string[]>([])
+    const [uploadedPhotos, setUploadedPhotos] = useState<File[]>([])
+    const [uploadedPhotoUrls, setUploadedPhotoUrls] = useState<string[]>([])
     const [booking, setBooking] = useState<Booking | null>(null)
     const [loading, setLoading] = useState(true)
     const [showValidationErrors, setShowValidationErrors] = useState(false)
+    const [categories, setCategories] = useState<{ value: string, label: string }[]>([])
 
     useEffect(() => {
         if (bookingId) {
             fetchBookingData()
         }
+        fetchCategories()
     }, [bookingId])
 
     async function fetchBookingData() {
@@ -59,6 +62,19 @@ export default function ReportRoomPage() {
             setBooking(null)
         } finally {
             setLoading(false)
+        }
+    }
+
+    async function fetchCategories() {
+        try {
+            const response = await fetch('/api/categories')
+            const result = await response.json()
+
+            if (result.success) {
+                setCategories(result.data.categories || [])
+            }
+        } catch (error) {
+            console.error('Error fetching categories:', error)
         }
     }
 
@@ -84,16 +100,19 @@ export default function ReportRoomPage() {
                 has_images: uploadedPhotos.length > 0
             })
 
+            const formData = new FormData()
+            formData.append('customer_id', booking.customer_id)
+            formData.append('room_id', booking.room.room_id)
+            formData.append('booking_id', booking.booking_id)
+            formData.append('category', reportType)
+            formData.append('description', description)
+            uploadedPhotos.forEach((file) => {
+                formData.append('images', file)
+            })
+
             const response = await fetch('/api/customer-reports', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    customer_id: booking.customer_id,
-                    room_id: booking.room.room_id,
-                    category: reportType,
-                    description,
-                    report_images: uploadedPhotos
-                })
+                body: formData
             })
 
             const result = await response.json()
@@ -121,23 +140,22 @@ export default function ReportRoomPage() {
     function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
         const files = e.target.files
         if (files && files.length > 0) {
-            const newPhotos: string[] = []
+            const newFiles: File[] = []
+            const newUrls: string[] = []
             const remainingSlots = 7 - uploadedPhotos.length
 
             for (let i = 0; i < Math.min(files.length, remainingSlots); i++) {
                 const file = files[i]
                 if (file.size <= 5 * 1024 * 1024) { // Max 5MB
-                    const reader = new FileReader()
-                    reader.onload = (event) => {
-                        if (event.target?.result) {
-                            setUploadedPhotos(prev => [...prev, event.target!.result as string])
-                        }
-                    }
-                    reader.readAsDataURL(file)
+                    newFiles.push(file)
+                    newUrls.push(URL.createObjectURL(file))
                 } else {
                     alert(`File ${file.name} melebihi 5MB`)
                 }
             }
+
+            setUploadedPhotos(prev => [...prev, ...newFiles])
+            setUploadedPhotoUrls(prev => [...prev, ...newUrls])
 
             if (files.length > remainingSlots) {
                 alert(`Maksimal 7 foto. Hanya ${remainingSlots} foto yang akan diupload.`)
@@ -153,23 +171,22 @@ export default function ReportRoomPage() {
         e.preventDefault()
         const files = e.dataTransfer.files
         if (files && files.length > 0) {
-            const newPhotos: string[] = []
+            const newFiles: File[] = []
+            const newUrls: string[] = []
             const remainingSlots = 7 - uploadedPhotos.length
 
             for (let i = 0; i < Math.min(files.length, remainingSlots); i++) {
                 const file = files[i]
                 if (file.size <= 5 * 1024 * 1024) {
-                    const reader = new FileReader()
-                    reader.onload = (event) => {
-                        if (event.target?.result) {
-                            setUploadedPhotos(prev => [...prev, event.target!.result as string])
-                        }
-                    }
-                    reader.readAsDataURL(file)
+                    newFiles.push(file)
+                    newUrls.push(URL.createObjectURL(file))
                 } else {
                     alert(`File ${file.name} melebihi 5MB`)
                 }
             }
+
+            setUploadedPhotos(prev => [...prev, ...newFiles])
+            setUploadedPhotoUrls(prev => [...prev, ...newUrls])
 
             if (files.length > remainingSlots) {
                 alert(`Maksimal 7 foto. Hanya ${remainingSlots} foto yang akan diupload.`)
@@ -179,6 +196,7 @@ export default function ReportRoomPage() {
 
     function removePhoto(index: number) {
         setUploadedPhotos(prev => prev.filter((_, i) => i !== index))
+        setUploadedPhotoUrls(prev => prev.filter((_, i) => i !== index))
     }
 
     return (
@@ -263,10 +281,11 @@ export default function ReportRoomPage() {
                                 required
                             >
                                 <option value="">Pilih kategori keluhan</option>
-                                <option value="facility">Fasilitas tidak sesuai</option>
-                                <option value="cleanliness">Kebersihan kurang</option>
-                                <option value="service">Pelayanan buruk</option>
-                                <option value="other">Lainnya</option>
+                                {categories.map((category) => (
+                                    <option key={category.value} value={category.value}>
+                                        {category.label}
+                                    </option>
+                                ))}
                             </select>
                         </div>
 
@@ -316,13 +335,13 @@ export default function ReportRoomPage() {
                         />
                     </div>
 
-                    {uploadedPhotos.length > 0 && (
+                    {uploadedPhotoUrls.length > 0 && (
                         <>
                             <p className={styles.photoInfo}>
-                                Foto bukti keluhan ({uploadedPhotos.length}/7)
+                                Foto bukti keluhan ({uploadedPhotoUrls.length}/7)
                             </p>
                             <div className={styles.photoGrid}>
-                                {uploadedPhotos.map((photo, index) => (
+                                {uploadedPhotoUrls.map((photo, index) => (
                                     <div key={index} className={styles.photoItem}>
                                         <img src={photo} alt={`Foto ${index + 1}`} className={styles.photoThumbnail} />
                                         <button

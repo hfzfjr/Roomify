@@ -50,6 +50,7 @@ export default function CustomerBookings() {
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false)
   const [selectedBookingForReview, setSelectedBookingForReview] = useState<Booking | null>(null)
   const [selectedBookingForCancel, setSelectedBookingForCancel] = useState<Booking | null>(null)
+  const [reports, setReports] = useState<any[]>([])
 
   const refreshBookings = useCallback(async () => {
     if (!currentUserId) return
@@ -59,7 +60,19 @@ export default function CustomerBookings() {
       throw new Error(result.message || 'Gagal memuat daftar booking.')
     }
     setBookings(result.data ?? [])
+
+    // Also refresh reports
+    const reportsResponse = await fetch(`/api/customer-reports?customer_id=${encodeURIComponent(currentUserId)}`)
+    const reportsResult = await reportsResponse.json()
+    if (reportsResponse.ok && reportsResult.success) {
+      setReports(reportsResult.data ?? [])
+    }
   }, [currentUserId])
+
+  // Check if a report exists for a booking (by room_id)
+  const hasReportForBooking = useCallback((booking: Booking) => {
+    return reports.some(report => report.room_id === booking.room.room_id)
+  }, [reports])
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user')
@@ -71,15 +84,24 @@ export default function CustomerBookings() {
     setUser(parsedUser)
 
     let isMounted = true
-    async function loadBookings() {
+    async function loadData() {
       try {
         setCurrentUserId(parsedUser.user_id)
-        const response = await fetch(`/api/bookings?user_id=${encodeURIComponent(parsedUser.user_id)}`)
-        const result = await response.json()
-        if (!response.ok || !result.success) {
-          throw new Error(result.message || 'Gagal memuat daftar booking.')
+
+        // Load bookings
+        const bookingsResponse = await fetch(`/api/bookings?user_id=${encodeURIComponent(parsedUser.user_id)}`)
+        const bookingsResult = await bookingsResponse.json()
+        if (!bookingsResponse.ok || !bookingsResult.success) {
+          throw new Error(bookingsResult.message || 'Gagal memuat daftar booking.')
         }
-        if (isMounted) setBookings(result.data ?? [])
+        if (isMounted) setBookings(bookingsResult.data ?? [])
+
+        // Load reports
+        const reportsResponse = await fetch(`/api/customer-reports?customer_id=${encodeURIComponent(parsedUser.user_id)}`)
+        const reportsResult = await reportsResponse.json()
+        if (reportsResponse.ok && reportsResult.success) {
+          if (isMounted) setReports(reportsResult.data ?? [])
+        }
       } catch (bookingError) {
         if (isMounted) {
           setError(bookingError instanceof Error ? bookingError.message : 'Gagal memuat daftar booking.')
@@ -88,7 +110,7 @@ export default function CustomerBookings() {
         if (isMounted) setLoading(false)
       }
     }
-    void loadBookings()
+    void loadData()
     return () => { isMounted = false }
   }, [router])
 
@@ -409,9 +431,10 @@ export default function CustomerBookings() {
                               <button
                                 type="button"
                                 className="customer-booking-v2-btn danger"
+                                disabled={hasReportForBooking(booking)}
                                 onClick={() => router.push(`/customer/reports?booking_id=${booking.booking_id}`)}
                               >
-                                Laporkan
+                                {hasReportForBooking(booking) ? 'Sudah Dilaporkan' : 'Laporkan'}
                               </button>
                               <button
                                 type="button"
