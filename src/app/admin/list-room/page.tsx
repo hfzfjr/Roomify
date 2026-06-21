@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useRef, useEffect } from 'react'
+import { useState, useMemo, useRef, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import SidebarAdmin from '@/components/layout/SidebarAdmin'
 import DetailListRoomOverlay from '@/components/ui/overlay/admin/DetailListRoomOverlay'
@@ -21,7 +21,7 @@ type Room = {
 type SortKey = 'id' | 'name' | 'owner' | 'type' | 'capacity' | 'status'
 const ROOM_TYPES = ['Meeting Room', 'Studio']
 
-export default function ListRoomPage() {
+function ListRoomContent() {
   const user = useUser()
   const searchParams = useSearchParams()
   const ownerId = searchParams.get('owner_id')
@@ -396,5 +396,13 @@ export default function ListRoomPage() {
         />
       )}
     </div>
+  )
+}
+
+export default function ListRoomPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ListRoomContent />
+    </Suspense>
   )
 }

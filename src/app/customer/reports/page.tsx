@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import BackButton from '@/components/ui/BackButton'
 import styles from './page.module.css'
@@ -22,7 +22,7 @@ interface Booking {
     status: string
 }
 
-export default function ReportRoomPage() {
+function ReportRoomContent() {
     const searchParams = useSearchParams()
     const bookingId = searchParams.get('booking_id')
 
@@ -381,5 +381,13 @@ export default function ReportRoomPage() {
                 </div>
             </div>
         </div>
+    )
+}
+
+export default function ReportRoomPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <ReportRoomContent />
+        </Suspense>
     )
 }
