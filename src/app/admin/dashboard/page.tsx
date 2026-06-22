@@ -323,7 +323,7 @@ export default function AdminDashboardPage() {
                         <path d="M12 4v16" strokeLinecap="round" />
                         <path d="m6.5 9.5 5.5-5.5 5.5 5.5" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
-                      {Math.abs(stats?.usersMonthChangePercent ?? 0)}%
+                      {Math.abs(stats?.usersMonthChangePercent ?? 0).toFixed(2)}%
                     </div>
                     <span className={styles.trendText}>Kenaikan dari bulan sebelumnya</span>
                   </div>
