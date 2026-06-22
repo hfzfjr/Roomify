@@ -231,11 +231,20 @@ export async function GET(request: Request) {
       startDate.setDate(startDate.getDate() - periodDays)
       startDate.setHours(0, 0, 0, 0)
 
-      // Fetch bookings first to get booking_ids for the owner's rooms
+      // Ambil booking_ids yang payment-nya success
+      const { data: successPayments } = await supabase
+        .from('payment')
+        .select('booking_id')
+        .eq('status', 'success')
+
+      const successBookingIds = successPayments?.map(p => p.booking_id) || []
+
+      // Fetch bookings — filter periode + room owner + payment success
       let bookingsQuery = supabase
         .from('booking')
         .select('booking_id, booking_date, room_id')
         .in('room_id', filteredRoomIds)
+        .in('booking_id', successBookingIds)
         .gte('booking_date', startDate.toISOString())
 
       const { data: bookings, error: bookingsError } = await bookingsQuery
@@ -272,13 +281,11 @@ export async function GET(request: Request) {
         .select(`
           booking_id,
           booking_date,
+          check_in,
+          check_out,
           customer_id,
           room_id,
-          total_cost,
-          room (
-            room_id,
-            name
-          )
+          total_cost
         `)
         .in('booking_id', bookingIdsFromPayments)
 
@@ -286,8 +293,27 @@ export async function GET(request: Request) {
         return NextResponse.json({ success: false, message: bookingsDetailsError.message }, { status: 500 })
       }
 
+      // Get room details for all bookings
+      const roomIdsFromBookings = Array.from(new Set((bookingsDetails || []).map(b => b.room_id).filter(Boolean)))
+      const { data: roomsDetails, error: roomsDetailsError } = await supabase
+        .from('room')
+        .select(`
+          room_id,
+          name,
+          type,
+          price_per_hour
+        `)
+        .in('room_id', roomIdsFromBookings)
+
+      if (roomsDetailsError) {
+        return NextResponse.json({ success: false, message: roomsDetailsError.message }, { status: 500 })
+      }
+
       // Create booking map
       const bookingMap = new Map((bookingsDetails || []).map(b => [b.booking_id, b]))
+
+      // Create room map
+      const roomDetailsMap = new Map((roomsDetails || []).map(r => [r.room_id, r]))
 
       // Get customer names
       const customerIds = Array.from(new Set((bookingsDetails || []).map(b => b.customer_id).filter((id): id is string => Boolean(id))))
@@ -299,6 +325,23 @@ export async function GET(request: Request) {
       // Format transactions
       const transactions = (payments || []).map(payment => {
         const bookingData = bookingMap.get(payment.booking_id)
+        const roomData = bookingData?.room_id ? roomDetailsMap.get(bookingData.room_id) : null
+
+        // Calculate duration in hours
+        let durationHours = 1
+        if (bookingData?.check_in && bookingData?.check_out) {
+          const checkIn = new Date(bookingData.check_in)
+          const checkOut = new Date(bookingData.check_out)
+          const diffMs = checkOut.getTime() - checkIn.getTime()
+          durationHours = Math.max(1, Math.round(diffMs / (1000 * 60 * 60)))
+        }
+
+        // Calculate sub total
+        const pricePerHour = roomData?.price_per_hour || 0
+        const subTotal = pricePerHour * durationHours
+        const serviceFee = 2500
+        const ppnPercent = 11
+        const ppnAmount = Math.round((subTotal * ppnPercent) / 100)
 
         return {
           id: `${payment.payment_id}`,
@@ -308,11 +351,32 @@ export async function GET(request: Request) {
             year: 'numeric'
           }).replace(/\//g, '/') : '-',
           roomName: bookingData?.room_id ? (roomMap.get(bookingData.room_id) || 'Unknown') : 'Unknown',
+          roomType: roomData?.type,
+          rentalDate: bookingData?.check_in ? new Date(bookingData.check_in).toLocaleDateString('id-ID', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+          }) : undefined,
+          startTime: bookingData?.check_in ? new Date(bookingData.check_in).toLocaleTimeString('id-ID', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+          }) : undefined,
+          endTime: bookingData?.check_out ? new Date(bookingData.check_out).toLocaleTimeString('id-ID', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+          }) : undefined,
           renter: bookingData?.customer_id ? (customerMap.get(bookingData.customer_id) || 'Unknown') : 'Unknown',
           payment: {
-            amount: bookingData?.total_cost ?? payment.amount,
+            amount: payment.amount,
+            booking_total_cost: bookingData?.total_cost,
             payment_method: payment.payment_method,
-            status: payment.status
+            status: payment.status,
+            room_price_per_hour: pricePerHour,
+            duration_hours: durationHours,
+            service_fee: serviceFee,
+            ppn_percent: ppnPercent
           }
         }
       })
@@ -334,7 +398,7 @@ export async function GET(request: Request) {
       const pendingTransactions = transactions.filter(t => t.payment.status === 'pending').length
       const totalRevenue = transactions
         .filter(t => t.payment.status === 'success')
-        .reduce((sum, t) => sum + t.payment.amount, 0)
+        .reduce((sum, t) => sum + (t.payment.booking_total_cost ?? t.payment.amount), 0)
 
       return NextResponse.json({
         success: true,
@@ -405,6 +469,22 @@ export async function GET(request: Request) {
 
       // Calculate revenue from completed bookings
       const roomIds = ownerRooms?.map(room => room.room_id) || []
+
+      // Compare current month vs previous month for revenue and bookings
+      const now = new Date()
+      const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1)
+      const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1)
+      const previousMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+      const previousMonthEnd = new Date(now.getFullYear(), now.getMonth(), 1)
+
+      // Ambil booking_ids yang payment-nya success
+      const { data: successPayments } = await supabase
+        .from('payment')
+        .select('booking_id')
+        .eq('status', 'success')
+
+      const successBookingIds = successPayments?.map(p => p.booking_id) || []
+
       let bookings: BookingRevenueRecord[] = []
       let bookingsError = null
 
@@ -413,7 +493,8 @@ export async function GET(request: Request) {
           .from('booking')
           .select('total_cost, status, booking_date')
           .in('room_id', roomIds)
-          .eq('status', 'completed')
+          .in('booking_id', successBookingIds)
+          .gte('booking_date', currentMonthStart.toISOString())
 
         bookings = bookingsResult.data || []
         bookingsError = bookingsResult.error
@@ -430,13 +511,6 @@ export async function GET(request: Request) {
       const availableRooms = ownerRooms?.filter(room => room.is_available).length || 0
       const totalRooms = ownerRooms?.length || 0
       const unavailableRooms = totalRooms - availableRooms
-
-      // Compare current month vs previous month for revenue and bookings
-      const now = new Date()
-      const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1)
-      const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1)
-      const previousMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1)
-      const previousMonthEnd = new Date(now.getFullYear(), now.getMonth(), 1)
 
       let currentMonthRevenue = 0
       let previousMonthRevenue = 0
@@ -605,13 +679,13 @@ export async function GET(request: Request) {
     } else if (type === 'admin') {
       // Admin Dashboard Data
 
-      const now = new Date()
-      const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1)
-      const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1)
-      const previousMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1)
-      const previousMonthEnd = currentMonthStart
+      const adminNow = new Date()
+      const adminCurrentMonthStart = new Date(adminNow.getFullYear(), adminNow.getMonth(), 1)
+      const adminNextMonthStart = new Date(adminNow.getFullYear(), adminNow.getMonth() + 1, 1)
+      const adminPreviousMonthStart = new Date(adminNow.getFullYear(), adminNow.getMonth() - 1, 1)
+      const adminPreviousMonthEnd = adminCurrentMonthStart
 
-      // Get user counts by role
+      // Get user counts by role and owner deletion status
       const { data: userStats, error: userError } = await supabase
         .from('users')
         .select('role')
@@ -621,7 +695,19 @@ export async function GET(request: Request) {
       }
 
       const totalUsers = userStats?.length || 0
-      const totalOwners = userStats?.filter(user => user.role === 'owner').length || 0
+
+      // Get owner count excluding deleted owners and only active status
+      const { data: ownerStats, error: ownerError } = await supabase
+        .from('owner')
+        .select('owner_id')
+        .eq('is_deleted', false)
+        .eq('status', 'active')
+
+      if (ownerError) {
+        return NextResponse.json({ success: false, message: ownerError.message }, { status: 500 })
+      }
+
+      const totalOwners = ownerStats?.length || 0
 
       // Get room count
       const { data: rooms, error: roomsError } = await supabase
@@ -639,32 +725,34 @@ export async function GET(request: Request) {
       const { data: currentUsers, error: currentUsersError } = await supabase
         .from('users')
         .select('user_id')
-        .gte('created_at', currentMonthStart.toISOString())
-        .lt('created_at', nextMonthStart.toISOString())
+        .gte('created_at', adminCurrentMonthStart.toISOString())
+        .lt('created_at', adminNextMonthStart.toISOString())
 
       const { data: previousUsers, error: previousUsersError } = await supabase
         .from('users')
         .select('user_id')
-        .gte('created_at', previousMonthStart.toISOString())
-        .lt('created_at', previousMonthEnd.toISOString())
+        .gte('created_at', adminPreviousMonthStart.toISOString())
+        .lt('created_at', adminPreviousMonthEnd.toISOString())
 
       if (currentUsersError || previousUsersError) {
         console.warn('Error fetching user month counts:', (currentUsersError || previousUsersError)?.message)
       }
 
       const currentOwnersCountResult = await supabase
-        .from('users')
-        .select('user_id')
-        .eq('role', 'owner')
-        .gte('created_at', currentMonthStart.toISOString())
-        .lt('created_at', nextMonthStart.toISOString())
+        .from('owner')
+        .select('owner_id')
+        .eq('is_deleted', false)
+        .eq('status', 'active')
+        .gte('created_at', adminCurrentMonthStart.toISOString())
+        .lt('created_at', adminNextMonthStart.toISOString())
 
       const previousOwnersCountResult = await supabase
-        .from('users')
-        .select('user_id')
-        .eq('role', 'owner')
-        .gte('created_at', previousMonthStart.toISOString())
-        .lt('created_at', previousMonthEnd.toISOString())
+        .from('owner')
+        .select('owner_id')
+        .eq('is_deleted', false)
+        .eq('status', 'active')
+        .gte('created_at', adminPreviousMonthStart.toISOString())
+        .lt('created_at', adminPreviousMonthEnd.toISOString())
 
       if (currentOwnersCountResult.error || previousOwnersCountResult.error) {
         console.warn('Error fetching owner month counts:', (currentOwnersCountResult.error || previousOwnersCountResult.error)?.message)
@@ -674,15 +762,15 @@ export async function GET(request: Request) {
         .from('room')
         .select('room_id')
         .eq('is_deleted', false)
-        .gte('created_at', currentMonthStart.toISOString())
-        .lt('created_at', nextMonthStart.toISOString())
+        .gte('created_at', adminCurrentMonthStart.toISOString())
+        .lt('created_at', adminNextMonthStart.toISOString())
 
       const previousRoomsCountResult = await supabase
         .from('room')
         .select('room_id')
         .eq('is_deleted', false)
-        .gte('created_at', previousMonthStart.toISOString())
-        .lt('created_at', previousMonthEnd.toISOString())
+        .gte('created_at', adminPreviousMonthStart.toISOString())
+        .lt('created_at', adminPreviousMonthEnd.toISOString())
 
       if (currentRoomsCountResult.error || previousRoomsCountResult.error) {
         console.warn('Error fetching room month counts:', (currentRoomsCountResult.error || previousRoomsCountResult.error)?.message)

@@ -122,7 +122,7 @@ export async function GET(
         .select('payment_id, payment_method, amount, status, paid_at')
         .eq('payment_id', invoice.payment_id)
         .maybeSingle<PaymentRecord>()
-      
+
       if (!paymentError) {
         payment = paymentData
       }
@@ -160,7 +160,7 @@ export async function GET(
 
     const serviceFee = 2500
     const subtotal = booking.total_cost || (room?.price_per_hour || 0) * durationHours
-    const taxAmount = Math.round((subtotal + serviceFee) * 0.11)
+    const taxAmount = Math.round(subtotal * 0.11)
     const totalAmount = invoice?.total_amount || (subtotal + serviceFee + taxAmount)
 
     return NextResponse.json({

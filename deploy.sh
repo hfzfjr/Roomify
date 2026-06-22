@@ -13,6 +13,8 @@ docker build \
   -t roomify-app .
 
 docker rm -f roomify-server
-docker run -d -p 3000:3000 --name roomify-server --restart always roomify-app
+docker run -d -p 3000:3000 --name roomify-server --restart always \
+  --env CRON_SECRET=$CRON_SECRET \
+  roomify-app
 
 echo "Deploy selesai!"

@@ -138,6 +138,14 @@ export default function CustomerPaymentProcessPage() {
   const [successMessage, setSuccessMessage] = useState('')
   const [actionLoading, setActionLoading] = useState<'confirm' | null>(null)
   const [nowTime, setNowTime] = useState(() => Date.now())
+  const [paymentStartTime, setPaymentStartTime] = useState(() => {
+    if (typeof window === 'undefined') return Date.now()
+    const stored = localStorage.getItem(`payment_start_${bookingId}`)
+    if (stored) return parseInt(stored, 10)
+    const now = Date.now()
+    localStorage.setItem(`payment_start_${bookingId}`, now.toString())
+    return now
+  })
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false)
   const [qrisImageUrl, setQrisImageUrl] = useState('')
   const [qrisPayload, setQrisPayload] = useState('')
@@ -262,9 +270,10 @@ export default function CustomerPaymentProcessPage() {
     }
   }, [bookingId, detail, method, userId])
 
-  // Calculate remaining time based on server's payment_due_at
-  const remainingPaymentMs = detail?.booking?.payment_due_at
-    ? getRemainingPaymentMs(detail.booking.payment_due_at, nowTime)
+  // Calculate remaining time based on payment start time from localStorage (15 minutes countdown)
+  const PAYMENT_WINDOW_MS = 15 * 60 * 1000 // 15 minutes in milliseconds
+  const remainingPaymentMs = isPending
+    ? Math.max(0, PAYMENT_WINDOW_MS - (nowTime - paymentStartTime))
     : 0
 
   const refreshDetail = useCallback(async () => {
@@ -499,7 +508,7 @@ export default function CustomerPaymentProcessPage() {
             )}
             <section className="customer-process-wait-card">
               <div className="customer-process-wait-icon">
-                <img src="/images/payment/logo-menunggu-pembayaran.png" alt="Menunggu pembayaran"/>
+                <img src="/images/payment/logo-menunggu-pembayaran.png" alt="Menunggu pembayaran" />
               </div>
               <div>
                 <h2>Menunggu pembayaran</h2>
@@ -514,8 +523,8 @@ export default function CustomerPaymentProcessPage() {
             </section>
 
             <section className="customer-payment-card customer-process-instruction-card">
-                <h2>{instruction.title}</h2>
-                <p>{method === 'qris' ? 'Scan QRIS di bawah untuk bayar sesuai nominal tagihan.' : 'Gunakan nomor pembayaran di bawah ini, lalu tekan tombol "Saya sudah bayar" setelah transfer berhasil.'}</p>
+              <h2>{instruction.title}</h2>
+              <p>{method === 'qris' ? 'Scan QRIS di bawah untuk bayar sesuai nominal tagihan.' : 'Gunakan nomor pembayaran di bawah ini, lalu tekan tombol "Saya sudah bayar" setelah transfer berhasil.'}</p>
               {method === 'qris' ? (
                 <div className="customer-process-qr-box">
                   <span>Scan QR Code untuk pembayaran</span>

@@ -9,11 +9,20 @@ type Transaction = {
   id: string
   date: string
   roomName: string
+  roomType?: string
+  rentalDate?: string
+  startTime?: string
+  endTime?: string
   renter: string
   payment: {
     amount: number
+    booking_total_cost?: number
     payment_method?: string
     status?: string
+    room_price_per_hour?: number
+    duration_hours?: number
+    service_fee?: number
+    ppn_percent?: number
   }
 }
 

@@ -1225,7 +1225,7 @@ export async function PATCH(request: Request) {
 
       const subtotal = Number(bookingDetails.total_cost) || 0
       const serviceFee = 2500
-      const taxAmount = Math.round((subtotal + serviceFee) * 0.11)
+      const taxAmount = Math.round(subtotal * 0.11)
       const totalAmount = Math.round(subtotal + serviceFee + taxAmount)
       const checkInDate = new Date(bookingDetails.check_in)
       const checkOutDate = new Date(bookingDetails.check_out)

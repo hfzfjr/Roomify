@@ -138,9 +138,17 @@ export default function Notification({ isOpen, onClose, userId }: NotificationPr
   }
 
   function formatTimestamp(dateString: string): string {
-    const date = new Date(dateString)
-    const now = new Date()
-    const diffMs = now.getTime() - date.getTime()
+    // Supabase mengirim timestamp tanpa timezone marker ("2026-06-22 09:00:00")
+    // Tambahkan 'Z' agar diparsing sebagai UTC, bukan local time
+    const normalizedString = dateString.includes('Z') || dateString.includes('+')
+      ? dateString
+      : dateString.replace(' ', 'T') + 'Z'
+
+    const dateUTC = new Date(normalizedString)
+    const now = new Date() // selalu UTC internally
+
+    // Diff dihitung dari UTC ke UTC — tidak perlu konversi timezone
+    const diffMs = now.getTime() - dateUTC.getTime()
     const diffMins = Math.floor(diffMs / 60000)
     const diffHours = Math.floor(diffMs / 3600000)
     const diffDays = Math.floor(diffMs / 86400000)
@@ -151,8 +159,16 @@ export default function Notification({ isOpen, onClose, userId }: NotificationPr
     if (diffDays === 1) return 'Kemarin'
     if (diffDays < 7) return `${diffDays} hari yang lalu`
 
-    return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) + ', ' +
-      date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB'
+    // Untuk display tanggal, convert ke WIB (GMT+7)
+    const wibOffset = 7 * 60 * 60 * 1000
+    const dateWIB = new Date(dateUTC.getTime() + wibOffset)
+
+    return (
+      dateWIB.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) +
+      ', ' +
+      dateWIB.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) +
+      ' WIB'
+    )
   }
 
   function getColorByType(type: string, title?: string): NotificationItem['color'] {
@@ -197,7 +213,7 @@ export default function Notification({ isOpen, onClose, userId }: NotificationPr
   }
 
   const handleNotificationClick = async (item: NotificationItem) => {
-    // Optimistically update local state
+    // Optimistic update
     setNotificationGroups(prevGroups =>
       prevGroups.map(group => ({
         ...group,
@@ -207,14 +223,28 @@ export default function Notification({ isOpen, onClose, userId }: NotificationPr
       }))
     )
 
-    // Mark as read in backend
-    if (!item.is_read && userId) {
+    // Selalu hit API, tidak perlu cek is_read dulu
+    if (userId) {
       try {
-        await fetch(`/api/notifications/${item.id}`, {
+        const response = await fetch(`/api/notifications/${item.id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ user_id: userId })
         })
+        const result = await response.json()
+
+        if (!response.ok) {
+          console.error('Gagal mark as read:', result.message)
+          // Rollback optimistic update jika gagal
+          setNotificationGroups(prevGroups =>
+            prevGroups.map(group => ({
+              ...group,
+              items: group.items.map(i =>
+                i.id === item.id ? { ...i, is_read: item.is_read } : i
+              )
+            }))
+          )
+        }
       } catch (error) {
         console.error('Error marking notification as read:', error)
       }

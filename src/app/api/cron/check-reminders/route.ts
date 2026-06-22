@@ -2,12 +2,34 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createNotification } from '@/lib/notifications'
 
+// Validasi CRON_SECRET agar endpoint tidak bisa diakses sembarangan
+function isAuthorized(request: Request): boolean {
+  const authHeader = request.headers.get('authorization')
+  const cronSecret = process.env.CRON_SECRET
+  if (!cronSecret) return true // jika tidak di-set, skip validasi (development)
+  return authHeader === `Bearer ${cronSecret}`
+}
+
 export async function GET(request: Request) {
+  if (!isAuthorized(request)) {
+    return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 })
+  }
   return handleCheckReminders()
 }
 
 export async function POST(request: Request) {
+  if (!isAuthorized(request)) {
+    return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 })
+  }
   return handleCheckReminders()
+}
+
+// Helper: format timestamp UTC → jam WIB (GMT+7)
+function formatWIB(dateString: string): string {
+  const date = new Date(dateString)
+  const wibOffset = 7 * 60 * 60 * 1000
+  const dateWIB = new Date(date.getTime() + wibOffset)
+  return dateWIB.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB'
 }
 
 async function handleCheckReminders() {
@@ -15,21 +37,32 @@ async function handleCheckReminders() {
     const supabase = await createClient()
     const now = new Date()
 
-    // === REMINDER: 24 hours before booking (23-25 hour window) ===
-    const twentyFourHoursLater = new Date(now.getTime() + 24 * 60 * 60 * 1000)
-    const twentyThreeHoursLater = new Date(now.getTime() + 23 * 60 * 60 * 1000)
-    const twentyFiveHoursLater = new Date(now.getTime() + 25 * 60 * 60 * 1000)
+    let reminded24h = 0
+    let reminded1h = 0
+    let remindedCompleted = 0
+
+    // ================================================================
+    // REMINDER H-1 HARI: window check_in antara 23–25 jam dari sekarang
+    // ================================================================
+    const h1DayMin = new Date(now.getTime() + 23 * 60 * 60 * 1000)
+    const h1DayMax = new Date(now.getTime() + 25 * 60 * 60 * 1000)
 
     const { data: bookings24h } = await supabase
       .from('booking')
-      .select('booking_id, customer_id, check_in, room_id')
+      .select(`
+        booking_id, customer_id, check_in, room_id,
+        room:room_id ( name, owner_id )
+      `)
       .eq('status', 'confirmed')
-      .gte('check_in', twentyThreeHoursLater.toISOString())
-      .lte('check_in', twentyFiveHoursLater.toISOString())
+      .gte('check_in', h1DayMin.toISOString())
+      .lte('check_in', h1DayMax.toISOString())
 
     if (bookings24h) {
       for (const booking of bookings24h) {
-        // Check if similar notification already exists
+        const roomName = (booking.room as any)?.name || 'ruangan'
+        const checkInWIB = formatWIB(booking.check_in)
+
+        // Cek duplikat
         const { data: existingNotif } = await supabase
           .from('notifications')
           .select('id')
@@ -37,111 +70,146 @@ async function handleCheckReminders() {
           .eq('title', 'Pengingat: Jadwal Booking Besok')
           .maybeSingle()
 
-        if (!existingNotif) {
-          // Get customer user_id
-          const { data: customer } = await supabase
-            .from('customer')
-            .select('user_id')
-            .eq('customer_id', booking.customer_id)
-            .maybeSingle()
+        if (existingNotif) continue
 
-          if (customer?.user_id) {
-            await createNotification({
-              user_id: customer.user_id,
-              title: 'Pengingat: Jadwal Booking Besok',
-              description: `Booking ${booking.booking_id} akan dimulai besok. Pastikan Anda sudah siap.`,
-              type: 'reminder',
-              priority: 'medium',
-              related_id: booking.booking_id,
-              related_type: 'booking'
-            })
-          }
-        }
-      }
-    }
-
-    // === REMINDER: 1 hour before booking (50-70 minute window) ===
-    const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000)
-    const fiftyMinutesLater = new Date(now.getTime() + 50 * 60 * 1000)
-    const seventyMinutesLater = new Date(now.getTime() + 70 * 60 * 1000)
-
-    const { data: bookings1h } = await supabase
-      .from('booking')
-      .select('booking_id, customer_id, check_in, room_id')
-      .eq('status', 'confirmed')
-      .gte('check_in', fiftyMinutesLater.toISOString())
-      .lte('check_in', seventyMinutesLater.toISOString())
-
-    if (bookings1h) {
-      for (const booking of bookings1h) {
-        // Check if similar notification already exists
-        const { data: existingNotif } = await supabase
-          .from('notifications')
-          .select('id')
-          .eq('related_id', booking.booking_id)
-          .eq('title', 'Pengingat: Jadwal Segera Mulai')
+        // Notifikasi Customer
+        const { data: customer } = await supabase
+          .from('customer')
+          .select('user_id')
+          .eq('customer_id', booking.customer_id)
           .maybeSingle()
 
-        if (!existingNotif) {
-          // Get customer user_id
-          const { data: customer } = await supabase
-            .from('customer')
+        if (customer?.user_id) {
+          await createNotification({
+            user_id: customer.user_id,
+            title: 'Pengingat: Jadwal Booking Besok',
+            description: `Booking Anda untuk ${roomName} dijadwalkan check-in besok pada ${checkInWIB}. Pastikan Anda sudah siap!`,
+            type: 'reminder',
+            priority: 'high',
+            related_id: booking.booking_id,
+            related_type: 'booking'
+          })
+          reminded24h++
+        }
+
+        // Notifikasi Owner
+        const ownerId = (booking.room as any)?.owner_id
+        if (ownerId) {
+          const { data: owner } = await supabase
+            .from('owner')
             .select('user_id')
-            .eq('customer_id', booking.customer_id)
+            .eq('owner_id', ownerId)
             .maybeSingle()
 
-          if (customer?.user_id) {
+          if (owner?.user_id) {
             await createNotification({
-              user_id: customer.user_id,
-              title: 'Pengingat: Jadwal Segera Mulai',
-              description: `Booking ${booking.booking_id} akan dimulai dalam 1 jam. Segera menuju lokasi.`,
+              user_id: owner.user_id,
+              title: 'Pengingat: Ada Check-in Besok',
+              description: `Customer akan check-in untuk ruangan ${roomName} besok pada ${checkInWIB}. Booking ID: ${booking.booking_id}.`,
               type: 'reminder',
               priority: 'high',
               related_id: booking.booking_id,
               related_type: 'booking'
             })
           }
+        }
+      }
+    }
 
-          // Optional: Notify owner as well
-          const { data: room } = await supabase
-            .from('room')
-            .select('owner_id')
-            .eq('room_id', booking.room_id)
+    // ================================================================
+    // REMINDER H-1 JAM: window check_in antara 50–70 menit dari sekarang
+    // ================================================================
+    const h1HourMin = new Date(now.getTime() + 50 * 60 * 1000)
+    const h1HourMax = new Date(now.getTime() + 70 * 60 * 1000)
+
+    const { data: bookings1h } = await supabase
+      .from('booking')
+      .select(`
+        booking_id, customer_id, check_in, room_id,
+        room:room_id ( name, owner_id )
+      `)
+      .eq('status', 'confirmed')
+      .gte('check_in', h1HourMin.toISOString())
+      .lte('check_in', h1HourMax.toISOString())
+
+    if (bookings1h) {
+      for (const booking of bookings1h) {
+        const roomName = (booking.room as any)?.name || 'ruangan'
+        const checkInWIB = formatWIB(booking.check_in)
+
+        // Cek duplikat
+        const { data: existingNotif } = await supabase
+          .from('notifications')
+          .select('id')
+          .eq('related_id', booking.booking_id)
+          .eq('title', 'Pengingat: Check-in dalam 1 Jam')
+          .maybeSingle()
+
+        if (existingNotif) continue
+
+        // Notifikasi Customer
+        const { data: customer } = await supabase
+          .from('customer')
+          .select('user_id')
+          .eq('customer_id', booking.customer_id)
+          .maybeSingle()
+
+        if (customer?.user_id) {
+          await createNotification({
+            user_id: customer.user_id,
+            title: 'Pengingat: Check-in dalam 1 Jam',
+            description: `Booking Anda untuk ${roomName} akan check-in dalam 1 jam (${checkInWIB}). Segera persiapkan diri Anda.`,
+            type: 'reminder',
+            priority: 'high',
+            related_id: booking.booking_id,
+            related_type: 'booking'
+          })
+          reminded1h++
+        }
+
+        // Notifikasi Owner
+        const ownerId = (booking.room as any)?.owner_id
+        if (ownerId) {
+          const { data: owner } = await supabase
+            .from('owner')
+            .select('user_id')
+            .eq('owner_id', ownerId)
             .maybeSingle()
 
-          if (room?.owner_id) {
-            const { data: owner } = await supabase
-              .from('owner')
-              .select('user_id')
-              .eq('owner_id', room.owner_id)
-              .maybeSingle()
-
-            if (owner?.user_id) {
-              await createNotification({
-                user_id: owner.user_id,
-                title: 'Pengingat: Booking Segera Dimulai',
-                description: `Booking ${booking.booking_id} akan dimulai dalam 1 jam. Siapkan ruangan.`,
-                type: 'reminder',
-                priority: 'medium',
-                related_id: booking.booking_id,
-                related_type: 'booking'
-              })
-            }
+          if (owner?.user_id) {
+            await createNotification({
+              user_id: owner.user_id,
+              title: 'Pengingat: Check-in dalam 1 Jam',
+              description: `Customer akan check-in untuk ruangan ${roomName} dalam 1 jam (${checkInWIB}). Booking ID: ${booking.booking_id}.`,
+              type: 'reminder',
+              priority: 'high',
+              related_id: booking.booking_id,
+              related_type: 'booking'
+            })
           }
         }
       }
     }
 
-    // === SYSTEM: Review reminder for completed bookings ===
+    // ================================================================
+    // SYSTEM: Review reminder — hanya booking completed dalam 24 jam terakhir
+    // ================================================================
+    const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
+
     const { data: completedBookings } = await supabase
       .from('booking')
-      .select('booking_id, customer_id, check_out, room_id')
+      .select(`
+        booking_id, customer_id, check_out, room_id,
+        room:room_id ( name )
+      `)
       .eq('status', 'completed')
-      .lt('check_out', now.toISOString())
+      .gte('check_out', twentyFourHoursAgo.toISOString()) // ← batasi 24 jam terakhir
+      .lte('check_out', now.toISOString())
 
     if (completedBookings) {
       for (const booking of completedBookings) {
-        // Check if review notification already exists
+        const roomName = (booking.room as any)?.name || 'ruangan'
+
         const { data: existingNotif } = await supabase
           .from('notifications')
           .select('id')
@@ -149,36 +217,36 @@ async function handleCheckReminders() {
           .eq('title', 'Bagaimana Pengalaman Anda?')
           .maybeSingle()
 
-        if (!existingNotif) {
-          // Get customer user_id
-          const { data: customer } = await supabase
-            .from('customer')
-            .select('user_id')
-            .eq('customer_id', booking.customer_id)
-            .maybeSingle()
+        if (existingNotif) continue
 
-          if (customer?.user_id) {
-            await createNotification({
-              user_id: customer.user_id,
-              title: 'Bagaimana Pengalaman Anda?',
-              description: `Booking ${booking.booking_id} telah selesai. Berikan ulasan untuk ruangan yang Anda gunakan.`,
-              type: 'system',
-              priority: 'low',
-              related_id: booking.booking_id,
-              related_type: 'booking'
-            })
-          }
+        const { data: customer } = await supabase
+          .from('customer')
+          .select('user_id')
+          .eq('customer_id', booking.customer_id)
+          .maybeSingle()
+
+        if (customer?.user_id) {
+          await createNotification({
+            user_id: customer.user_id,
+            title: 'Bagaimana Pengalaman Anda?',
+            description: `Booking Anda untuk ${roomName} telah selesai. Berikan ulasan untuk ruangan yang Anda gunakan.`,
+            type: 'system',
+            priority: 'low',
+            related_id: booking.booking_id,
+            related_type: 'booking'
+          })
+          remindedCompleted++
         }
       }
     }
 
     return NextResponse.json({
       success: true,
-      message: 'Reminder check completed successfully',
+      message: 'Reminder check completed',
       data: {
-        checked24h: bookings24h?.length || 0,
-        checked1h: bookings1h?.length || 0,
-        checkedCompleted: completedBookings?.length || 0
+        reminded24h,
+        reminded1h,
+        remindedCompleted
       }
     })
   } catch (error) {

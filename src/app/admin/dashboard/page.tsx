@@ -468,44 +468,46 @@ export default function AdminDashboardPage() {
                 <span className={styles.badgeUnread}>{dashboardLoading ? '...' : `${pendingVerifications.length} unread`}</span>
               </div>
 
-              {dashboardLoading && pendingVerifications.length === 0 ? (
-                <div className={styles.verifItem}>
-                  <div className={styles.requestSkeletonLine} />
-                  <div className={styles.requestSkeletonLineShort} />
-                  <div className={styles.requestSkeletonLineText} />
-                </div>
-              ) : (
-                pendingVerifications.slice(0, 3).map((verification) => (
-                  <div key={verification.user_id} className={styles.verifItem}>
-                    <div className={styles.verifTop}>
-                      <span className={styles.verifName}>{verification.name}</span>
-                      <span className={styles.verifTime}>{formatDate(verification.created_at)}</span>
-                    </div>
-                    <div className={styles.verifMsg}>
-                      <strong>{verification.name}</strong> mengirimkan permintaan verifikasi untuk menjadi Owner. Tinjau
-                      dokumennya sekarang
-                    </div>
-                    <div className={styles.verifActions}>
-                      <button className={styles.btnView} onClick={() => {
-                        setSelectedVerification(verification);
-                        setOverlayOpen(true);
-                      }}>Lihat detail</button>
-                      <button className={styles.btnClose} onClick={() => {
-                        setSelectedVerification(verification);
-                        handleReject();
-                      }}>
-                        Tolak
-                      </button>
-                    </div>
+              <div className={styles.verifList}>
+                {dashboardLoading && pendingVerifications.length === 0 ? (
+                  <div className={styles.verifItem}>
+                    <div className={styles.requestSkeletonLine} />
+                    <div className={styles.requestSkeletonLineShort} />
+                    <div className={styles.requestSkeletonLineText} />
                   </div>
-                ))
-              )}
+                ) : (
+                  pendingVerifications.map((verification) => (
+                    <div key={verification.user_id} className={styles.verifItem}>
+                      <div className={styles.verifTop}>
+                        <span className={styles.verifName}>{verification.name}</span>
+                        <span className={styles.verifTime}>{formatDate(verification.created_at)}</span>
+                      </div>
+                      <div className={styles.verifMsg}>
+                        <strong>{verification.name}</strong> mengirimkan permintaan verifikasi untuk menjadi Owner. Tinjau
+                        dokumennya sekarang
+                      </div>
+                      <div className={styles.verifActions}>
+                        <button className={styles.btnView} onClick={() => {
+                          setSelectedVerification(verification);
+                          setOverlayOpen(true);
+                        }}>Lihat detail</button>
+                        <button className={styles.btnClose} onClick={() => {
+                          setSelectedVerification(verification);
+                          handleReject();
+                        }}>
+                          Tolak
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
 
-              {!dashboardLoading && pendingVerifications.length === 0 && (
-                <div style={{ textAlign: 'center', padding: '20px', color: 'var(--gray-400)' }}>
-                  No pending verifications
-                </div>
-              )}
+                {!dashboardLoading && pendingVerifications.length === 0 && (
+                  <div style={{ textAlign: 'center', padding: '20px', color: 'var(--gray-400)' }}>
+                    No pending verifications
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

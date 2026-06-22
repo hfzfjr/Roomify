@@ -170,7 +170,7 @@ export async function GET(
       ? (checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60)
       : 0
     const serviceFee = 2500
-    const taxAmount = Math.round((booking.total_cost + serviceFee) * 0.11)
+    const taxAmount = Math.round(booking.total_cost * 0.11)
 
     return NextResponse.json({
       success: true,

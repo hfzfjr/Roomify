@@ -81,7 +81,7 @@ export async function GET(
 
     const subtotal = Number(booking.total_cost) || 0
     const serviceFee = 2500
-    const taxAmount = Math.round((subtotal + serviceFee) * 0.11)
+    const taxAmount = Math.round(subtotal * 0.11)
     const totalPayment = Math.round(subtotal + serviceFee + taxAmount)
 
     const qrisPayload = buildDynamicQrisPayload(qrisBasePayload, totalPayment)

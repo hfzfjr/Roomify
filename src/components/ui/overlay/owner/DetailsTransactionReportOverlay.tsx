@@ -81,10 +81,10 @@ export default function DetailsTransactionReportOverlay({
     const durationHours = tx.payment?.duration_hours ?? 1
     const pricePerHour = tx.payment?.room_price_per_hour ?? 0
     const subTotal = pricePerHour * durationHours
-    const serviceFee = tx.payment?.service_fee ?? 0
+    const serviceFee = tx.payment?.service_fee ?? 2500
     const ppnPercent = tx.payment?.ppn_percent ?? 11
     const ppnAmount = Math.round((subTotal * ppnPercent) / 100)
-    const totalAmount = tx.payment?.amount ?? (subTotal + serviceFee + ppnAmount)
+    const totalAmount = subTotal + serviceFee + ppnAmount
 
     return (
         <div className={styles.overlay} onClick={onClose}>
@@ -106,7 +106,7 @@ export default function DetailsTransactionReportOverlay({
                     <div className={styles.section}>
                         <div className={styles.detailRow}>
                             <span className={styles.detailLabel}>ID Transaksi</span>
-                            <span className={styles.detailValue}>{`#${tx.id}`}</span>
+                            <span className={styles.detailValue}>{`${tx.id}`}</span>
                         </div>
                         <div className={styles.detailRow}>
                             <span className={styles.detailLabel}>Tanggal Pembayaran</span>
@@ -149,7 +149,7 @@ export default function DetailsTransactionReportOverlay({
                     {/* Section 2: Harga Sewa & Sub Total */}
                     <div className={styles.section}>
                         <div className={styles.detailRow}>
-                            <span className={styles.detailLabel}>Harga Sewa Ruangan</span>
+                            <span className={styles.detailLabel}>Harga Sewa Ruangan (per jam)</span>
                             <span className={styles.detailValue}>{formatCurrency(pricePerHour)}</span>
                         </div>
                         <div className={styles.detailRow}>
